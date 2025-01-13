@@ -233,7 +233,7 @@ static void invest_powers(PlayerType *player_ptr, ItemEntity *o_ptr, int *powers
 
             break;
         case 5:
-            random_misc(player_ptr, o_ptr);
+            random_misc(o_ptr);
             break;
         case 6:
         case 7:
