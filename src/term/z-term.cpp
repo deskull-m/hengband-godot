@@ -1900,21 +1900,21 @@ void term_load(bool should_load_all)
 /*
  * React to a new physical window size.
  */
-errr term_resize(TERM_LEN w, TERM_LEN h)
+void term_resize(int w, int h)
 {
     /* Resizing is forbidden */
     if (game_term->fixed_shape) {
-        return -1;
+        return;
     }
 
     /* Ignore illegal changes */
     if ((w < 1) || (h < 1)) {
-        return -1;
+        return;
     }
 
     /* Ignore non-changes */
     if ((game_term->wid == w) && (game_term->hgt == h) && (arg_bigtile == use_bigtile)) {
-        return 1;
+        return;
     }
 
     use_bigtile = arg_bigtile;
@@ -1938,7 +1938,7 @@ errr term_resize(TERM_LEN w, TERM_LEN h)
     game_term->total_erase = true;
 
     /* Assume change */
-    for (int i = 0; i < h; i++) {
+    for (auto i = 0; i < h; i++) {
         /* Assume change */
         game_term->x1[i] = 0;
         game_term->x2[i] = w - 1;
@@ -1952,8 +1952,6 @@ errr term_resize(TERM_LEN w, TERM_LEN h)
     if (game_term->resize_hook) {
         game_term->resize_hook();
     }
-
-    return 0;
 }
 
 /*
