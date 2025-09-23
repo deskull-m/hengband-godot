@@ -226,8 +226,6 @@ errr term_inkey(char *ch, bool wait, bool take);
 void term_save();
 void term_load(bool should_load_all);
 
-errr term_exchange();
-
 errr term_resize(TERM_LEN w, TERM_LEN h);
 
 errr term_activate(term_type *t);

@@ -1898,36 +1898,6 @@ void term_load(bool should_load_all)
 }
 
 /*
- * Exchange the "requested" screen with the "tmp" screen
- */
-errr term_exchange(void)
-{
-    TERM_LEN w = game_term->wid;
-    TERM_LEN h = game_term->hgt;
-
-    /* Create */
-    if (!game_term->tmp) {
-        /* Allocate window */
-        game_term->tmp = term_win::create(w, h);
-    }
-
-    /* Swap */
-    game_term->scr.swap(game_term->tmp);
-
-    /* Assume change */
-    for (TERM_LEN y = 0; y < h; y++) {
-        /* Assume change */
-        game_term->x1[y] = 0;
-        game_term->x2[y] = w - 1;
-    }
-
-    /* Assume change */
-    game_term->y1 = 0;
-    game_term->y2 = h - 1;
-    return 0;
-}
-
-/*
  * React to a new physical window size.
  */
 errr term_resize(TERM_LEN w, TERM_LEN h)
