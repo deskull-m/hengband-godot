@@ -224,7 +224,7 @@ errr term_key_push(int k);
 errr term_inkey(char *ch, bool wait, bool take);
 
 void term_save();
-errr term_load(bool load_all);
+void term_load(bool should_load_all);
 
 errr term_exchange();
 

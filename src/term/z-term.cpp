@@ -1863,16 +1863,15 @@ void term_save()
  *
  * Every "term_save()" should match exactly one "term_load()"
  */
-errr term_load(bool load_all)
+void term_load(bool should_load_all)
 {
-    TERM_LEN w = game_term->wid;
-    TERM_LEN h = game_term->hgt;
-
+    const auto w = game_term->wid;
+    const auto h = game_term->hgt;
     if (game_term->mem_stack.empty()) {
-        return 0;
+        return;
     }
 
-    if (load_all) {
+    if (should_load_all) {
         // 残り1つを残して読み捨てる
         while (game_term->mem_stack.size() > 1) {
             game_term->mem_stack.pop();
@@ -1887,7 +1886,7 @@ errr term_load(bool load_all)
     game_term->mem_stack.pop();
 
     /* Assume change */
-    for (TERM_LEN y = 0; y < h; y++) {
+    for (auto y = 0; y < h; y++) {
         /* Assume change */
         game_term->x1[y] = 0;
         game_term->x2[y] = w - 1;
@@ -1896,7 +1895,6 @@ errr term_load(bool load_all)
     /* Assume change */
     game_term->y1 = 0;
     game_term->y2 = h - 1;
-    return 0;
 }
 
 /*
