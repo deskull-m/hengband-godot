@@ -2004,7 +2004,7 @@ void term_activate(term_type *t)
  * By default, the cursor starts out "invisible"
  * By default, we "erase" using "black spaces"
  */
-errr term_init(term_type *t, TERM_LEN w, TERM_LEN h, int k)
+void term_init(term_type *t, int w, int h, int k)
 {
     /* Wipe it */
     *t = term_type{};
@@ -2056,7 +2056,6 @@ errr term_init(term_type *t, TERM_LEN w, TERM_LEN h, int k)
     t->wipe_hook = term_wipe_hack;
     t->text_hook = term_text_hack;
     t->pict_hook = term_pict_hack;
-    return 0;
 }
 
 #ifdef JP

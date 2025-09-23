@@ -230,7 +230,7 @@ void term_resize(int w, int h);
 
 void term_activate(term_type *t);
 
-errr term_init(term_type *t, TERM_LEN w, TERM_LEN h, int k);
+void term_init(term_type *t, int w, int h, int k);
 
 #ifdef JP
 void term_putstr_v(int x, int y_initial, size_t n, uint8_t color, std::string_view sv);
