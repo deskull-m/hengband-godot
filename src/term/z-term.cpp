@@ -1757,14 +1757,13 @@ DisplaySymbol term_what(int x, int y, const DisplaySymbol &ds)
 /*
  * Flush and forget the input
  */
-errr term_flush(void)
+void term_flush()
 {
     /* Flush all events */
     term_xtra(TERM_XTRA_FLUSH, 0);
 
     /* Forget all keypresses */
     game_term->key_head = game_term->key_tail = 0;
-    return 0;
 }
 
 /*

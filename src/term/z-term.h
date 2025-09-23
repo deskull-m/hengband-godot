@@ -219,7 +219,7 @@ std::pair<int, int> term_get_size();
 std::pair<int, int> term_locate();
 DisplaySymbol term_what(int x, int y, const DisplaySymbol &ds);
 
-errr term_flush();
+void term_flush();
 errr term_key_push(int k);
 errr term_inkey(char *ch, bool wait, bool take);
 
