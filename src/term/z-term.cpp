@@ -1853,12 +1853,9 @@ errr term_inkey(char *ch, bool wait, bool take)
  *
  * Every "term_save()" should match exactly one "term_load()"
  */
-errr term_save(void)
+void term_save()
 {
-    /* Push stack */
     game_term->mem_stack.push(game_term->scr->clone());
-
-    return 0;
 }
 
 /*

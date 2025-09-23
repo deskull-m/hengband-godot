@@ -223,7 +223,7 @@ void term_flush();
 errr term_key_push(int k);
 errr term_inkey(char *ch, bool wait, bool take);
 
-errr term_save();
+void term_save();
 errr term_load(bool load_all);
 
 errr term_exchange();
