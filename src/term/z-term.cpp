@@ -1963,11 +1963,11 @@ void term_resize(int w, int h)
  * To "create" a valid "term", one should do "term_init(t)", then
  * set the various flags and hooks, and then do "term_activate(t)".
  */
-errr term_activate(term_type *t)
+void term_activate(term_type *t)
 {
     /* already done */
     if (game_term == t) {
-        return 1;
+        return;
     }
 
     /* Deactivate the old Term */
@@ -1996,8 +1996,6 @@ errr term_activate(term_type *t)
     if (game_term) {
         term_xtra(TERM_XTRA_LEVEL, 1);
     }
-
-    return 0;
 }
 
 /*

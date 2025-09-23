@@ -228,7 +228,7 @@ void term_load(bool should_load_all);
 
 void term_resize(int w, int h);
 
-errr term_activate(term_type *t);
+void term_activate(term_type *t);
 
 errr term_init(term_type *t, TERM_LEN w, TERM_LEN h, int k);
 
