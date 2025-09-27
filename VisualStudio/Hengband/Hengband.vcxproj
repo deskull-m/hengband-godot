@@ -272,6 +272,7 @@
     <ClCompile Include="..\..\src\artifact\random-art-misc.cpp" />
     <ClCompile Include="..\..\src\artifact\random-art-resistance.cpp" />
     <ClCompile Include="..\..\src\artifact\random-art-slay.cpp" />
+    <ClCompile Include="..\..\src\autopick\autopick-keys-table.cpp" />
     <ClCompile Include="..\..\src\avatar\avatar-changer.cpp" />
     <ClCompile Include="..\..\src\birth\auto-roller.cpp" />
     <ClCompile Include="..\..\src\birth\birth-body-spec.cpp" />

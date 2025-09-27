@@ -1,6 +1,8 @@
 #pragma once
 
 #include "system/h-basic.h"
+#include <map>
+#include <string>
 
 /*
  * Note these are defined in autopick-menu-data-table.c.  See the comments
@@ -55,3 +57,58 @@ extern concptr KEY_CLOAKS;
 extern concptr KEY_HELMS;
 extern concptr KEY_GLOVES;
 extern concptr KEY_BOOTS;
+
+enum class AutopickKey {
+    NONE = 0,
+    ALL,
+    UNAWARE,
+    UNIDENTIFIED,
+    IDENTIFIED,
+    STAR_IDENTIFIED,
+    COLLECTING,
+    ARTIFACT,
+    EGO,
+    GOOD,
+    NAMELESS,
+    AVERAGE,
+    WORTHLESS,
+    RARE,
+    COMMON,
+    BOOSTED,
+    MORE_THAN,
+    DICE,
+    MORE_BONUS,
+    MORE_BONUS2,
+    WANTED,
+    UNIQUE,
+    HUMAN,
+    UNREADABLE,
+    REALM1,
+    REALM2,
+    FIRST,
+    SECOND,
+    THIRD,
+    FOURTH,
+    ITEMS,
+    WEAPONS,
+    FAVORITE_WEAPONS,
+    ARMORS,
+    MISSILES,
+    DEVICES,
+    LIGHTS,
+    JUNKS,
+    CORPSES,
+    SPELLBOOKS,
+    HAFTED,
+    SHIELDS,
+    BOWS,
+    RINGS,
+    AMULETS,
+    SUITS,
+    CLOAKS,
+    HELMS,
+    GLOVES,
+    BOOTS,
+};
+
+extern const std::map<AutopickKey, std::string> autopick_keys;

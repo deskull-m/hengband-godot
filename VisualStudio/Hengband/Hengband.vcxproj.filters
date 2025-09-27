@@ -2577,6 +2577,9 @@
     <ClCompile Include="..\..\src\system\item\item-entity.cpp">
       <Filter>system\item</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\autopick\autopick-keys-table.cpp">
+      <Filter>autopick</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\combat\shoot.h">
