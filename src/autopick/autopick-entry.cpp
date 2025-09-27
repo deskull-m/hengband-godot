@@ -28,6 +28,15 @@
 #include <tl/optional.hpp>
 
 namespace {
+std::string_view ltrim_sv_one(std::string_view sv)
+{
+    if (sv.starts_with(' ')) {
+        sv.remove_prefix(1);
+    }
+
+    return sv;
+}
+
 std::string_view ltrim_sv(std::string_view sv)
 {
     sv.remove_prefix(std::min(sv.find_first_not_of(' '), sv.size()));
@@ -41,11 +50,31 @@ tl::optional<std::string_view> match_key(std::string_view sv, std::string_view k
     }
 
     sv.remove_prefix(key.size());
-    if (!sv.empty() && sv.front() == ' ') {
-        sv.remove_prefix(1);
+    return ltrim_sv_one(sv);
+}
+
+struct ParsedNumericValue {
+public:
+    uint8_t value;
+    std::string_view remaining_sv;
+};
+
+tl::optional<ParsedNumericValue> parse_numeric_value(std::string_view sv)
+{
+    const auto original_sv = ltrim_sv(sv);
+    auto current_sv = original_sv;
+    uint8_t parsed_value = 0;
+    while (!current_sv.empty() && is_numeric(current_sv.front())) {
+        parsed_value = 10 * parsed_value + (current_sv.front() - '0');
+        current_sv.remove_prefix(1);
     }
 
-    return sv;
+    const auto num_digits = original_sv.length() - current_sv.length();
+    if ((num_digits == 1) || (num_digits == 2)) {
+        return ParsedNumericValue{ parsed_value, current_sv };
+    }
+
+    return tl::nullopt;
 }
 
 #ifdef JP
@@ -71,7 +100,8 @@ bool autopick_new_entry(autopick_type *entry, std::string_view str_view, bool al
         }
     }
 
-    entry->flags[0] = entry->flags[1] = 0L;
+    entry->flags[0] = 0;
+    entry->flags[1] = 0;
     entry->dice = 0;
     entry->bonus = 0;
 
@@ -136,80 +166,78 @@ bool autopick_new_entry(autopick_type *entry, std::string_view str_view, bool al
     }
 
     std::string_view sv = buf;
-    const char *old_head = nullptr;
-    while (old_head != sv.data()) {
+    std::string_view old_sv;
+    do {
         sv = ltrim_sv(sv);
-        old_head = sv.data();
-        if (const auto sv_opt = match_key(sv, KEY_ALL); sv_opt) {
-            entry->add(FLG_ALL);
-            sv = *sv_opt;
+        if (sv.empty()) {
+            break;
         }
 
-        if (const auto sv_opt = match_key(sv, KEY_COLLECTING); sv_opt) {
-            entry->add(FLG_COLLECTING);
-            sv = *sv_opt;
+        old_sv = sv;
+        static const std::vector<std::pair<std::string_view, int>> adjectives = {
+            { KEY_ALL, FLG_ALL },
+            { KEY_COLLECTING, FLG_COLLECTING },
+            { KEY_UNAWARE, FLG_UNAWARE },
+            { KEY_UNIDENTIFIED, FLG_UNIDENTIFIED },
+            { KEY_IDENTIFIED, FLG_IDENTIFIED },
+            { KEY_STAR_IDENTIFIED, FLG_STAR_IDENTIFIED },
+            { KEY_BOOSTED, FLG_BOOSTED },
+            { KEY_WORTHLESS, FLG_WORTHLESS },
+            { KEY_EGO, FLG_EGO },
+            { KEY_GOOD, FLG_GOOD },
+            { KEY_NAMELESS, FLG_NAMELESS },
+            { KEY_AVERAGE, FLG_AVERAGE },
+            { KEY_RARE, FLG_RARE },
+            { KEY_COMMON, FLG_COMMON },
+            { KEY_WANTED, FLG_WANTED },
+            { KEY_UNIQUE, FLG_UNIQUE },
+            { KEY_HUMAN, FLG_HUMAN },
+            { KEY_UNREADABLE, FLG_UNREADABLE },
+            { KEY_REALM1, FLG_REALM1 },
+            { KEY_REALM2, FLG_REALM2 },
+            { KEY_FIRST, FLG_FIRST },
+            { KEY_SECOND, FLG_SECOND },
+            { KEY_THIRD, FLG_THIRD },
+            { KEY_FOURTH, FLG_FOURTH },
+        };
+        for (const auto &[key, flag] : adjectives) {
+            if (const auto sv_opt = match_key(sv, key); sv_opt) {
+                entry->add(flag);
+                sv = *sv_opt;
+                if (sv.empty()) {
+                    break;
+                }
+            }
         }
 
-        if (const auto sv_opt = match_key(sv, KEY_UNAWARE); sv_opt) {
-            entry->add(FLG_UNAWARE);
-            sv = *sv_opt;
-        }
-
-        if (const auto sv_opt = match_key(sv, KEY_UNIDENTIFIED); sv_opt) {
-            entry->add(FLG_UNIDENTIFIED);
-            sv = *sv_opt;
-        }
-
-        if (const auto sv_opt = match_key(sv, KEY_IDENTIFIED); sv_opt) {
-            entry->add(FLG_IDENTIFIED);
-            sv = *sv_opt;
-        }
-
-        if (const auto sv_opt = match_key(sv, KEY_STAR_IDENTIFIED); sv_opt) {
-            entry->add(FLG_STAR_IDENTIFIED);
-            sv = *sv_opt;
-        }
-
-        if (const auto sv_opt = match_key(sv, KEY_BOOSTED)) {
-            entry->add(FLG_BOOSTED);
-            sv = *sv_opt;
+        if (sv.empty()) {
+            break;
         }
 
         /*** Weapons whose dd*ds is more than nn ***/
         if (const auto sv_opt = match_key(sv, KEY_MORE_THAN); sv_opt) {
-            auto remaining_sv = ltrim_sv(*sv_opt);
-            auto k = 0;
-            entry->dice = 0;
-            while (!remaining_sv.empty() && is_numeric(remaining_sv.front())) {
-                entry->dice = 10 * entry->dice + (remaining_sv.front() - '0');
-                remaining_sv.remove_prefix(1);
-                k++;
-            }
-
-            if ((k == 1) || (k == 2)) {
-                if (const auto dice_sv_opt = match_key(remaining_sv, KEY_DICE)) {
-                    remaining_sv = *dice_sv_opt;
+            if (const auto parsed_val_opt = parse_numeric_value(*sv_opt)) {
+                entry->dice = parsed_val_opt->value;
+                std::string_view remaining_sv = parsed_val_opt->remaining_sv;
+                if (const auto dice_key_sv_opt = match_key(remaining_sv, KEY_DICE); dice_key_sv_opt) {
+                    remaining_sv = *dice_key_sv_opt;
                 }
 
                 entry->add(FLG_MORE_DICE);
                 sv = remaining_sv;
+                if (sv.empty()) {
+                    break;
+                }
             }
         }
 
         /*** Items whose magical bonus is more than n ***/
         if (const auto sv_opt = match_key(sv, KEY_MORE_BONUS); sv_opt) {
-            auto current_parse_sv = ltrim_sv(*sv_opt);
-            auto k = 0;
-            entry->bonus = 0;
-            while (!current_parse_sv.empty() && is_numeric(current_parse_sv.front())) {
-                entry->bonus = 10 * entry->bonus + (current_parse_sv.front() - '0');
-                current_parse_sv.remove_prefix(1);
-                k++;
-            }
-
-            if ((k == 1) || (k == 2)) {
+            if (const auto parsed_val_opt = parse_numeric_value(*sv_opt)) {
+                entry->bonus = parsed_val_opt->value;
+                std::string_view current_parse_sv = parsed_val_opt->remaining_sv;
 #ifdef JP
-                if (const auto bonus2_sv_opt = match_key(current_parse_sv, KEY_MORE_BONUS2)) {
+                if (const auto bonus2_sv_opt = match_key(current_parse_sv, KEY_MORE_BONUS2); bonus2_sv_opt) {
                     current_parse_sv = *bonus2_sv_opt;
                 }
 #else
@@ -217,183 +245,51 @@ bool autopick_new_entry(autopick_type *entry, std::string_view str_view, bool al
 #endif
                 entry->add(FLG_MORE_BONUS);
                 sv = current_parse_sv;
+                if (sv.empty()) {
+                    break;
+                }
             }
         }
-
-        if (const auto sv_opt = match_key(sv, KEY_WORTHLESS); sv_opt) {
-            entry->add(FLG_WORTHLESS);
-            sv = *sv_opt;
-        }
-
-        if (const auto sv_opt = match_key(sv, KEY_EGO); sv_opt) {
-            entry->add(FLG_EGO);
-            sv = *sv_opt;
-        }
-
-        if (const auto sv_opt = match_key(sv, KEY_GOOD); sv_opt) {
-            entry->add(FLG_GOOD);
-            sv = *sv_opt;
-        }
-
-        if (const auto sv_opt = match_key(sv, KEY_NAMELESS); sv_opt) {
-            entry->add(FLG_NAMELESS);
-            sv = *sv_opt;
-        }
-
-        if (const auto sv_opt = match_key(sv, KEY_AVERAGE); sv_opt) {
-            entry->add(FLG_AVERAGE);
-            sv = *sv_opt;
-        }
-
-        if (const auto sv_opt = match_key(sv, KEY_RARE); sv_opt) {
-            entry->add(FLG_RARE);
-            sv = *sv_opt;
-        }
-
-        if (const auto sv_opt = match_key(sv, KEY_COMMON); sv_opt) {
-            entry->add(FLG_COMMON);
-            sv = *sv_opt;
-        }
-
-        if (const auto sv_opt = match_key(sv, KEY_WANTED); sv_opt) {
-            entry->add(FLG_WANTED);
-            sv = *sv_opt;
-        }
-
-        if (const auto sv_opt = match_key(sv, KEY_UNIQUE); sv_opt) {
-            entry->add(FLG_UNIQUE);
-            sv = *sv_opt;
-        }
-
-        if (const auto sv_opt = match_key(sv, KEY_HUMAN); sv_opt) {
-            entry->add(FLG_HUMAN);
-            sv = *sv_opt;
-        }
-
-        if (const auto sv_opt = match_key(sv, KEY_UNREADABLE); sv_opt) {
-            entry->add(FLG_UNREADABLE);
-            sv = *sv_opt;
-        }
-
-        if (const auto sv_opt = match_key(sv, KEY_REALM1); sv_opt) {
-            entry->add(FLG_REALM1);
-            sv = *sv_opt;
-        }
-
-        if (const auto sv_opt = match_key(sv, KEY_REALM2); sv_opt) {
-            entry->add(FLG_REALM2);
-            sv = *sv_opt;
-        }
-
-        if (const auto sv_opt = match_key(sv, KEY_FIRST); sv_opt) {
-            entry->add(FLG_FIRST);
-            sv = *sv_opt;
-        }
-
-        if (const auto sv_opt = match_key(sv, KEY_SECOND); sv_opt) {
-            entry->add(FLG_SECOND);
-            sv = *sv_opt;
-        }
-
-        if (const auto sv_opt = match_key(sv, KEY_THIRD); sv_opt) {
-            entry->add(FLG_THIRD);
-            sv = *sv_opt;
-        }
-
-        if (const auto sv_opt = match_key(sv, KEY_FOURTH); sv_opt) {
-            entry->add(FLG_FOURTH);
-            sv = *sv_opt;
-        }
-    }
+    } while (old_sv != sv);
 
     const auto sv_backup = sv;
-    tl::optional<int> previous_flag = tl::nullopt;
+    tl::optional<int> previous_flag;
     if (const auto sv_opt = match_key(sv, KEY_ARTIFACT); sv_opt) {
         entry->add(FLG_ARTIFACT);
         previous_flag = FLG_ARTIFACT;
         sv = *sv_opt;
     }
 
-    if (const auto sv_opt = match_key(sv, KEY_ITEMS); sv_opt) {
-        entry->add(FLG_ITEMS);
-        previous_flag = FLG_ITEMS;
-        sv = *sv_opt;
-    } else if (const auto sv_opt = match_key(sv, KEY_WEAPONS); sv_opt) {
-        entry->add(FLG_WEAPONS);
-        previous_flag = FLG_WEAPONS;
-        sv = *sv_opt;
-    } else if (const auto sv_opt = match_key(sv, KEY_FAVORITE_WEAPONS); sv_opt) {
-        entry->add(FLG_FAVORITE_WEAPONS);
-        previous_flag = FLG_FAVORITE_WEAPONS;
-        sv = *sv_opt;
-    } else if (const auto sv_opt = match_key(sv, KEY_ARMORS); sv_opt) {
-        entry->add(FLG_ARMORS);
-        previous_flag = FLG_ARMORS;
-        sv = *sv_opt;
-    } else if (const auto sv_opt = match_key(sv, KEY_MISSILES); sv_opt) {
-        entry->add(FLG_MISSILES);
-        previous_flag = FLG_MISSILES;
-        sv = *sv_opt;
-    } else if (const auto sv_opt = match_key(sv, KEY_DEVICES); sv_opt) {
-        entry->add(FLG_DEVICES);
-        previous_flag = FLG_DEVICES;
-        sv = *sv_opt;
-    } else if (const auto sv_opt = match_key(sv, KEY_LIGHTS); sv_opt) {
-        entry->add(FLG_LIGHTS);
-        previous_flag = FLG_LIGHTS;
-        sv = *sv_opt;
-    } else if (const auto sv_opt = match_key(sv, KEY_JUNKS); sv_opt) {
-        entry->add(FLG_JUNKS);
-        previous_flag = FLG_JUNKS;
-        sv = *sv_opt;
-    } else if (const auto sv_opt = match_key(sv, KEY_CORPSES); sv_opt) {
-        entry->add(FLG_CORPSES);
-        previous_flag = FLG_CORPSES;
-        sv = *sv_opt;
-    } else if (const auto sv_opt = match_key(sv, KEY_SPELLBOOKS); sv_opt) {
-        entry->add(FLG_SPELLBOOKS);
-        previous_flag = FLG_SPELLBOOKS;
-        sv = *sv_opt;
-    } else if (const auto sv_opt = match_key(sv, KEY_HAFTED); sv_opt) {
-        entry->add(FLG_HAFTED);
-        previous_flag = FLG_HAFTED;
-        sv = *sv_opt;
-    } else if (const auto sv_opt = match_key(sv, KEY_SHIELDS); sv_opt) {
-        entry->add(FLG_SHIELDS);
-        previous_flag = FLG_SHIELDS;
-        sv = *sv_opt;
-    } else if (const auto sv_opt = match_key(sv, KEY_BOWS); sv_opt) {
-        entry->add(FLG_BOWS);
-        previous_flag = FLG_BOWS;
-        sv = *sv_opt;
-    } else if (const auto sv_opt = match_key(sv, KEY_RINGS); sv_opt) {
-        entry->add(FLG_RINGS);
-        previous_flag = FLG_RINGS;
-        sv = *sv_opt;
-    } else if (const auto sv_opt = match_key(sv, KEY_AMULETS); sv_opt) {
-        entry->add(FLG_AMULETS);
-        previous_flag = FLG_AMULETS;
-        sv = *sv_opt;
-    } else if (const auto sv_opt = match_key(sv, KEY_SUITS); sv_opt) {
-        entry->add(FLG_SUITS);
-        previous_flag = FLG_SUITS;
-        sv = *sv_opt;
-    } else if (const auto sv_opt = match_key(sv, KEY_CLOAKS); sv_opt) {
-        entry->add(FLG_CLOAKS);
-        previous_flag = FLG_CLOAKS;
-        sv = *sv_opt;
-    } else if (const auto sv_opt = match_key(sv, KEY_HELMS); sv_opt) {
-        entry->add(FLG_HELMS);
-        previous_flag = FLG_HELMS;
-        sv = *sv_opt;
-    } else if (const auto sv_opt = match_key(sv, KEY_GLOVES); sv_opt) {
-        entry->add(FLG_GLOVES);
-        previous_flag = FLG_GLOVES;
-        sv = *sv_opt;
-    } else if (const auto sv_opt = match_key(sv, KEY_BOOTS); sv_opt) {
-        entry->add(FLG_BOOTS);
-        previous_flag = FLG_BOOTS;
-        sv = *sv_opt;
+    static const std::vector<std::pair<std::string_view, int>> nouns = {
+        { KEY_ITEMS, FLG_ITEMS },
+        { KEY_WEAPONS, FLG_WEAPONS },
+        { KEY_FAVORITE_WEAPONS, FLG_FAVORITE_WEAPONS },
+        { KEY_ARMORS, FLG_ARMORS },
+        { KEY_MISSILES, FLG_MISSILES },
+        { KEY_DEVICES, FLG_DEVICES },
+        { KEY_LIGHTS, FLG_LIGHTS },
+        { KEY_JUNKS, FLG_JUNKS },
+        { KEY_CORPSES, FLG_CORPSES },
+        { KEY_SPELLBOOKS, FLG_SPELLBOOKS },
+        { KEY_HAFTED, FLG_HAFTED },
+        { KEY_SHIELDS, FLG_SHIELDS },
+        { KEY_BOWS, FLG_BOWS },
+        { KEY_RINGS, FLG_RINGS },
+        { KEY_AMULETS, FLG_AMULETS },
+        { KEY_SUITS, FLG_SUITS },
+        { KEY_CLOAKS, FLG_CLOAKS },
+        { KEY_HELMS, FLG_HELMS },
+        { KEY_GLOVES, FLG_GLOVES },
+        { KEY_BOOTS, FLG_BOOTS },
+    };
+
+    for (const auto &[key, flag] : nouns) {
+        if (const auto sv_opt = match_key(sv, key); sv_opt) {
+            entry->add(flag);
+            previous_flag = flag;
+            sv = *sv_opt;
+            break;
+        }
     }
 
     const auto finalizer = util::make_finalizer([&]() {
