@@ -1,6 +1,5 @@
 #include "autopick/autopick-entry.h"
 #include "autopick/autopick-flags-table.h"
-#include "autopick/autopick-key-flag-process.h"
 #include "autopick/autopick-keys-table.h"
 #include "autopick/autopick-methods-table.h"
 #include "autopick/autopick-util.h"
@@ -27,6 +26,36 @@
 #include <tl/optional.hpp>
 
 namespace {
+bool match_key(const char *&ptr, std::string_view key)
+{
+    if (std::strncmp(ptr, key.data(), key.length())) {
+        return false;
+    }
+
+    ptr += key.length();
+    if (' ' == *ptr) {
+        ptr++;
+    }
+
+    return true;
+}
+
+bool match_key2(const char *&ptr, std::string_view key, const char *&prev_ptr)
+{
+    prev_ptr = ptr;
+    const auto len = key.length();
+    if (std::strncmp(ptr, key.data(), len)) {
+        return false;
+    }
+
+    ptr += len;
+    if (*ptr == ' ') {
+        ++ptr;
+    }
+
+    return true;
+}
+
 #ifdef JP
 constexpr std::string_view kanji_colon = "：";
 #endif
@@ -119,30 +148,30 @@ bool autopick_new_entry(autopick_type *entry, std::string_view str_view, bool al
     concptr old_ptr = nullptr;
     while (old_ptr != ptr) {
         old_ptr = ptr;
-        if (MATCH_KEY(KEY_ALL)) {
+        if (match_key(ptr, KEY_ALL)) {
             entry->add(FLG_ALL);
         }
-        if (MATCH_KEY(KEY_COLLECTING)) {
+        if (match_key(ptr, KEY_COLLECTING)) {
             entry->add(FLG_COLLECTING);
         }
-        if (MATCH_KEY(KEY_UNAWARE)) {
+        if (match_key(ptr, KEY_UNAWARE)) {
             entry->add(FLG_UNAWARE);
         }
-        if (MATCH_KEY(KEY_UNIDENTIFIED)) {
+        if (match_key(ptr, KEY_UNIDENTIFIED)) {
             entry->add(FLG_UNIDENTIFIED);
         }
-        if (MATCH_KEY(KEY_IDENTIFIED)) {
+        if (match_key(ptr, KEY_IDENTIFIED)) {
             entry->add(FLG_IDENTIFIED);
         }
-        if (MATCH_KEY(KEY_STAR_IDENTIFIED)) {
+        if (match_key(ptr, KEY_STAR_IDENTIFIED)) {
             entry->add(FLG_STAR_IDENTIFIED);
         }
-        if (MATCH_KEY(KEY_BOOSTED)) {
+        if (match_key(ptr, KEY_BOOSTED)) {
             entry->add(FLG_BOOSTED);
         }
 
         /*** Weapons whose dd*ds is more than nn ***/
-        if (MATCH_KEY2(KEY_MORE_THAN)) {
+        if (match_key2(ptr, KEY_MORE_THAN, prev_ptr)) {
             int k = 0;
             entry->dice = 0;
 
@@ -157,7 +186,7 @@ bool autopick_new_entry(autopick_type *entry, std::string_view str_view, bool al
             }
 
             if (k > 0 && k <= 2) {
-                (void)MATCH_KEY(KEY_DICE);
+                (void)match_key(ptr, KEY_DICE);
                 entry->add(FLG_MORE_DICE);
             } else {
                 ptr = prev_ptr;
@@ -165,7 +194,7 @@ bool autopick_new_entry(autopick_type *entry, std::string_view str_view, bool al
         }
 
         /*** Items whose magical bonus is more than n ***/
-        if (MATCH_KEY2(KEY_MORE_BONUS)) {
+        if (match_key2(ptr, KEY_MORE_BONUS, prev_ptr)) {
             int k = 0;
             entry->bonus = 0;
 
@@ -181,7 +210,7 @@ bool autopick_new_entry(autopick_type *entry, std::string_view str_view, bool al
 
             if (k > 0 && k <= 2) {
 #ifdef JP
-                (void)MATCH_KEY(KEY_MORE_BONUS2);
+                (void)match_key(ptr, KEY_MORE_BONUS2);
 #else
                 if (' ' == *ptr) {
                     ptr++;
@@ -193,123 +222,123 @@ bool autopick_new_entry(autopick_type *entry, std::string_view str_view, bool al
             }
         }
 
-        if (MATCH_KEY(KEY_WORTHLESS)) {
+        if (match_key(ptr, KEY_WORTHLESS)) {
             entry->add(FLG_WORTHLESS);
         }
-        if (MATCH_KEY(KEY_EGO)) {
+        if (match_key(ptr, KEY_EGO)) {
             entry->add(FLG_EGO);
         }
-        if (MATCH_KEY(KEY_GOOD)) {
+        if (match_key(ptr, KEY_GOOD)) {
             entry->add(FLG_GOOD);
         }
-        if (MATCH_KEY(KEY_NAMELESS)) {
+        if (match_key(ptr, KEY_NAMELESS)) {
             entry->add(FLG_NAMELESS);
         }
-        if (MATCH_KEY(KEY_AVERAGE)) {
+        if (match_key(ptr, KEY_AVERAGE)) {
             entry->add(FLG_AVERAGE);
         }
-        if (MATCH_KEY(KEY_RARE)) {
+        if (match_key(ptr, KEY_RARE)) {
             entry->add(FLG_RARE);
         }
-        if (MATCH_KEY(KEY_COMMON)) {
+        if (match_key(ptr, KEY_COMMON)) {
             entry->add(FLG_COMMON);
         }
-        if (MATCH_KEY(KEY_WANTED)) {
+        if (match_key(ptr, KEY_WANTED)) {
             entry->add(FLG_WANTED);
         }
-        if (MATCH_KEY(KEY_UNIQUE)) {
+        if (match_key(ptr, KEY_UNIQUE)) {
             entry->add(FLG_UNIQUE);
         }
-        if (MATCH_KEY(KEY_HUMAN)) {
+        if (match_key(ptr, KEY_HUMAN)) {
             entry->add(FLG_HUMAN);
         }
-        if (MATCH_KEY(KEY_UNREADABLE)) {
+        if (match_key(ptr, KEY_UNREADABLE)) {
             entry->add(FLG_UNREADABLE);
         }
-        if (MATCH_KEY(KEY_REALM1)) {
+        if (match_key(ptr, KEY_REALM1)) {
             entry->add(FLG_REALM1);
         }
-        if (MATCH_KEY(KEY_REALM2)) {
+        if (match_key(ptr, KEY_REALM2)) {
             entry->add(FLG_REALM2);
         }
-        if (MATCH_KEY(KEY_FIRST)) {
+        if (match_key(ptr, KEY_FIRST)) {
             entry->add(FLG_FIRST);
         }
-        if (MATCH_KEY(KEY_SECOND)) {
+        if (match_key(ptr, KEY_SECOND)) {
             entry->add(FLG_SECOND);
         }
-        if (MATCH_KEY(KEY_THIRD)) {
+        if (match_key(ptr, KEY_THIRD)) {
             entry->add(FLG_THIRD);
         }
-        if (MATCH_KEY(KEY_FOURTH)) {
+        if (match_key(ptr, KEY_FOURTH)) {
             entry->add(FLG_FOURTH);
         }
     }
 
     tl::optional<int> previous_flag = tl::nullopt;
-    if (MATCH_KEY2(KEY_ARTIFACT)) {
+    if (match_key2(ptr, KEY_ARTIFACT, prev_ptr)) {
         entry->add(FLG_ARTIFACT);
         previous_flag = FLG_ARTIFACT;
     }
 
-    if (MATCH_KEY2(KEY_ITEMS)) {
+    if (match_key2(ptr, KEY_ITEMS, prev_ptr)) {
         entry->add(FLG_ITEMS);
         previous_flag = FLG_ITEMS;
-    } else if (MATCH_KEY2(KEY_WEAPONS)) {
+    } else if (match_key2(ptr, KEY_WEAPONS, prev_ptr)) {
         entry->add(FLG_WEAPONS);
         previous_flag = FLG_WEAPONS;
-    } else if (MATCH_KEY2(KEY_FAVORITE_WEAPONS)) {
+    } else if (match_key2(ptr, KEY_FAVORITE_WEAPONS, prev_ptr)) {
         entry->add(FLG_FAVORITE_WEAPONS);
         previous_flag = FLG_FAVORITE_WEAPONS;
-    } else if (MATCH_KEY2(KEY_ARMORS)) {
+    } else if (match_key2(ptr, KEY_ARMORS, prev_ptr)) {
         entry->add(FLG_ARMORS);
         previous_flag = FLG_ARMORS;
-    } else if (MATCH_KEY2(KEY_MISSILES)) {
+    } else if (match_key2(ptr, KEY_MISSILES, prev_ptr)) {
         entry->add(FLG_MISSILES);
         previous_flag = FLG_MISSILES;
-    } else if (MATCH_KEY2(KEY_DEVICES)) {
+    } else if (match_key2(ptr, KEY_DEVICES, prev_ptr)) {
         entry->add(FLG_DEVICES);
         previous_flag = FLG_DEVICES;
-    } else if (MATCH_KEY2(KEY_LIGHTS)) {
+    } else if (match_key2(ptr, KEY_LIGHTS, prev_ptr)) {
         entry->add(FLG_LIGHTS);
         previous_flag = FLG_LIGHTS;
-    } else if (MATCH_KEY2(KEY_JUNKS)) {
+    } else if (match_key2(ptr, KEY_JUNKS, prev_ptr)) {
         entry->add(FLG_JUNKS);
         previous_flag = FLG_JUNKS;
-    } else if (MATCH_KEY2(KEY_CORPSES)) {
+    } else if (match_key2(ptr, KEY_CORPSES, prev_ptr)) {
         entry->add(FLG_CORPSES);
         previous_flag = FLG_CORPSES;
-    } else if (MATCH_KEY2(KEY_SPELLBOOKS)) {
+    } else if (match_key2(ptr, KEY_SPELLBOOKS, prev_ptr)) {
         entry->add(FLG_SPELLBOOKS);
         previous_flag = FLG_SPELLBOOKS;
-    } else if (MATCH_KEY2(KEY_HAFTED)) {
+    } else if (match_key2(ptr, KEY_HAFTED, prev_ptr)) {
         entry->add(FLG_HAFTED);
         previous_flag = FLG_HAFTED;
-    } else if (MATCH_KEY2(KEY_SHIELDS)) {
+    } else if (match_key2(ptr, KEY_SHIELDS, prev_ptr)) {
         entry->add(FLG_SHIELDS);
         previous_flag = FLG_SHIELDS;
-    } else if (MATCH_KEY2(KEY_BOWS)) {
+    } else if (match_key2(ptr, KEY_BOWS, prev_ptr)) {
         entry->add(FLG_BOWS);
         previous_flag = FLG_BOWS;
-    } else if (MATCH_KEY2(KEY_RINGS)) {
+    } else if (match_key2(ptr, KEY_RINGS, prev_ptr)) {
         entry->add(FLG_RINGS);
         previous_flag = FLG_RINGS;
-    } else if (MATCH_KEY2(KEY_AMULETS)) {
+    } else if (match_key2(ptr, KEY_AMULETS, prev_ptr)) {
         entry->add(FLG_AMULETS);
         previous_flag = FLG_AMULETS;
-    } else if (MATCH_KEY2(KEY_SUITS)) {
+    } else if (match_key2(ptr, KEY_SUITS, prev_ptr)) {
         entry->add(FLG_SUITS);
         previous_flag = FLG_SUITS;
-    } else if (MATCH_KEY2(KEY_CLOAKS)) {
+    } else if (match_key2(ptr, KEY_CLOAKS, prev_ptr)) {
         entry->add(FLG_CLOAKS);
         previous_flag = FLG_CLOAKS;
-    } else if (MATCH_KEY2(KEY_HELMS)) {
+    } else if (match_key2(ptr, KEY_HELMS, prev_ptr)) {
         entry->add(FLG_HELMS);
         previous_flag = FLG_HELMS;
-    } else if (MATCH_KEY2(KEY_GLOVES)) {
+    } else if (match_key2(ptr, KEY_GLOVES, prev_ptr)) {
         entry->add(FLG_GLOVES);
         previous_flag = FLG_GLOVES;
-    } else if (MATCH_KEY2(KEY_BOOTS)) {
+    } else if (match_key2(ptr, KEY_BOOTS, prev_ptr)) {
         entry->add(FLG_BOOTS);
         previous_flag = FLG_BOOTS;
     }
