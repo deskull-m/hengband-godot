@@ -85,10 +85,10 @@ constexpr std::string_view kanji_colon = "：";
 /*!
  * @brief A function to create new entry
  */
-bool autopick_new_entry(autopick_type *entry, std::string_view str_view, bool allow_default)
+bool autopick_new_entry(autopick_type *entry, std::string_view line_input, bool allow_default)
 {
-    if ((str_view.length() > 1) && (str_view[1] == ':')) {
-        switch (str_view[0]) {
+    if ((line_input.length() > 1) && (line_input[1] == ':')) {
+        switch (line_input[0]) {
         case '?':
         case '%':
         case 'A':
@@ -106,32 +106,32 @@ bool autopick_new_entry(autopick_type *entry, std::string_view str_view, bool al
     entry->bonus = 0;
 
     byte act = DO_AUTOPICK | DO_DISPLAY;
-    auto str = str_view.data();
-    while (true) {
-        if ((act & DO_AUTOPICK) && *str == '!') {
+    std::string_view line = line_input;
+    while (!line.empty()) {
+        if ((act & DO_AUTOPICK) && line.starts_with('!')) {
             act &= ~DO_AUTOPICK;
             act |= DO_AUTODESTROY;
-            str++;
+            line.remove_prefix(1);
             continue;
         }
 
-        if ((act & DO_AUTOPICK) && *str == '~') {
+        if ((act & DO_AUTOPICK) && line.starts_with('~')) {
             act &= ~DO_AUTOPICK;
             act |= DONT_AUTOPICK;
-            str++;
+            line.remove_prefix(1);
             continue;
         }
 
-        if ((act & DO_AUTOPICK) && *str == ';') {
+        if ((act & DO_AUTOPICK) && line.starts_with(';')) {
             act &= ~DO_AUTOPICK;
             act |= DO_QUERY_AUTOPICK;
-            str++;
+            line.remove_prefix(1);
             continue;
         }
 
-        if ((act & DO_DISPLAY) && *str == '(') {
+        if ((act & DO_DISPLAY) && line.starts_with('(')) {
             act &= ~DO_DISPLAY;
-            str++;
+            line.remove_prefix(1);
             continue;
         }
 
@@ -140,16 +140,18 @@ bool autopick_new_entry(autopick_type *entry, std::string_view str_view, bool al
 
     std::string inscription;
     std::stringstream ss;
-    while (*str != '\0') {
-        auto c = *str++;
+    while (!line.empty()) {
+        auto c = line.front();
+        line.remove_prefix(1);
 #ifdef JP
-        if (iskanji(c)) {
-            ss << c << *str++;
+        if (iskanji(c) && !line.empty()) {
+            ss << c << line.front();
+            line.remove_prefix(1);
             continue;
         }
 #endif
         if (c == '#') {
-            inscription = str;
+            inscription = line;
             break;
         }
 
