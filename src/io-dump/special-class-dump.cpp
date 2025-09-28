@@ -21,6 +21,7 @@
 #include "util/enum-converter.h"
 #include "util/flag-group.h"
 #include <algorithm>
+#include <fmt/format.h>
 #include <iterator>
 #include <string>
 #include <vector>
@@ -125,99 +126,73 @@ static void dump_smith(PlayerType *player_ptr, FILE *fff)
 
 /*!
  * @brief ダンプする情報に学習済魔法の種類を追加する
- * @param p ダンプ用のバッファ
  * @param col 行数
- * @param SpellProcessType 魔法の種類
+ * @param blue_magic_type 魔法の種類
  * @param learnt_spell_ptr 学習済魔法のテーブル
+ * @return ダンプ用情報
  */
-static void add_monster_spell_type(char p[][80], int col, BlueMagicType SpellProcessType, learnt_spell_table *learnt_spell_ptr)
+static std::string add_monster_spell_type(BlueMagicType blue_magic_type, learnt_spell_table &learnt_spell_ptr)
 {
-    learnt_spell_ptr->ability_flags.clear();
-    set_rf_masks(learnt_spell_ptr->ability_flags, SpellProcessType);
-    switch (SpellProcessType) {
+    learnt_spell_ptr.ability_flags.clear();
+    set_rf_masks(learnt_spell_ptr.ability_flags, blue_magic_type);
+    switch (blue_magic_type) {
     case BlueMagicType::BOLT:
-        strcat(p[col], _("\n     [ボルト型]\n", "\n     [Bolt  Type]\n"));
-        break;
-
+        return _("\n     [ボルト型]\n", "\n     [Bolt  Type]\n");
     case BlueMagicType::BALL:
-        strcat(p[col], _("\n     [ボール型]\n", "\n     [Ball  Type]\n"));
-        break;
-
+        return _("\n     [ボール型]\n", "\n     [Ball  Type]\n");
     case BlueMagicType::BREATH:
-        strcat(p[col], _("\n     [ブレス型]\n", "\n     [  Breath  ]\n"));
-        break;
-
+        return _("\n     [ブレス型]\n", "\n     [  Breath  ]\n");
     case BlueMagicType::SUMMON:
-        strcat(p[col], _("\n     [召喚魔法]\n", "\n     [Summonning]\n"));
-        break;
-
+        return _("\n     [召喚魔法]\n", "\n     [Summonning]\n");
     case BlueMagicType::OTHER:
-        strcat(p[col], _("\n     [ その他 ]\n", "\n     [Other Type]\n"));
-        break;
+        return _("\n     [ その他 ]\n", "\n     [Other Type]\n");
+    default:
+        return "";
     }
 }
 
 /*!
  * @brief 青魔道士の学習済魔法をダンプする
- * @param player_ptr プレイヤーへの参照ポインタ
- * @param fff ファイルポインタ
+ * @param bluemage_data 青魔道士の固有データへの参照
+ * @return ダンプ用情報の行リスト
  */
-static void dump_blue_mage(PlayerType *player_ptr, FILE *fff)
+static std::vector<std::string> build_learnt_magics_info(bluemage_data_type &bluemage_data)
 {
-    const auto bluemage_data = PlayerClass(player_ptr).get_specific_data<bluemage_data_type>();
-    if (!bluemage_data) {
-        return;
-    }
-
-    char p[60][80]{};
-    auto col = 0;
-    strcat(p[col], _("\n\n  [学習済みの青魔法]\n", "\n\n  [Learned Blue Magic]\n"));
-
-    for (auto SpellProcessType : BLUE_MAGIC_TYPE_LIST) {
-        col++;
+    std::vector<std::string> lines;
+    lines.emplace_back(_("\n\n  [学習済みの青魔法]\n", "\n\n  [Learned Blue Magic]\n"));
+    for (auto blue_magic_type : BLUE_MAGIC_TYPE_LIST) {
+        lines.emplace_back("");
         learnt_spell_table learnt_magic;
-        add_monster_spell_type(p, col, SpellProcessType, &learnt_magic);
-        learnt_magic.ability_flags &= bluemage_data->learnt_blue_magics;
+        lines.push_back(add_monster_spell_type(blue_magic_type, learnt_magic));
+        learnt_magic.ability_flags &= bluemage_data.learnt_blue_magics;
 
         std::vector<MonsterAbilityType> learnt_spells;
         EnumClassFlagGroup<MonsterAbilityType>::get_flags(learnt_magic.ability_flags, std::back_inserter(learnt_spells));
-
-        col++;
-        auto pcol = false;
-        strcat(p[col], "       ");
-
-        for (auto spell : learnt_spells) {
-            pcol = true;
-            auto l1 = strlen(p[col]);
-            auto l2 = strlen(monster_powers_short.at(spell));
+        lines.emplace_back("");
+        lines.emplace_back("       ");
+        for (const auto spell : learnt_spells) {
+            const auto l1 = lines.cend()->length();
+            const auto l2 = monster_powers_short.at(spell).length();
             if ((l1 + l2) >= 75) {
-                strcat(p[col], "\n");
-                col++;
-                strcat(p[col], "       ");
+                lines.emplace_back("\n");
+                lines.emplace_back("");
+                lines.emplace_back("       ");
             }
 
-            strcat(p[col], monster_powers_short.at(spell));
-            strcat(p[col], ", ");
+            lines.emplace_back(monster_powers_short.at(spell));
+            lines.emplace_back(", ");
         }
 
-        if (!pcol) {
-            strcat(p[col], _("なし", "None"));
-            strcat(p[col], "\n");
+        if (learnt_spells.empty()) {
+            lines.emplace_back(_("なし", "None"));
+            lines.emplace_back("\n");
             continue;
         }
 
-        if (p[col][strlen(p[col]) - 2] == ',') {
-            p[col][strlen(p[col]) - 2] = '\0';
-        } else {
-            p[col][strlen(p[col]) - 10] = '\0';
-        }
-
-        strcat(p[col], "\n");
+        lines.emplace_back("\n");
     }
 
-    for (int i = 0; i <= col; i++) {
-        fputs(p[i], fff);
-    }
+    return lines;
 }
 
 /*!
@@ -237,7 +212,16 @@ void dump_aux_class_special(PlayerType *player_ptr, FILE *fff)
         return;
     }
     case PlayerClassType::BLUE_MAGE: {
-        dump_blue_mage(player_ptr, fff);
+        const auto bluemage_data = PlayerClass(player_ptr).get_specific_data<bluemage_data_type>();
+        std::vector<std::string> lines;
+        if (bluemage_data) {
+            lines = build_learnt_magics_info(*bluemage_data);
+        }
+
+        for (const auto &line : lines) {
+            fmt::print(fff, "{}", line);
+        }
+
         return;
     }
     default:

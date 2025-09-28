@@ -1,4 +1,5 @@
 #include "mspell/monster-power-table.h"
+#include "locale/language-switcher.h"
 #include "monster-race/race-ability-flags.h"
 #include "player-ability/player-ability-types.h"
 
@@ -121,7 +122,7 @@ const std::map<MonsterAbilityType, const monster_power> monster_powers = {
 /*!
  * @brief モンスター魔法名テーブル
  */
-const std::map<MonsterAbilityType, concptr> monster_powers_short = {
+const std::map<MonsterAbilityType, std::string_view> monster_powers_short = {
     { MonsterAbilityType::SHRIEK, _("叫ぶ", "Shriek") },
     { MonsterAbilityType::XXX1, _("何か", "Something") },
     { MonsterAbilityType::DISPEL, _("魔力消去", "Dispel-magic") },

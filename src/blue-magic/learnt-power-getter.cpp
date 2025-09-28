@@ -330,7 +330,7 @@ static void describe_blue_magic_name(PlayerType *player_ptr, int menu_line, cons
         char header[80];
         close_blue_magic_name(header, sizeof(header), i, menu_line);
         const auto info = learnt_info(player_ptr, spell);
-        const auto psi_desc = format("%s %-26s %3d %3d%%%s", header, mp.name, need_mana, chance, info.data());
+        const auto psi_desc = fmt::format("{} {:<26} {:3} {:3}%{}", header, fmt::bytes(mp.name), need_mana, chance, info);
         prt(psi_desc, y_base + i + 1, x_base);
     }
 
@@ -345,7 +345,7 @@ static void describe_blue_magic_name(PlayerType *player_ptr, int menu_line, cons
  */
 static bool confirm_cast_blue_magic(MonsterAbilityType spell)
 {
-    const auto prompt = format(_("%sの魔法を唱えますか？", "Use %s? "), monster_powers.at(spell).name);
+    const auto prompt = fmt::format(_("{}の魔法を唱えますか？", "Use {}? "), monster_powers.at(spell).name);
     return input_check(prompt);
 }
 
