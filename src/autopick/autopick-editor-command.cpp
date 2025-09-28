@@ -570,19 +570,19 @@ ape_quittance do_editor_command(PlayerType *player_ptr, text_body_type *tb, int 
         break;
     }
     case EC_CL_AUTOPICK:
-        toggle_command_letter(tb, DO_AUTOPICK);
+        toggle_command_letter(tb, AutopickMethod::AUTOPICK);
         break;
     case EC_CL_DESTROY:
-        toggle_command_letter(tb, DO_AUTODESTROY);
+        toggle_command_letter(tb, AutopickMethod::AUTODESTROY);
         break;
     case EC_CL_LEAVE:
-        toggle_command_letter(tb, DONT_AUTOPICK);
+        toggle_command_letter(tb, AutopickMethod::NOT_AUTOPICK);
         break;
     case EC_CL_QUERY:
-        toggle_command_letter(tb, DO_QUERY_AUTOPICK);
+        toggle_command_letter(tb, AutopickMethod::QUERY_AUTOPICK);
         break;
     case EC_CL_NO_DISP:
-        toggle_command_letter(tb, DO_DISPLAY);
+        toggle_command_letter(tb, AutopickMethod::DISPLAY);
         break;
     case EC_IK_UNAWARE:
         toggle_keyword(tb, FLG_UNAWARE);

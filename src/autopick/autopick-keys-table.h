@@ -2,7 +2,7 @@
 
 #include "system/h-basic.h"
 #include <map>
-#include <string>
+#include <string_view>
 
 /*
  * Note these are defined in autopick-menu-data-table.c.  See the comments
@@ -111,4 +111,4 @@ enum class AutopickKey {
     BOOTS,
 };
 
-extern const std::map<AutopickKey, std::string> autopick_keys;
+extern const std::map<AutopickKey, std::string_view> autopick_keys;

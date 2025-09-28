@@ -14,7 +14,7 @@
 
 struct autopick_describer {
     concptr str;
-    byte act;
+    EnumClassFlagGroup<AutopickMethod> act;
     concptr insc;
     bool top;
     int before_n;
@@ -247,20 +247,20 @@ static void describe_autpick_jp(char *buff, const autopick_type &entry, autopick
         strcat(buff, "を");
     }
 
-    if (describer->act & DONT_AUTOPICK) {
+    if (describer->act.has(AutopickMethod::NOT_AUTOPICK)) {
         strcat(buff, "放置する。");
-    } else if (describer->act & DO_AUTODESTROY) {
+    } else if (describer->act.has(AutopickMethod::AUTODESTROY)) {
         strcat(buff, "破壊する。");
-    } else if (describer->act & DO_QUERY_AUTOPICK) {
+    } else if (describer->act.has(AutopickMethod::QUERY_AUTOPICK)) {
         strcat(buff, "確認の後に拾う。");
     } else {
         strcat(buff, "拾う。");
     }
 
-    if (describer->act & DO_DISPLAY) {
-        if (describer->act & DONT_AUTOPICK) {
+    if (describer->act.has(AutopickMethod::DISPLAY)) {
+        if (describer->act.has(AutopickMethod::NOT_AUTOPICK)) {
             strcat(buff, "全体マップ('M')で'N'を押したときに表示する。");
-        } else if (describer->act & DO_AUTODESTROY) {
+        } else if (describer->act.has(AutopickMethod::AUTODESTROY)) {
             strcat(buff, "全体マップ('M')で'K'を押したときに表示する。");
         } else {
             strcat(buff, "全体マップ('M')で'M'を押したときに表示する。");
@@ -476,11 +476,11 @@ void describe_autopick_en(char *buff, const autopick_type &entry, autopick_descr
         }
     }
 
-    if (describer->act & DONT_AUTOPICK) {
+    if (describer->act.has(AutopickMethod::NOT_AUTOPICK)) {
         strcpy(buff, "Leave on floor ");
-    } else if (describer->act & DO_AUTODESTROY) {
+    } else if (describer->act.has(AutopickMethod::AUTODESTROY)) {
         strcpy(buff, "Destroy ");
-    } else if (describer->act & DO_QUERY_AUTOPICK) {
+    } else if (describer->act.has(AutopickMethod::QUERY_AUTOPICK)) {
         strcpy(buff, "Ask to pick up ");
     } else {
         strcpy(buff, "Pickup ");
@@ -550,10 +550,10 @@ void describe_autopick_en(char *buff, const autopick_type &entry, autopick_descr
 
     strcat(buff, ".");
 
-    if (describer->act & DO_DISPLAY) {
-        if (describer->act & DONT_AUTOPICK) {
+    if (describer->act.has(AutopickMethod::DISPLAY)) {
+        if (describer->act.has(AutopickMethod::NOT_AUTOPICK)) {
             strcat(buff, "  Display these items when you press the N key in the full 'M'ap.");
-        } else if (describer->act & DO_AUTODESTROY) {
+        } else if (describer->act.has(AutopickMethod::AUTODESTROY)) {
             strcat(buff, "  Display these items when you press the K key in the full 'M'ap.");
         } else {
             strcat(buff, "  Display these items when you press the M key in the full 'M'ap.");

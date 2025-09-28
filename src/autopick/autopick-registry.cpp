@@ -111,12 +111,12 @@ bool autopick_autoregister(PlayerType *player_ptr, const ItemEntity *o_ptr)
     int autopick_registered = find_autopick_list(player_ptr, o_ptr);
     if (autopick_registered != -1) {
         concptr what;
-        byte act = autopick_list[autopick_registered].action;
-        if (act & DO_AUTOPICK) {
+        const auto &act = autopick_list[autopick_registered].action;
+        if (act.has(AutopickMethod::AUTOPICK)) {
             what = _("自動で拾う", "auto-pickup");
-        } else if (act & DO_AUTODESTROY) {
+        } else if (act.has(AutopickMethod::AUTODESTROY)) {
             what = _("自動破壊する", "auto-destroy");
-        } else if (act & DONT_AUTOPICK) {
+        } else if (act.has(AutopickMethod::NOT_AUTOPICK)) {
             what = _("放置する", "leave on floor");
         } else {
             what = _("確認して拾う", "query auto-pickup");
@@ -185,7 +185,8 @@ bool autopick_autoregister(PlayerType *player_ptr, const ItemEntity *o_ptr)
     }
 
     autopick_entry_from_object(player_ptr, entry, o_ptr);
-    entry->action = DO_AUTODESTROY;
+    entry->action.clear();
+    entry->action.set(AutopickMethod::AUTODESTROY);
     autopick_list.push_back(*entry);
 
     const auto line = autopick_line_from_entry(*entry);

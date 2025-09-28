@@ -1,7 +1,7 @@
 #include "autopick/autopick-keys-table.h"
 #include "locale/language-switcher.h"
 
-const std::map<AutopickKey, std::string> autopick_keys = {
+const std::map<AutopickKey, std::string_view> autopick_keys = {
     { AutopickKey::ALL, _("すべての", "all") },
     { AutopickKey::UNAWARE, _("未判明の", "unaware") },
     { AutopickKey::UNIDENTIFIED, _("未鑑定の", "unidentified") },
