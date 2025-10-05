@@ -380,7 +380,7 @@ void process_player(PlayerType *player_ptr)
             }
 
             if (player_ptr->action == ACTION_LEARN) {
-                auto mane_data = PlayerClass(player_ptr).get_specific_data<bluemage_data_type>();
+                auto mane_data = PlayerClass(player_ptr).get_specific_data<BluemageData>();
                 mane_data->new_magic_learned = false;
                 rfu.set_flag(MainWindowRedrawingFlag::ACTION);
             }

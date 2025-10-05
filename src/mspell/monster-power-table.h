@@ -19,4 +19,3 @@ struct monster_power {
 #define MAX_MONSPELLS 96
 
 extern const std::map<MonsterAbilityType, const monster_power> monster_powers;
-extern const std::map<MonsterAbilityType, std::string_view> monster_powers_short;

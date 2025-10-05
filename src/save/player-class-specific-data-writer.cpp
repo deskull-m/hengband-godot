@@ -30,7 +30,7 @@ void PlayerClassSpecificDataWriter::operator()(const std::shared_ptr<force_train
     wr_s32b(force_trainer_data->ki);
 }
 
-void PlayerClassSpecificDataWriter::operator()(const std::shared_ptr<bluemage_data_type> &bluemage_data) const
+void PlayerClassSpecificDataWriter::operator()(const std::shared_ptr<BluemageData> &bluemage_data) const
 {
     wr_FlagGroup(bluemage_data->learnt_blue_magics, wr_byte);
 }

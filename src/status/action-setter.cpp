@@ -49,7 +49,7 @@ void set_action(PlayerType *player_ptr, uint8_t typ)
         break;
     case ACTION_LEARN: {
         msg_print(_("学習をやめた。", "You stop learning."));
-        auto bluemage_data = PlayerClass(player_ptr).get_specific_data<bluemage_data_type>();
+        auto bluemage_data = PlayerClass(player_ptr).get_specific_data<BluemageData>();
         bluemage_data->new_magic_learned = false;
         break;
     }

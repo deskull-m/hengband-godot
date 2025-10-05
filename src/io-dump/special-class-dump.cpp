@@ -5,30 +5,17 @@
  */
 
 #include "io-dump/special-class-dump.h"
-#include "blue-magic/blue-magic-checker.h"
-#include "cmd-item/cmd-magiceat.h"
-#include "mind/mind-blue-mage.h"
-#include "monster-race/race-ability-flags.h"
-#include "mspell/monster-power-table.h"
-#include "object/tval-types.h"
 #include "player-base/player-class.h"
 #include "player-info/bluemage-data.h"
 #include "player-info/magic-eater-data-type.h"
 #include "smith/object-smith.h"
 #include "system/baseitem/baseitem-definition.h"
 #include "system/baseitem/baseitem-list.h"
-#include "system/player-type-definition.h"
-#include "util/enum-converter.h"
-#include "util/flag-group.h"
 #include <algorithm>
 #include <fmt/format.h>
 #include <iterator>
 #include <string>
 #include <vector>
-
-struct learnt_spell_table {
-    EnumClassFlagGroup<MonsterAbilityType> ability_flags;
-};
 
 /*!
  * @brief 魔力喰いを持つクラスの情報をダンプする
@@ -125,77 +112,6 @@ static void dump_smith(PlayerType *player_ptr, FILE *fff)
 }
 
 /*!
- * @brief ダンプする情報に学習済魔法の種類を追加する
- * @param col 行数
- * @param blue_magic_type 魔法の種類
- * @param learnt_spell_ptr 学習済魔法のテーブル
- * @return ダンプ用情報
- */
-static std::string add_monster_spell_type(BlueMagicType blue_magic_type, learnt_spell_table &learnt_spell_ptr)
-{
-    learnt_spell_ptr.ability_flags.clear();
-    set_rf_masks(learnt_spell_ptr.ability_flags, blue_magic_type);
-    switch (blue_magic_type) {
-    case BlueMagicType::BOLT:
-        return _("\n     [ボルト型]\n", "\n     [Bolt  Type]\n");
-    case BlueMagicType::BALL:
-        return _("\n     [ボール型]\n", "\n     [Ball  Type]\n");
-    case BlueMagicType::BREATH:
-        return _("\n     [ブレス型]\n", "\n     [  Breath  ]\n");
-    case BlueMagicType::SUMMON:
-        return _("\n     [召喚魔法]\n", "\n     [Summonning]\n");
-    case BlueMagicType::OTHER:
-        return _("\n     [ その他 ]\n", "\n     [Other Type]\n");
-    default:
-        return "";
-    }
-}
-
-/*!
- * @brief 青魔道士の学習済魔法をダンプする
- * @param bluemage_data 青魔道士の固有データへの参照
- * @return ダンプ用情報の行リスト
- */
-static std::vector<std::string> build_learnt_magics_info(bluemage_data_type &bluemage_data)
-{
-    std::vector<std::string> lines;
-    lines.emplace_back(_("\n\n  [学習済みの青魔法]\n", "\n\n  [Learned Blue Magic]\n"));
-    for (auto blue_magic_type : BLUE_MAGIC_TYPE_LIST) {
-        lines.emplace_back("");
-        learnt_spell_table learnt_magic;
-        lines.push_back(add_monster_spell_type(blue_magic_type, learnt_magic));
-        learnt_magic.ability_flags &= bluemage_data.learnt_blue_magics;
-
-        std::vector<MonsterAbilityType> learnt_spells;
-        EnumClassFlagGroup<MonsterAbilityType>::get_flags(learnt_magic.ability_flags, std::back_inserter(learnt_spells));
-        lines.emplace_back("");
-        lines.emplace_back("       ");
-        for (const auto spell : learnt_spells) {
-            const auto l1 = lines.cend()->length();
-            const auto l2 = monster_powers_short.at(spell).length();
-            if ((l1 + l2) >= 75) {
-                lines.emplace_back("\n");
-                lines.emplace_back("");
-                lines.emplace_back("       ");
-            }
-
-            lines.emplace_back(monster_powers_short.at(spell));
-            lines.emplace_back(", ");
-        }
-
-        if (learnt_spells.empty()) {
-            lines.emplace_back(_("なし", "None"));
-            lines.emplace_back("\n");
-            continue;
-        }
-
-        lines.emplace_back("\n");
-    }
-
-    return lines;
-}
-
-/*!
  * @brief プレイヤーの職業能力情報をファイルにダンプする
  * @param player_ptr プレイヤーへの参照ポインタ
  * @param fff ファイルポインタ
@@ -212,10 +128,10 @@ void dump_aux_class_special(PlayerType *player_ptr, FILE *fff)
         return;
     }
     case PlayerClassType::BLUE_MAGE: {
-        const auto bluemage_data = PlayerClass(player_ptr).get_specific_data<bluemage_data_type>();
+        const auto bluemage_data = PlayerClass(player_ptr).get_specific_data<BluemageData>();
         std::vector<std::string> lines;
         if (bluemage_data) {
-            lines = build_learnt_magics_info(*bluemage_data);
+            lines = bluemage_data->build_learnt_magics_info();
         }
 
         for (const auto &line : lines) {

@@ -2565,6 +2565,9 @@
     <ClCompile Include="..\..\src\io\macro-configurations-store.cpp">
       <Filter>io</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\player-info\bluemage-data.cpp">
+      <Filter>player-info</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\combat\shoot.h">
