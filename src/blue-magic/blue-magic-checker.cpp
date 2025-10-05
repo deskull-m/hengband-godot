@@ -16,7 +16,7 @@
 #include "monster-race/race-ability-mask.h"
 #include "mspell/monster-power-table.h"
 #include "player-base/player-class.h"
-#include "player-info/bluemage-data-type.h"
+#include "player-info/bluemage-data.h"
 #include "player/attack-defense-types.h"
 #include "status/experience.h"
 #include "system/angband.h"

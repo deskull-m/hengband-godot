@@ -12,7 +12,7 @@
 #include "mspell/monster-power-table.h"
 #include "object/tval-types.h"
 #include "player-base/player-class.h"
-#include "player-info/bluemage-data-type.h"
+#include "player-info/bluemage-data.h"
 #include "player-info/magic-eater-data-type.h"
 #include "smith/object-smith.h"
 #include "system/baseitem/baseitem-definition.h"

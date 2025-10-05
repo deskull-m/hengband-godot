@@ -13,7 +13,7 @@
 
 #include "status/action-setter.h"
 #include "player-base/player-class.h"
-#include "player-info/bluemage-data-type.h"
+#include "player-info/bluemage-data.h"
 #include "player-info/monk-data-type.h"
 #include "player-info/samurai-data-type.h"
 #include "player-status/player-energy.h"

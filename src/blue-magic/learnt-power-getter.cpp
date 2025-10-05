@@ -18,7 +18,7 @@
 #include "monster-race/race-ability-flags.h"
 #include "mspell/monster-power-table.h"
 #include "player-base/player-class.h"
-#include "player-info/bluemage-data-type.h"
+#include "player-info/bluemage-data.h"
 #include "player/player-status-table.h"
 #include "realm/realm-types.h"
 #include "spell/spell-info.h"

@@ -9,7 +9,7 @@
 #include "inventory/inventory-slot-types.h"
 #include "mind/mind-elementalist.h"
 #include "player-info/bard-data-type.h"
-#include "player-info/bluemage-data-type.h"
+#include "player-info/bluemage-data.h"
 #include "player-info/equipment-info.h"
 #include "player-info/force-trainer-data-type.h"
 #include "player-info/magic-eater-data-type.h"

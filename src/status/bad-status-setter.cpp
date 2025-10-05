@@ -7,7 +7,7 @@
 #include "mind/mind-sniper.h"
 #include "player-base/player-class.h"
 #include "player-base/player-race.h"
-#include "player-info/bluemage-data-type.h"
+#include "player-info/bluemage-data.h"
 #include "player-info/monk-data-type.h"
 #include "player/attack-defense-types.h"
 #include "player/player-status-flags.h"

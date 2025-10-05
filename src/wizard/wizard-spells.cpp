@@ -22,7 +22,7 @@
 #include "mutation/mutation-processor.h"
 #include "object-activation/activation-others.h"
 #include "player-base/player-class.h"
-#include "player-info/bluemage-data-type.h"
+#include "player-info/bluemage-data.h"
 #include "player-info/smith-data-type.h"
 #include "smith/object-smith.h"
 #include "spell-kind/spells-launcher.h"

@@ -29,7 +29,7 @@
 #include "monster/monster-util.h"
 #include "mutation/mutation-investor-remover.h"
 #include "player-base/player-class.h"
-#include "player-info/bluemage-data-type.h"
+#include "player-info/bluemage-data.h"
 #include "player-info/mane-data-type.h"
 #include "player-info/samurai-data-type.h"
 #include "player-info/sniper-data-type.h"

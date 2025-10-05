@@ -3,7 +3,7 @@
 #include "mind/stances-table.h"
 #include "monster/monster-status.h"
 #include "player-base/player-class.h"
-#include "player-info/bluemage-data-type.h"
+#include "player-info/bluemage-data.h"
 #include "player-info/mane-data-type.h"
 #include "player-info/monk-data-type.h"
 #include "player-info/ninja-data-type.h"
