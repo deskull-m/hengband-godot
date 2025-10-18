@@ -221,7 +221,7 @@ DisplaySymbol term_what(int x, int y, const DisplaySymbol &ds);
 
 void term_flush();
 errr term_key_push(int k);
-errr term_inkey(char *ch, bool wait, bool take);
+char term_inkey(bool wait, bool take);
 
 void term_save();
 void term_load(bool should_load_all);

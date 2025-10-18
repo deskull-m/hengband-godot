@@ -1792,58 +1792,39 @@ errr term_key_push(int k)
 }
 
 /*
- * Check for a pending keypress on the key queue.
- *
- * Store the keypress, if any, in "ch", and return "0".
- * Otherwise store "zero" in "ch", and return "1".
- *
- * Wait for a keypress if "wait" is true.
- *
- * Remove the keypress if "take" is true.
+ * @brief Check for a pending keypress on the key queue.
+ * @param wait Wait for a keypress.
+ * @param take Remove the keypress.
+ * @return Keypress or zero.
  */
-errr term_inkey(char *ch, bool wait, bool take)
+char term_inkey(bool wait, bool take)
 {
-    /* Assume no key */
-    (*ch) = '\0';
-
     /* get bored */
     if (!game_term->never_bored) {
         /* Process random events */
         term_xtra(TERM_XTRA_BORED, 0);
     }
 
-    /* Wait */
     if (wait) {
-        /* Process pending events while necessary */
         while (game_term->key_head == game_term->key_tail) {
-            /* Process events (wait for one) */
             term_xtra(TERM_XTRA_EVENT, true);
         }
-    }
-
-    /* Do not Wait */
-    else {
-        /* Process pending events if necessary */
-        if (game_term->key_head == game_term->key_tail) {
-            /* Process events (do not wait) */
-            term_xtra(TERM_XTRA_EVENT, false);
-        }
+    } else if (game_term->key_head == game_term->key_tail) {
+        term_xtra(TERM_XTRA_EVENT, false);
     }
 
     /* No keys are ready */
     if (game_term->key_head == game_term->key_tail) {
-        return 1;
+        return '\0';
     }
 
-    /* Extract the next keypress */
-    (*ch) = game_term->key_queue[game_term->key_tail];
-
     /* If requested, advance the queue, wrap around if necessary */
+    const auto res = game_term->key_queue[game_term->key_tail];
     if (take && (++game_term->key_tail == game_term->key_size)) {
         game_term->key_tail = 0;
     }
 
-    return 0;
+    return res;
 }
 
 /*** Extra routines ***/
