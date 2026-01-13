@@ -9,7 +9,6 @@
 #include "object-hook/hook-armor.h"
 #include "object/tval-types.h"
 #include "system/item-entity.h"
-#include "system/player-type-definition.h"
 #include "util/bit-flags-calculator.h"
 
 static bool invest_misc_ranger(ItemEntity *o_ptr)
