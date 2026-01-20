@@ -737,6 +737,9 @@ hengband_SOURCES = \
 	main-unix/unix-user-ids.cpp main-unix/unix-user-ids.h \
 	main-unix/x11-gamma-builder.cpp main-unix/x11-gamma-builder.h \
 	main-unix/x11-type-string.cpp main-unix/x11-type-string.h \
+	main-unix/unix-music.cpp main-unix/unix-music.h \
+	main-unix/unix-cfg-reader.cpp main-unix/unix-cfg-reader.h \
+	main-unix/SimpleIni.h \
 	\
 	market/arena.cpp market/arena.h \
 	market/arena-entry.cpp market/arena-entry.h \
