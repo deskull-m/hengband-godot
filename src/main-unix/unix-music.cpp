@@ -44,6 +44,7 @@
 #include "world/world.h"
 #include <algorithm>
 #include <csignal>
+#include <cstdlib>
 #include <cstring>
 #include <limits>
 #include <spawn.h>
@@ -56,7 +57,6 @@
 #include <sys/wait.h>
 extern char **environ;
 
-bool use_pause_music_inactive = false;
 static int current_music_type = TERM_XTRA_MUSIC_MUTE;
 static int current_music_id = 0;
 // current filename being played
@@ -161,10 +161,6 @@ static tl::optional<std::string> monster_key_at(int index)
 void load_music_prefs()
 {
     CfgReader reader(ANGBAND_DIR_XTRA_MUSIC, { "music_debug.cfg", "music.cfg" });
-    // constexpr auto size = 256;
-    // char device_type[size];
-    // GetPrivateProfileStringA("Device", "type", "MPEGVideo", device_type, size, reader.get_cfg_path().string().data());
-    // mci_device_type = to_wchar(device_type).wc_str();
 
     // clang-format off
     music_cfg_data = reader.read_sections({
@@ -196,7 +192,8 @@ void init_music(std::filesystem::path music_path)
 
 bool is_music_player_exist()
 {
-    return music_player_pid > 0;
+    // kill process 0 never invoked thank to short-circuit evaluation
+    return music_player_pid > 0 && kill(music_player_pid, 0) == 0;
 }
 
 /*
@@ -205,7 +202,6 @@ bool is_music_player_exist()
 void stop_music()
 {
     auto status = 0;
-    // check if the music player exists
     if (!is_music_player_exist()) {
         return;
     }
@@ -257,14 +253,21 @@ bool play_music(int type, int val)
         stop_music();
     }
 
-    // convert to char * const*
     auto music_player = "./playmusic.sh";
     //  argv must has null end
+    //  strdup()ed variables must be manually free()
     char *argv[] = { strdup(music_player), strdup(path_music.c_str()), nullptr };
     // explicitly pass environment
     char **envp = environ;
     auto ret = posix_spawnp(&music_player_pid, argv[0], nullptr, nullptr, argv, envp);
+    free(argv[0]);
+    free(argv[1]);
+    if (ret != 0) { // failed to spawn process
+        music_player_pid = 0;
+        return false;
+    }
     if (kill(music_player_pid, 0) == -1) { // Test signal 0 (no action)
+        music_player_pid = 0;
         return false;
     }
     return true;

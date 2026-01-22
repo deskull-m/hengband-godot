@@ -41,7 +41,7 @@ int16_t tokenize_whitespace(char *buf, int16_t num, char **tokens)
 
     while (k < num) {
         char *t;
-        for (; *s && iswspace(*s); ++s) { /* loop */
+        for (; *s && isspace(*s); ++s) { /* loop */
             ;
         }
 
@@ -49,7 +49,7 @@ int16_t tokenize_whitespace(char *buf, int16_t num, char **tokens)
             break;
         }
 
-        for (t = s; *t && !iswspace(*t); ++t) { /* loop */
+        for (t = s; *t && !isspace(*t); ++t) { /* loop */
             ;
         }
 
@@ -152,7 +152,7 @@ CfgData CfgReader::read_sections(std::initializer_list<cfg_section> sections) co
             if (value.empty()) {
                 continue;
             }
-            strcpy(buf, value.c_str());
+            snprintf(buf, sizeof(buf), "%s", value.data());
 #ifdef JP
             // .cfg (UTF-8) to Shift-JIS
             guess_convert_to_system_encoding(buf, MAIN_WIN_MAX_PATH);

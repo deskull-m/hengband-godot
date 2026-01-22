@@ -1892,7 +1892,7 @@ static void init_music()
 /*
  * Hack -- play a music
  */
-static auto is_player_initerized = false;
+static auto is_musicplayer_initialized = false;
 
 static errr game_term_xtra_x11_music(int n, int v)
 {
@@ -1900,7 +1900,7 @@ static errr game_term_xtra_x11_music(int n, int v)
         return false;
     }
 
-    if (!is_player_initerized) {
+    if (!is_musicplayer_initialized) {
         init_music();
     }
 
@@ -1916,7 +1916,7 @@ static bool game_term_xtra_x11_scene(int v)
         return false;
     }
 
-    if (!is_player_initerized) {
+    if (!is_musicplayer_initialized) {
         init_music();
     }
 
