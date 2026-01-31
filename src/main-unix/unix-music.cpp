@@ -29,7 +29,7 @@
 
 #include "main-unix/unix-music.h"
 #include "dungeon/quest.h"
-#include "main-unix/SimpleIni.h"
+#include "external-lib/include/simpleini/SimpleIni.h"
 #include "main-unix/unix-cfg-reader.h"
 #include "main/music-definitions-table.h"
 #include "main/scene-table.h"
@@ -192,8 +192,10 @@ void init_music(std::filesystem::path music_path)
 
 bool is_music_player_exist()
 {
-    // kill process 0 never invoked thank to short-circuit evaluation
-    return music_player_pid > 0 && kill(music_player_pid, 0) == 0;
+    if (music_player_pid > 0) {
+        return kill(music_player_pid, 0) == 0;
+    }
+    return false;
 }
 
 /*

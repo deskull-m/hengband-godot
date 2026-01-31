@@ -5,8 +5,8 @@
  */
 
 #include "main-unix/unix-cfg-reader.h"
+#include "external-lib/include/simpleini/SimpleIni.h"
 #include "locale/japanese.h"
-#include "main-unix/SimpleIni.h"
 #include "main/sound-definitions-table.h"
 #include "term/z-term.h"
 #include "util/angband-files.h"

@@ -193,6 +193,7 @@ hengband_SOURCES = \
 	\
 	external-lib/include-json.h \
 	external-lib/include/nlohmann/json.hpp \
+	external-lib/include/simpleini/SimpleIni.h \
 	external-lib/include/std/detail/associated_types.hpp \
 	external-lib/include/std/iterator \
 	external-lib/include/concepts/compare.hpp \
@@ -739,7 +740,6 @@ hengband_SOURCES = \
 	main-unix/x11-type-string.cpp main-unix/x11-type-string.h \
 	main-unix/unix-music.cpp main-unix/unix-music.h \
 	main-unix/unix-cfg-reader.cpp main-unix/unix-cfg-reader.h \
-	main-unix/SimpleIni.h \
 	\
 	market/arena.cpp market/arena.h \
 	market/arena-entry.cpp market/arena-entry.h \
