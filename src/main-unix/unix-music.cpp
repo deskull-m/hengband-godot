@@ -29,7 +29,6 @@
 
 #include "main-unix/unix-music.h"
 #include "dungeon/quest.h"
-#include "external-lib/include/simpleini/SimpleIni.h"
 #include "main-unix/unix-cfg-reader.h"
 #include "main/music-definitions-table.h"
 #include "main/scene-table.h"
@@ -48,6 +47,7 @@
 #include <cstring>
 #include <limits>
 #include <range/v3/all.hpp>
+#include <simpleini/SimpleIni.h>
 #include <spawn.h>
 #include <string>
 #include <sys/types.h>
