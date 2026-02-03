@@ -5,13 +5,13 @@
  */
 
 #include "main-unix/unix-cfg-reader.h"
-#include "external-lib/include/simpleini/SimpleIni.h"
 #include "locale/japanese.h"
 #include "main/sound-definitions-table.h"
 #include "term/z-term.h"
 #include "util/angband-files.h"
 #include <cstring>
 #include <ctype.h>
+#include <simpleini/SimpleIni.h>
 #include <span>
 #include <tl/optional.hpp>
 

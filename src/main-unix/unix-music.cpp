@@ -29,7 +29,6 @@
 
 #include "main-unix/unix-music.h"
 #include "dungeon/quest.h"
-#include "external-lib/include/simpleini/SimpleIni.h"
 #include "main-unix/unix-cfg-reader.h"
 #include "main/music-definitions-table.h"
 #include "main/scene-table.h"
@@ -47,6 +46,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <limits>
+#include <range/v3/all.hpp>
+#include <simpleini/SimpleIni.h>
 #include <spawn.h>
 #include <string>
 #include <sys/types.h>
@@ -255,15 +256,16 @@ bool play_music(int type, int val)
         stop_music();
     }
 
-    auto music_player = "./playmusic.sh";
+    const std::string_view music_player = "./playmusic.sh";
+    auto argv_music_player_buf = music_player | ranges::to_vector;
+    argv_music_player_buf.push_back('\0');
+    auto argv_path_music_buf = path_music.string() | ranges::to_vector;
+    argv_path_music_buf.push_back('\0');
     //  argv must has null end
-    //  strdup()ed variables must be manually free()
-    char *argv[] = { strdup(music_player), strdup(path_music.c_str()), nullptr };
+    char *const argv[] = { argv_music_player_buf.data(), argv_path_music_buf.data(), nullptr };
     // explicitly pass environment
     char **envp = environ;
-    auto ret = posix_spawnp(&music_player_pid, argv[0], nullptr, nullptr, argv, envp);
-    free(argv[0]);
-    free(argv[1]);
+    auto ret = posix_spawnp(&music_player_pid, music_player.data(), nullptr, nullptr, argv, envp);
     if (ret != 0) { // failed to spawn process
         music_player_pid = 0;
         return false;
