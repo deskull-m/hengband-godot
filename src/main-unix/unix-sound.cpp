@@ -152,12 +152,6 @@ bool play_sound(int val)
     char **envp = environ;
     auto ret = posix_spawnp(&sound_player_pid, sound_player.c_str(), nullptr, nullptr, argv, envp);
     if (ret != 0) { // failed to spawn process
-        sound_player_pid = 0;
-        return false;
-    }
-
-    if (kill(sound_player_pid, 0) == -1) { // Test signal 0 (no action)
-        sound_player_pid = 0;
         return false;
     }
 
