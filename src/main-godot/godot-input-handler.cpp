@@ -230,21 +230,31 @@ void GodotInputHandler::push_key(int k)
 
 void GodotInputHandler::wait_for_key()
 {
-    // Phase 4: スレッドなし → 即時リターン
-    // Phase 7: condition_variable で game thread をブロック
-    // std::unique_lock<std::mutex> lock(key_mutex_);
-    // key_cv_.wait(lock, [this] { return key_available_; });
-    // key_available_ = false;
+    // ゲームスレッドからキーが来るまでブロック
+    std::unique_lock<std::mutex> lock(key_mutex_);
+    key_cv_.wait(lock, [this] { return key_available_ || stop_requested_; });
+    key_available_ = false;
 }
 
 void GodotInputHandler::poll_events()
 {
-    // Godot のイベントは _unhandled_input() で自動的に処理される
-    // Phase 4 では何もしない
+    // ノンブロッキング: キーが既にキューにあれば通知フラグだけリセット
+    std::lock_guard<std::mutex> lock(key_mutex_);
+    key_available_ = false;
+}
+
+void GodotInputHandler::request_stop()
+{
+    {
+        std::lock_guard<std::mutex> lock(key_mutex_);
+        stop_requested_ = true;
+    }
+    key_cv_.notify_all();
 }
 
 void GodotInputHandler::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("wait_for_key"),  &GodotInputHandler::wait_for_key);
     ClassDB::bind_method(D_METHOD("poll_events"),   &GodotInputHandler::poll_events);
+    ClassDB::bind_method(D_METHOD("request_stop"),  &GodotInputHandler::request_stop);
 }

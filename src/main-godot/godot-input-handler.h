@@ -44,21 +44,23 @@ public:
 
     // --- Phase 7 で使用するスレッド同期プリミティブ ---
 
-    /// TERM_XTRA_EVENT(wait=true) から呼ばれる。キーが来るまで待機。
-    /// Phase 4 では即時リターン。Phase 7 で condition_variable に置き換える。
+    /// TERM_XTRA_EVENT(wait=true) から呼ばれる。キーが来るまでブロック。
     void wait_for_key();
 
     /// TERM_XTRA_EVENT(wait=false) の non-blocking 版。
     void poll_events();
 
+    /// ゲームスレッド停止時に wait_for_key() のブロックを解除する
+    void request_stop();
+
 protected:
     static void _bind_methods();
 
 private:
-    // Phase 7 で有効化するスレッド同期用
     std::mutex key_mutex_;
     std::condition_variable key_cv_;
     bool key_available_{ false };
+    bool stop_requested_{ false };
 
     /// キーを push してスレッドに通知する
     void push_key(int k);

@@ -68,16 +68,26 @@ void GodotTerminal::_draw()
         return;
     }
 
+    // グリッドのスナップショットを取得 (ゲームスレッドとの競合防止)
+    std::vector<CellData> snapshot;
+    int snap_cols, snap_rows;
+    {
+        std::lock_guard<std::mutex> lock(grid_mutex_);
+        snapshot = grid_;
+        snap_cols = cols_;
+        snap_rows = rows_;
+    }
+
     // 背景を黒で塗りつぶす
     const Rect2 bg_rect(0, 0,
-        static_cast<float>(cols_ * cell_w_),
-        static_cast<float>(rows_ * cell_h_));
+        static_cast<float>(snap_cols * cell_w_),
+        static_cast<float>(snap_rows * cell_h_));
     draw_rect(bg_rect, Color(0, 0, 0));
 
     // 全セルを描画
-    for (int y = 0; y < rows_; ++y) {
-        for (int x = 0; x < cols_; ++x) {
-            draw_cell(x, y, grid_[cell_idx(x, y)]);
+    for (int y = 0; y < snap_rows; ++y) {
+        for (int x = 0; x < snap_cols; ++x) {
+            draw_cell(x, y, snapshot[y * snap_cols + x]);
         }
     }
 
@@ -152,15 +162,18 @@ void GodotTerminal::draw_text(int x, int y, int n, uint8_t color, const char *st
     }
 
     const auto codepoints = utf8_to_codepoints(str, n);
-    int col = x;
-    for (const char32_t cp : codepoints) {
-        if (col >= cols_) {
-            break;
+    {
+        std::lock_guard<std::mutex> lock(grid_mutex_);
+        int col = x;
+        for (const char32_t cp : codepoints) {
+            if (col >= cols_) {
+                break;
+            }
+            auto &cell = grid_[cell_idx(col, y)];
+            cell.ch = cp;
+            cell.color = color;
+            ++col;
         }
-        auto &cell = grid_[cell_idx(col, y)];
-        cell.ch = cp;
-        cell.color = color;
-        ++col;
     }
     queue_redraw();
 }
@@ -170,10 +183,13 @@ void GodotTerminal::wipe_cells(int x, int y, int n)
     if (y < 0 || y >= rows_) {
         return;
     }
-    for (int i = 0; i < n && (x + i) < cols_; ++i) {
-        auto &cell = grid_[cell_idx(x + i, y)];
-        cell.ch = U' ';
-        cell.color = 0; // TERM_DARK
+    {
+        std::lock_guard<std::mutex> lock(grid_mutex_);
+        for (int i = 0; i < n && (x + i) < cols_; ++i) {
+            auto &cell = grid_[cell_idx(x + i, y)];
+            cell.ch = U' ';
+            cell.color = 0; // TERM_DARK
+        }
     }
     queue_redraw();
 }
@@ -194,9 +210,12 @@ void GodotTerminal::hide_cursor()
 
 void GodotTerminal::clear_all()
 {
-    for (auto &cell : grid_) {
-        cell.ch = U' ';
-        cell.color = 0;
+    {
+        std::lock_guard<std::mutex> lock(grid_mutex_);
+        for (auto &cell : grid_) {
+            cell.ch = U' ';
+            cell.color = 0;
+        }
     }
     cursor_visible_ = false;
     queue_redraw();
@@ -204,6 +223,7 @@ void GodotTerminal::clear_all()
 
 void GodotTerminal::resize_grid()
 {
+    std::lock_guard<std::mutex> lock(grid_mutex_);
     grid_.assign(static_cast<size_t>(cols_ * rows_), CellData{});
 }
 

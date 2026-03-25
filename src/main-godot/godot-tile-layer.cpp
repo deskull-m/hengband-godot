@@ -66,15 +66,23 @@ void GodotTileLayer::_draw()
         return;
     }
 
-    for (int y = 0; y < rows_; ++y) {
-        for (int x = 0; x < cols_; ++x) {
-            const auto &cell = grid_[cell_idx(x, y)];
+    // グリッドのスナップショットを取得
+    std::vector<TileCell> snapshot;
+    int snap_cols, snap_rows;
+    {
+        std::lock_guard<std::mutex> lock(grid_mutex_);
+        snapshot = grid_;
+        snap_cols = cols_;
+        snap_rows = rows_;
+    }
+
+    for (int y = 0; y < snap_rows; ++y) {
+        for (int x = 0; x < snap_cols; ++x) {
+            const auto &cell = snapshot[y * snap_cols + x];
             if (!cell.valid) {
                 continue;
             }
-            // 1. 背景タイル (terrain) を描画
             draw_one_tile(x * tile_w_, y * tile_h_, cell.bg_row, cell.bg_col);
-            // 2. 前景タイルを重ねて描画 (マスク合成済みテクスチャなので自動透過)
             if (cell.fg_row != cell.bg_row || cell.fg_col != cell.bg_col) {
                 draw_one_tile(x * tile_w_, y * tile_h_, cell.fg_row, cell.fg_col);
             }
@@ -145,39 +153,49 @@ void GodotTileLayer::draw_tiles(int x, int y, int n,
     const uint8_t *ap, const char *cp,
     const uint8_t *tap, const char *tcp)
 {
-    for (int i = 0; i < n; ++i) {
-        const int col = x + i;
-        if (col >= cols_ || y >= rows_) {
-            break;
+    {
+        std::lock_guard<std::mutex> lock(grid_mutex_);
+        for (int i = 0; i < n; ++i) {
+            const int col = x + i;
+            if (col >= cols_ || y >= rows_) {
+                break;
+            }
+            auto &cell = grid_[cell_idx(col, y)];
+            cell.fg_row = ap[i] & 0x7F;
+            cell.fg_col = static_cast<uint8_t>(cp[i]) & 0x7F;
+            cell.bg_row = tap[i] & 0x7F;
+            cell.bg_col = static_cast<uint8_t>(tcp[i]) & 0x7F;
+            cell.valid = true;
         }
-        auto &cell = grid_[cell_idx(col, y)];
-        cell.fg_row = ap[i] & 0x7F;
-        cell.fg_col = static_cast<uint8_t>(cp[i]) & 0x7F;
-        cell.bg_row = tap[i] & 0x7F;
-        cell.bg_col = static_cast<uint8_t>(tcp[i]) & 0x7F;
-        cell.valid = true;
     }
     queue_redraw();
 }
 
 void GodotTileLayer::wipe_tiles(int x, int y, int n)
 {
-    for (int i = 0; i < n && (x + i) < cols_; ++i) {
-        grid_[cell_idx(x + i, y)].valid = false;
+    {
+        std::lock_guard<std::mutex> lock(grid_mutex_);
+        for (int i = 0; i < n && (x + i) < cols_; ++i) {
+            grid_[cell_idx(x + i, y)].valid = false;
+        }
     }
     queue_redraw();
 }
 
 void GodotTileLayer::clear_all()
 {
-    for (auto &cell : grid_) {
-        cell.valid = false;
+    {
+        std::lock_guard<std::mutex> lock(grid_mutex_);
+        for (auto &cell : grid_) {
+            cell.valid = false;
+        }
     }
     queue_redraw();
 }
 
 void GodotTileLayer::resize_grid()
 {
+    std::lock_guard<std::mutex> lock(grid_mutex_);
     grid_.assign(static_cast<size_t>(cols_ * rows_), TileCell{});
 }
 
