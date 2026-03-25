@@ -1,26 +1,27 @@
 extends Node
 
-## Hengband メインエントリポイント
-## ゲームロジックは別スレッドで実行し、Godot メインスレッドをブロックしない
+## Hengband メインエントリポイント (Phase 7)
+## HengbandGame GDExtension ノードが start_game() でゲームスレッドを起動する
 
-var _game_thread: Thread
+## lib/ ディレクトリのパス (空文字列 = 実行ファイルの隣を自動検出)
+## Godot エディタでテストする場合: プロジェクトルートから見た lib/ の絶対パスを指定
+@export var game_lib_path: String = ""
 
 func _ready() -> void:
-	print("Hengband GDExtension: initializing...")
-	# TODO: Phase 7 で HengbandGame GDExtension ノードを追加し
-	#       _game_thread で start_game() を呼び出す
-	# _game_thread = Thread.new()
-	# _game_thread.start(_run_game)
+	var game := $HengbandGame
+	if not game:
+		push_error("HengbandGame node not found")
+		return
 
-func _run_game() -> void:
-	# HengbandGame.start_game() を呼び出す予定
-	pass
+	# lib_path が未設定の場合はプロジェクトディレクトリの隣の lib/ を使う
+	var lib_path := game_lib_path
+	if lib_path.is_empty():
+		# res:// → プロジェクトフォルダ → ../lib/
+		lib_path = ProjectSettings.globalize_path("res://../lib")
+
+	print("Hengband: lib_path = ", lib_path)
+	game.start_game(lib_path)
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
-		_on_close_requested()
-
-func _on_close_requested() -> void:
-	if _game_thread and _game_thread.is_started():
-		_game_thread.wait_to_finish()
-	get_tree().quit()
+		get_tree().quit()

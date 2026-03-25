@@ -92,28 +92,33 @@ void HengbandGame::_notification(int p_what)
     }
 }
 
-void HengbandGame::start_game()
+void HengbandGame::start_game(const String &lib_path)
 {
     if (game_thread_.is_valid() && game_thread_->is_started()) {
         return; // 既に起動中
     }
 
-    // 実行ファイルパスを取得
-    const String exe_path = OS::get_singleton()->get_executable_path();
-    const std::filesystem::path exe_fs(exe_path.utf8().get_data());
+    // lib_path が空の場合は実行ファイルの隣の lib/ を使う
+    String resolved_lib;
+    if (lib_path.is_empty()) {
+        const String exe = OS::get_singleton()->get_executable_path();
+        resolved_lib = exe.get_base_dir().path_join("lib");
+    } else {
+        resolved_lib = lib_path;
+    }
 
     game_thread_.instantiate();
     game_thread_->start(
         Callable(this, "_game_thread_func"),
-        Variant(exe_path),
+        Variant(resolved_lib),
         Thread::PRIORITY_NORMAL);
 }
 
 /// ゲームスレッド本体 (Godot Thread から呼ばれる)
-void HengbandGame::_game_thread_func(String exe_path)
+void HengbandGame::_game_thread_func(String lib_path)
 {
-    const std::filesystem::path exe_fs(exe_path.utf8().get_data());
-    run_game_thread(exe_fs);
+    const std::filesystem::path lib_fs(lib_path.utf8().get_data());
+    run_game_thread(lib_fs);
 }
 }
 
@@ -278,7 +283,7 @@ void HengbandGame::load_window_layout(const String &path)
 
 void HengbandGame::_bind_methods()
 {
-    ClassDB::bind_method(D_METHOD("start_game"), &HengbandGame::start_game);
+    ClassDB::bind_method(D_METHOD("start_game", "lib_path"), &HengbandGame::start_game);
     ClassDB::bind_method(D_METHOD("set_game_font", "font", "size"),
         &HengbandGame::set_game_font);
     ClassDB::bind_method(

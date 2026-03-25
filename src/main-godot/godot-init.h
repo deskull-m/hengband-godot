@@ -25,7 +25,7 @@ namespace hengband_godot {
 void init_godot_game_paths(const std::filesystem::path &exe_path);
 
 /// ゲームスレッドのエントリポイント
-/// init_godot_game_paths() → init_angband() → play_game() を順に呼ぶ
-void run_game_thread(const std::filesystem::path &exe_path);
+/// @param lib_path lib/ ディレクトリの絶対パス
+void run_game_thread(const std::filesystem::path &lib_path);
 
 } // namespace hengband_godot

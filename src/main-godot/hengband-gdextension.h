@@ -44,7 +44,8 @@ public:
     void _notification(int p_what);
 
     /// ゲームを開始する (Godot Thread を起動して play_game() を呼ぶ)
-    void start_game();
+    /// @param lib_path lib/ ディレクトリの絶対パス。省略時は実行ファイルの隣を使う。
+    void start_game(const godot::String &lib_path = godot::String());
 
     /// ゲームスレッド本体 (Callable として Thread に渡す)
     void _game_thread_func(godot::String exe_path);
