@@ -14,6 +14,7 @@
 #include "godot-term-hooks.h"
 
 #include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/classes/node2d.hpp>
 #include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <array>
@@ -46,12 +47,27 @@ public:
     /// フォントを設定する（GDScript から呼び出す）
     void set_game_font(const godot::Ref<godot::Font> &font, int size);
 
+    /// サブウィンドウ(idx=1〜7)の表示/非表示を切り替える
+    void set_sub_window_visible(int idx, bool visible);
+
+    /// サブウィンドウのターミナルサイズを変更する
+    void set_sub_window_size(int idx, int cols, int rows);
+
+    /// ウィンドウレイアウト(表示状態・位置)をConfigFileに保存する
+    void save_window_layout(const godot::String &path);
+
+    /// ウィンドウレイアウトをConfigFileから復元する
+    void load_window_layout(const godot::String &path);
+
 protected:
     static void _bind_methods();
 
 private:
     /// 各ターミナルの term_data_godot
     std::array<term_data_godot, HENGBAND_TERM_COUNT> term_data_{};
+
+    /// サブウィンドウ(idx=1〜7)の Node2D ルートノード
+    std::array<godot::Node2D *, HENGBAND_TERM_COUNT> sub_window_roots_{};
 
     /// 使用するフォント
     godot::Ref<godot::Font> font_;
