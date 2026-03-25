@@ -14,7 +14,7 @@
 #include "term/z-term.h"
 #include "term/gameterm.h"
 
-#include <godot_cpp/classes/callable.hpp>
+#include <godot_cpp/variant/callable.hpp>
 #include <godot_cpp/classes/config_file.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/core/defs.hpp>
@@ -33,7 +33,8 @@ using namespace hengband_godot;
 void HengbandGame::_ready()
 {
     // TerminalContainer 以下から Terminal0〜7 と TileLayer0〜7 を探して設定
-    Node *container = get_node_or_null(NodePath("TerminalContainer"));
+    // シーン構造: HengbandGame の兄弟 GameViewport/SubViewport/TerminalContainer
+    Node *container = get_node_or_null(NodePath("../GameViewport/SubViewport/TerminalContainer"));
     if (!container) {
         return;
     }
@@ -109,8 +110,7 @@ void HengbandGame::start_game(const String &lib_path)
 
     game_thread_.instantiate();
     game_thread_->start(
-        Callable(this, "_game_thread_func"),
-        Variant(resolved_lib),
+        Callable(this, "_game_thread_func").bind(resolved_lib),
         Thread::PRIORITY_NORMAL);
 }
 
@@ -120,12 +120,17 @@ void HengbandGame::_game_thread_func(String lib_path)
     const std::filesystem::path lib_fs(lib_path.utf8().get_data());
     run_game_thread(lib_fs);
 }
-}
 
 void HengbandGame::set_game_font(const Ref<Font> &font, int size)
 {
     font_ = font;
     font_size_ = size;
+    // 既に _ready() で初期化済みのターミナルにも反映する
+    for (auto &td : term_data_) {
+        if (td.terminal && font_.is_valid()) {
+            td.terminal->set_terminal_font(font_, font_size_);
+        }
+    }
 }
 
 bool HengbandGame::load_tileset(const String &tileset_path,
@@ -180,7 +185,7 @@ void HengbandGame::setup_terminal(int idx, GodotTerminal *term,
     t->data = static_cast<vptr>(&td);
 
     if (idx < HENGBAND_TERM_COUNT) {
-        angband_term[idx] = t;
+        angband_terms[idx] = t;
     }
 }
 
@@ -232,7 +237,7 @@ void HengbandGame::save_window_layout(const String &path)
     cfg.instantiate();
 
     // SubViewport の親ノードから位置を取得して保存
-    Node *container = get_node_or_null(NodePath("GameViewport/SubViewport/TerminalContainer"));
+    Node *container = get_node_or_null(NodePath("../GameViewport/SubViewport/TerminalContainer"));
 
     for (int i = 0; i < HENGBAND_TERM_COUNT; ++i) {
         const std::string section = "window" + std::to_string(i);

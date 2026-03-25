@@ -26,15 +26,6 @@ class GodotTileLayer;
 class GodotInputHandler;
 } // namespace hengband_godot
 
-/// GodotInputHandler をグローバル参照として登録する
-void set_input_handler(hengband_godot::GodotInputHandler *handler);
-
-/// term_data_godot 配列をグローバル参照として登録する (TERM_XTRA_REACT 用)
-void set_term_data_array(term_data_godot *arr, int count);
-
-/// resize_hook: ターミナルサイズ変更時のコールバック
-void term_resize_hook_godot();
-
 /*!
  * @brief Godot バックエンド用の term_data 構造体
  *
@@ -49,6 +40,15 @@ struct term_data_godot {
     int cell_w{ 8 };
     int cell_h{ 16 };
 };
+
+/// GodotInputHandler をグローバル参照として登録する
+void set_input_handler(hengband_godot::GodotInputHandler *handler);
+
+/// term_data_godot 配列をグローバル参照として登録する (TERM_XTRA_REACT 用)
+void set_term_data_array(term_data_godot *arr, int count);
+
+/// resize_hook: ターミナルサイズ変更時のコールバック
+void term_resize_hook_godot();
 
 /// text_hook: テキスト描画
 errr term_text_godot(int x, int y, int n, TERM_COLOR a, concptr s);

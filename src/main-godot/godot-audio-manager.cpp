@@ -15,6 +15,7 @@
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/packed_byte_array.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
 
 #include <algorithm>
 #include <cctype>
@@ -365,7 +366,7 @@ bool GodotAudioManager::play_music(int type, int val)
     bgm_player_->stop();
     bgm_player_->set_stream(stream);
     bgm_player_->set_volume_db(
-        Math::linear_to_db(volume_level_to_linear(music_volume_level_)));
+        UtilityFunctions::linear_to_db(volume_level_to_linear(music_volume_level_)));
     bgm_player_->play();
 
     current_music_type_ = type;
@@ -404,7 +405,7 @@ void GodotAudioManager::play_sound(int val)
     player->stop();
     player->set_stream(stream);
     player->set_volume_db(
-        Math::linear_to_db(volume_level_to_linear(sound_volume_level_)));
+        UtilityFunctions::linear_to_db(volume_level_to_linear(sound_volume_level_)));
     player->play();
 }
 
@@ -416,7 +417,7 @@ void GodotAudioManager::set_music_volume(int level)
     music_volume_level_ = std::clamp(level, 0, 9);
     if (bgm_player_ && bgm_player_->is_playing()) {
         bgm_player_->set_volume_db(
-            Math::linear_to_db(volume_level_to_linear(music_volume_level_)));
+            UtilityFunctions::linear_to_db(volume_level_to_linear(music_volume_level_)));
     }
 }
 

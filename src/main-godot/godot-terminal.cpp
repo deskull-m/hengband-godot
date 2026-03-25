@@ -17,9 +17,25 @@
 using namespace godot;
 using namespace hengband_godot;
 
-// --- ユーティリティ: UTF-8 → UTF-32 変換 ---
+// --- ユーティリティ ---
 
-/// UTF-8 文字列の最初の n 文字を UTF-32 コードポイント列に変換する
+/// Unicode コードポイントが全角文字かどうかを判定する
+/// (East Asian Width = Wide または Fullwidth に相当する範囲)
+static bool is_fullwidth(char32_t cp)
+{
+    return (cp >= 0x1100 && cp <= 0x115F)   // Hangul Jamo
+        || (cp >= 0x2E80 && cp <= 0x303E)   // CJK Radicals / Kangxi
+        || (cp >= 0x3041 && cp <= 0x33BF)   // Hiragana/Katakana/CJK Symbols
+        || (cp >= 0x3400 && cp <= 0x4DBF)   // CJK Extension A
+        || (cp >= 0x4E00 && cp <= 0x9FFF)   // CJK Unified Ideographs
+        || (cp >= 0xAC00 && cp <= 0xD7AF)   // Hangul Syllables
+        || (cp >= 0xF900 && cp <= 0xFAFF)   // CJK Compatibility Ideographs
+        || (cp >= 0xFE10 && cp <= 0xFE6F)   // CJK Compatibility Forms
+        || (cp >= 0xFF01 && cp <= 0xFF60)   // Fullwidth ASCII
+        || (cp >= 0xFFE0 && cp <= 0xFFE6);  // Fullwidth Signs
+}
+
+/// UTF-8 文字列を UTF-32 コードポイント列に変換する (バイト数上限付き)
 static std::vector<char32_t> utf8_to_codepoints(const char *str, int max_chars)
 {
     std::vector<char32_t> result;
@@ -104,22 +120,20 @@ void GodotTerminal::draw_cell(int x, int y, const CellData &cell)
     }
 
     const Color fg = term_color_to_godot(cell.color);
+    // 全角文字は2セル幅、半角は1セル幅
+    const int char_cell_w = is_fullwidth(cell.ch) ? (cell_w_ * 2) : cell_w_;
 
-    // Godot の Font::draw_char() でセルに1文字描画
-    // 基準点: セルの左下 (baseline)
-    const Vector2 pos(
-        static_cast<float>(x * cell_w_),
-        static_cast<float>(y * cell_h_ + font_size_));
+    const float px = static_cast<float>(x * cell_w_);
+    const float py = static_cast<float>(y * cell_h_);
 
-    // 背景色でセルを塗る（文字の後ろ）
-    // TERM_DARK(黒)以外の文字はセル背景を黒にする
-    draw_rect(Rect2(
-        static_cast<float>(x * cell_w_),
-        static_cast<float>(y * cell_h_),
-        static_cast<float>(cell_w_),
+    // セル背景を黒で塗る
+    draw_rect(Rect2(px, py,
+        static_cast<float>(char_cell_w),
         static_cast<float>(cell_h_)), Color(0, 0, 0));
 
-    font_->draw_char(*this, pos, static_cast<int64_t>(cell.ch), font_size_, fg);
+    // 文字描画 (baseline = py + font_size_)
+    const Vector2 pos(px, py + static_cast<float>(font_size_));
+    font_->draw_char(get_canvas_item(), pos, static_cast<int64_t>(cell.ch), font_size_, fg);
 }
 
 void GodotTerminal::draw_cursor_rect(int x, int y)
@@ -138,21 +152,21 @@ void GodotTerminal::set_grid_size(int cols, int rows)
     cols_ = cols;
     rows_ = rows;
     resize_grid();
-    queue_redraw();
+    call_deferred("queue_redraw");
 }
 
 void GodotTerminal::set_cell_size(int w, int h)
 {
     cell_w_ = w;
     cell_h_ = h;
-    queue_redraw();
+    call_deferred("queue_redraw");
 }
 
 void GodotTerminal::set_terminal_font(const Ref<Font> &font, int font_size)
 {
     font_ = font;
     font_size_ = font_size;
-    queue_redraw();
+    call_deferred("queue_redraw");
 }
 
 void GodotTerminal::draw_text(int x, int y, int n, uint8_t color, const char *str)
@@ -172,10 +186,19 @@ void GodotTerminal::draw_text(int x, int y, int n, uint8_t color, const char *st
             auto &cell = grid_[cell_idx(col, y)];
             cell.ch = cp;
             cell.color = color;
+            if (is_fullwidth(cp)) {
+                // 全角文字は2セル占有: 次のセルをプレースホルダにする
+                ++col;
+                if (col < cols_) {
+                    auto &cell2 = grid_[cell_idx(col, y)];
+                    cell2.ch = 0; // 描画スキップ用プレースホルダ
+                    cell2.color = color;
+                }
+            }
             ++col;
         }
     }
-    queue_redraw();
+    call_deferred("queue_redraw");
 }
 
 void GodotTerminal::wipe_cells(int x, int y, int n)
@@ -191,7 +214,7 @@ void GodotTerminal::wipe_cells(int x, int y, int n)
             cell.color = 0; // TERM_DARK
         }
     }
-    queue_redraw();
+    call_deferred("queue_redraw");
 }
 
 void GodotTerminal::set_cursor(int x, int y)
@@ -199,13 +222,13 @@ void GodotTerminal::set_cursor(int x, int y)
     cursor_x_ = x;
     cursor_y_ = y;
     cursor_visible_ = true;
-    queue_redraw();
+    call_deferred("queue_redraw");
 }
 
 void GodotTerminal::hide_cursor()
 {
     cursor_visible_ = false;
-    queue_redraw();
+    call_deferred("queue_redraw");
 }
 
 void GodotTerminal::clear_all()
@@ -218,7 +241,7 @@ void GodotTerminal::clear_all()
         }
     }
     cursor_visible_ = false;
-    queue_redraw();
+    call_deferred("queue_redraw");
 }
 
 void GodotTerminal::resize_grid()
@@ -235,12 +258,8 @@ void GodotTerminal::_bind_methods()
         &GodotTerminal::set_cell_size);
     ClassDB::bind_method(D_METHOD("set_terminal_font", "font", "size"),
         &GodotTerminal::set_terminal_font);
-    ClassDB::bind_method(D_METHOD("draw_text", "x", "y", "n", "color", "str"),
-        &GodotTerminal::draw_text);
-    ClassDB::bind_method(D_METHOD("wipe_cells", "x", "y", "n"),
-        &GodotTerminal::wipe_cells);
-    ClassDB::bind_method(D_METHOD("set_cursor", "x", "y"),
-        &GodotTerminal::set_cursor);
+    // draw_text / wipe_cells / set_cursor は C++ 側 (term hooks) からのみ呼ばれるため
+    // GDScript への bind は不要 (std::string / const char* は GDExtension 型システム外)
     ClassDB::bind_method(D_METHOD("hide_cursor"),
         &GodotTerminal::hide_cursor);
     ClassDB::bind_method(D_METHOD("clear_all"),

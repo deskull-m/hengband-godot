@@ -13,6 +13,12 @@ func _ready() -> void:
 		push_error("HengbandGame node not found")
 		return
 
+	# 日本語対応モノスペースフォントを設定
+	# MS Gothic / Yu Gothic はWindows標準の等幅日本語フォント
+	var font := SystemFont.new()
+	font.font_names = ["MS Gothic", "Yu Gothic", "Meiryo", "Courier New", "Monospace"]
+	game.set_game_font(font, 16)
+
 	# lib_path が未設定の場合はプロジェクトディレクトリの隣の lib/ を使う
 	var lib_path := game_lib_path
 	if lib_path.is_empty():
