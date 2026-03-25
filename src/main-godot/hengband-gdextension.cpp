@@ -6,6 +6,7 @@
 #include "hengband-gdextension.h"
 #include "godot-terminal.h"
 #include "godot-tile-layer.h"
+#include "godot-input-handler.h"
 #include "godot-term-hooks.h"
 
 #include "term/z-term.h"
@@ -51,6 +52,13 @@ void HengbandGame::_ready()
     // game_term をメインターミナルに設定
     if (term_data_[0].terminal) {
         term_activate(&term_data_[0].t);
+    }
+
+    // InputHandler を取得して TERM_XTRA_EVENT に登録
+    auto *input_handler = Object::cast_to<GodotInputHandler>(
+        get_node_or_null(NodePath("InputHandler")));
+    if (input_handler) {
+        set_input_handler(input_handler);
     }
 
     // TODO: Phase 7 でゲームスレッドを起動する
@@ -156,6 +164,7 @@ void initialize_hengband_module(ModuleInitializationLevel p_level)
     }
     ClassDB::register_class<GodotTerminal>();
     ClassDB::register_class<GodotTileLayer>();
+    ClassDB::register_class<GodotInputHandler>();
     ClassDB::register_class<HengbandGame>();
 }
 

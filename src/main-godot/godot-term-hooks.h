@@ -23,7 +23,11 @@
 namespace hengband_godot {
 class GodotTerminal;
 class GodotTileLayer;
+class GodotInputHandler;
 } // namespace hengband_godot
+
+/// GodotInputHandler をグローバル参照として登録する
+void set_input_handler(hengband_godot::GodotInputHandler *handler);
 
 /*!
  * @brief Godot バックエンド用の term_data 構造体
