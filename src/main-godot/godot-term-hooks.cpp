@@ -5,6 +5,7 @@
 
 #include "godot-term-hooks.h"
 #include "godot-terminal.h"
+#include "godot-tile-layer.h"
 
 #include "term/z-term.h"
 
@@ -62,6 +63,10 @@ errr term_xtra_godot(int n, int v)
         if (term) {
             term->clear_all();
         }
+        auto *tiles = get_tile_layer(game_term);
+        if (tiles) {
+            tiles->clear_all();
+        }
         return 0;
     }
     case TERM_XTRA_FRESH:
@@ -100,6 +105,24 @@ errr term_xtra_godot(int n, int v)
     default:
         return 1; // 未サポート
     }
+}
+
+// ---------------------------------------------------------------------------
+// pict_hook: タイル描画
+// ---------------------------------------------------------------------------
+errr term_pict_godot(TERM_LEN x, TERM_LEN y, int n,
+    const TERM_COLOR *ap, concptr cp,
+    const TERM_COLOR *tap, concptr tcp)
+{
+    auto *tiles = get_tile_layer(game_term);
+    if (!tiles || !tiles->is_tileset_loaded()) {
+        // タイルセット未ロード時はテキスト消去で代替
+        return term_wipe_godot(x, y, n);
+    }
+    tiles->draw_tiles(x, y, n,
+        reinterpret_cast<const uint8_t *>(ap), cp,
+        reinterpret_cast<const uint8_t *>(tap), tcp);
+    return 0;
 }
 
 // ---------------------------------------------------------------------------

@@ -22,6 +22,7 @@
 
 namespace hengband_godot {
 class GodotTerminal;
+class GodotTileLayer;
 } // namespace hengband_godot
 
 /*!
@@ -31,7 +32,8 @@ class GodotTerminal;
  */
 struct term_data_godot {
     term_type t{};
-    hengband_godot::GodotTerminal *terminal{ nullptr }; ///< 対応する Godot ノード
+    hengband_godot::GodotTerminal  *terminal{ nullptr }; ///< テキスト描画ノード
+    hengband_godot::GodotTileLayer *tile_layer{ nullptr }; ///< タイル描画ノード
     int cols{ 80 };
     int rows{ 24 };
     int cell_w{ 8 };
@@ -56,8 +58,19 @@ void term_init_godot(term_type *t);
 /// nuke_hook: ターミナル破棄
 void term_nuke_godot(term_type *t);
 
+/// pict_hook: タイル描画
+errr term_pict_godot(TERM_LEN x, TERM_LEN y, int n,
+    const TERM_COLOR *ap, concptr cp,
+    const TERM_COLOR *tap, concptr tcp);
+
 /// ターミナルデータから GodotTerminal ポインタを取得するヘルパー
 inline hengband_godot::GodotTerminal *get_terminal(term_type *t)
 {
     return reinterpret_cast<term_data_godot *>(t->data)->terminal;
+}
+
+/// ターミナルデータから GodotTileLayer ポインタを取得するヘルパー
+inline hengband_godot::GodotTileLayer *get_tile_layer(term_type *t)
+{
+    return reinterpret_cast<term_data_godot *>(t->data)->tile_layer;
 }
