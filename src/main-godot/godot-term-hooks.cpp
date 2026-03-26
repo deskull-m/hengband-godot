@@ -10,6 +10,7 @@
 #include "godot-tile-layer.h"
 
 #include "term/z-term.h"
+#include "locale/japanese.h"
 
 #include <thread>
 #include <chrono>
@@ -66,7 +67,16 @@ errr term_text_godot(int x, int y, int n, TERM_COLOR a, concptr s)
     if (!term) {
         return 1;
     }
+#ifdef JP
+    // z-term から渡される s は SJIS(CP932) エンコード、n はバイト数 = セル数。
+    // Godot のフォント描画は UTF-8 を要求するため変換する。
+    // n バイト分だけを変換対象とし、null 終端に依存しない。
+    const auto utf8 = sys_to_utf8(std::string_view(s, static_cast<size_t>(n)));
+    const char *str = utf8 ? utf8->c_str() : s;
+    term->draw_text(x, y, n, static_cast<uint8_t>(a), str);
+#else
     term->draw_text(x, y, n, static_cast<uint8_t>(a), s);
+#endif
     return 0;
 }
 

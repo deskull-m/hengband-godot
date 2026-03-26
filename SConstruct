@@ -47,6 +47,7 @@ hengband_core_sources = collect_hengband_sources()
 
 # --- ビルド設定 ---
 
+# CPPPATH と USE_GODOT は全ソースに共通 (godot-cpp との互換性に問題なし)
 env.Append(CPPPATH=[
     "src",
     "src/external-lib",
@@ -55,34 +56,50 @@ env.Append(CPPPATH=[
 
 env.Append(CPPDEFINES=["USE_GODOT"])
 
-# C++20 を要求
+# --- Hengband 専用ビルド環境 ---
+# godot-cpp は CCFLAGS に /utf-8 (=/source-charset:utf-8 /execution-charset:utf-8) を追加する。
+# Hengband は z-term の SJIS モデルに合わせて /execution-charset:932 が必要なため、
+# env をクローンして /utf-8 を除去し独自のチャーセットフラグを設定する。
+hengband_env = env.Clone()
+
 if env["platform"] == "windows":
     # h-config.h は WIN32 マクロで WINDOWS を判定するが、
     # x86_64 MSVC は _WIN32 のみ定義するため明示的に追加
-    env.Append(CPPDEFINES=["WINDOWS", "JP", "SJIS"])
+    hengband_env.Append(CPPDEFINES=["WINDOWS", "JP", "SJIS"])
     # fmtlib v11 の consteval フォーマット文字列検証を無効化
     # (_() マクロがランタイム文字列を返すため compile-time check 不可)
-    env.Append(CPPDEFINES=["FMT_USE_CONSTEVAL=0"])
+    hengband_env.Append(CPPDEFINES=["FMT_USE_CONSTEVAL=0"])
+    # /utf-8 は /source-charset:utf-8 /execution-charset:utf-8 の短縮形。
+    # /source-charset:utf-8 と同時指定できないため除去して個別に指定する。
+    hengband_env["CCFLAGS"] = [f for f in hengband_env.get("CCFLAGS", []) if f != "/utf-8"]
+    # /source-charset:utf-8  : ソースファイルを UTF-8 として読む
+    # /execution-charset は省略 → システムデフォルト (日本語 Windows = CP932) を使用
+    #   → z-term の 1バイト/セル・SJIS モデルと一致させるため必須
+    hengband_env.Append(CCFLAGS=["/source-charset:utf-8"])
     # C++ 例外ハンドラ有効化 (MSVC 既定では無効)
-    env.Append(CXXFLAGS=["/std:c++20", "/EHsc"])
+    hengband_env.Append(CXXFLAGS=["/std:c++20", "/EHsc"])
     # timeGetTime (record-play-movie.cpp) と DbgHelp (stack-trace) に必要
+    # LIBS はリンクステップで使われるため、SharedLibrary を呼ぶ env に追加する
     env.Append(LIBS=["winmm", "DbgHelp"])
 else:
-    env.Append(CXXFLAGS=["-std=c++20"])
+    hengband_env.Append(CXXFLAGS=["-std=c++20"])
 
 # --- ライブラリのビルド ---
 
 # fmtlib のコンパイル済み実装 (ヘッダオンリーではなくコンパイルモードで使用)
 fmt_sources = ["src/external-lib/fmt/format.cc"]
 
-all_sources = godot_backend_sources + hengband_core_sources + fmt_sources
+# Hengband 専用環境でオブジェクトファイルを生成
+hengband_objects = hengband_env.SharedObject(
+    list(godot_backend_sources) + hengband_core_sources + fmt_sources
+)
 
 library = env.SharedLibrary(
     "godot_project/../bin/hengband{}{}".format(
         env["suffix"],
         env["SHLIBSUFFIX"]
     ),
-    source=all_sources,
+    source=hengband_objects,
 )
 
 Default(library)

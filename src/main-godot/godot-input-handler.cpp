@@ -220,7 +220,15 @@ void GodotInputHandler::handle_special_key(uint8_t scan_code,
 
 void GodotInputHandler::push_key(int k)
 {
-    term_key_push(k);
+    // term_key_push() はキュー先頭へのプリペンドで逆順になるため使用しない。
+    // main-win.cpp の term_keypress() と同じ: key_head に追加する FIFO 方式。
+    if (!k || !game_term) {
+        return;
+    }
+    game_term->key_queue[game_term->key_head++] = static_cast<char>(k);
+    if (game_term->key_head == game_term->key_size) {
+        game_term->key_head = 0;
+    }
     {
         std::lock_guard<std::mutex> lock(key_mutex_);
         key_available_ = true;
