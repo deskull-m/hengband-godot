@@ -7,8 +7,16 @@
  * エントリポイントおよびコアクラス宣言。
  */
 
+#include "godot-terminal.h"
+#include "godot-term-hooks.h"
+
 #include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/core/class_db.hpp>
+#include <array>
+
+/// ターミナル数（メイン + サブウィンドウ最大8）
+static constexpr int HENGBAND_TERM_COUNT = 8;
 
 namespace hengband_godot {
 
@@ -32,8 +40,22 @@ public:
     /// ゲームを開始する（別スレッドから呼び出す）
     void start_game();
 
+    /// フォントを設定する（GDScript から呼び出す）
+    void set_game_font(const godot::Ref<godot::Font> &font, int size);
+
 protected:
     static void _bind_methods();
+
+private:
+    /// 各ターミナルの term_data_godot
+    std::array<term_data_godot, HENGBAND_TERM_COUNT> term_data_{};
+
+    /// 使用するフォント
+    godot::Ref<godot::Font> font_;
+    int font_size_{ 14 };
+
+    /// ターミナルを初期化して term_type フックを設定する
+    void setup_terminal(int idx, GodotTerminal *term, int cols, int rows);
 };
 
 } // namespace hengband_godot

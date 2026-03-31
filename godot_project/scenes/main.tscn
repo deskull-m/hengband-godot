@@ -5,6 +5,8 @@
 [node name="Main" type="Node"]
 script = ExtResource("1_main")
 
+[node name="HengbandGame" type="Node" parent="."]
+
 [node name="GameViewport" type="SubViewportContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -17,3 +19,34 @@ grow_vertical = 2
 size = Vector2i(1280, 800)
 
 [node name="TerminalContainer" type="Node2D" parent="GameViewport/SubViewport"]
+
+[node name="Terminal0" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(0, 0)
+
+[node name="Terminal1" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(0, 384)
+visible = false
+
+[node name="Terminal2" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(640, 384)
+visible = false
+
+[node name="Terminal3" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(0, 576)
+visible = false
+
+[node name="Terminal4" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(640, 576)
+visible = false
+
+[node name="Terminal5" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(0, 672)
+visible = false
+
+[node name="Terminal6" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(640, 672)
+visible = false
+
+[node name="Terminal7" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(0, 736)
+visible = false
