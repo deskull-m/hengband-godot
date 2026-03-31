@@ -8,6 +8,7 @@
  */
 
 #include "godot-terminal.h"
+#include "godot-tile-layer.h"
 #include "godot-term-hooks.h"
 
 #include <godot_cpp/classes/node.hpp>
@@ -54,8 +55,14 @@ private:
     godot::Ref<godot::Font> font_;
     int font_size_{ 14 };
 
+    /// タイルセットを読み込む（GDScript から呼び出す）
+    bool load_tileset(const godot::String &tileset_path,
+        const godot::String &mask_path,
+        int cell_w, int cell_h);
+
     /// ターミナルを初期化して term_type フックを設定する
-    void setup_terminal(int idx, GodotTerminal *term, int cols, int rows);
+    void setup_terminal(int idx, GodotTerminal *term,
+        GodotTileLayer *tiles, int cols, int rows);
 };
 
 } // namespace hengband_godot

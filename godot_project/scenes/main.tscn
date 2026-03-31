@@ -20,31 +20,66 @@ size = Vector2i(1280, 800)
 
 [node name="TerminalContainer" type="Node2D" parent="GameViewport/SubViewport"]
 
+; --- ターミナル0 (メイン) ---
+[node name="TileLayer0" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(0, 0)
+z_index = 0
+
 [node name="Terminal0" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
 position = Vector2(0, 0)
+z_index = 1
+
+; --- ターミナル1〜7 (サブウィンドウ、初期非表示) ---
+[node name="TileLayer1" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(0, 384)
+visible = false
 
 [node name="Terminal1" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
 position = Vector2(0, 384)
+visible = false
+
+[node name="TileLayer2" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(640, 384)
 visible = false
 
 [node name="Terminal2" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
 position = Vector2(640, 384)
 visible = false
 
+[node name="TileLayer3" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(0, 576)
+visible = false
+
 [node name="Terminal3" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
 position = Vector2(0, 576)
+visible = false
+
+[node name="TileLayer4" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(640, 576)
 visible = false
 
 [node name="Terminal4" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
 position = Vector2(640, 576)
 visible = false
 
+[node name="TileLayer5" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(0, 672)
+visible = false
+
 [node name="Terminal5" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
 position = Vector2(0, 672)
 visible = false
 
+[node name="TileLayer6" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(640, 672)
+visible = false
+
 [node name="Terminal6" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
 position = Vector2(640, 672)
+visible = false
+
+[node name="TileLayer7" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(0, 736)
 visible = false
 
 [node name="Terminal7" type="Node2D" parent="GameViewport/SubViewport/TerminalContainer"]

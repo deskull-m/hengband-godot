@@ -5,6 +5,7 @@
 
 #include "hengband-gdextension.h"
 #include "godot-terminal.h"
+#include "godot-tile-layer.h"
 #include "godot-term-hooks.h"
 
 #include "term/z-term.h"
@@ -24,18 +25,23 @@ using namespace hengband_godot;
 
 void HengbandGame::_ready()
 {
-    // シーン内の GodotTerminal ノードを TerminalContainer から探す
+    // TerminalContainer 以下から Terminal0〜7 と TileLayer0〜7 を探して設定
     Node *container = get_node_or_null(NodePath("TerminalContainer"));
     if (!container) {
         return;
     }
 
     for (int i = 0; i < HENGBAND_TERM_COUNT; ++i) {
-        const std::string node_name = "Terminal" + std::to_string(i);
+        const std::string term_name = "Terminal" + std::to_string(i);
+        const std::string tile_name = "TileLayer" + std::to_string(i);
+
         auto *term = Object::cast_to<GodotTerminal>(
-            container->get_node_or_null(NodePath(node_name.c_str())));
+            container->get_node_or_null(NodePath(term_name.c_str())));
+        auto *tiles = Object::cast_to<GodotTileLayer>(
+            container->get_node_or_null(NodePath(tile_name.c_str())));
+
         if (term) {
-            setup_terminal(i, term, (i == 0) ? 80 : 80, (i == 0) ? 24 : 24);
+            setup_terminal(i, term, tiles, 80, 24);
             if (font_.is_valid()) {
                 term->set_terminal_font(font_, font_size_);
             }
@@ -74,14 +80,41 @@ void HengbandGame::set_game_font(const Ref<Font> &font, int size)
     font_size_ = size;
 }
 
-void HengbandGame::setup_terminal(int idx, GodotTerminal *term, int cols, int rows)
+bool HengbandGame::load_tileset(const String &tileset_path,
+    const String &mask_path,
+    int cell_w, int cell_h)
+{
+    // メインターミナルの TileLayer にタイルセットを読み込む
+    // tile_w / tile_h はフォントサイズに合わせる（cell_w と同じ値でよい）
+    auto *tiles = term_data_[0].tile_layer;
+    if (!tiles) {
+        return false;
+    }
+    const bool ok = tiles->load_tileset(
+        tileset_path.utf8().get_data(),
+        mask_path.utf8().get_data(),
+        cell_w, cell_h, cell_w, cell_h);
+
+    if (ok) {
+        // pict_hook を有効化
+        term_data_[0].t.higher_pict = true;
+    }
+    return ok;
+}
+
+void HengbandGame::setup_terminal(int idx, GodotTerminal *term,
+    GodotTileLayer *tiles, int cols, int rows)
 {
     auto &td = term_data_[idx];
     td.terminal = term;
+    td.tile_layer = tiles;
     td.cols = cols;
     td.rows = rows;
 
     term->set_grid_size(cols, rows);
+    if (tiles) {
+        tiles->set_grid_size(cols, rows);
+    }
 
     term_type *t = &td.t;
     term_init(t, cols, rows, 256);
@@ -93,10 +126,10 @@ void HengbandGame::setup_terminal(int idx, GodotTerminal *term, int cols, int ro
     t->text_hook = term_text_godot;
     t->wipe_hook = term_wipe_godot;
     t->curs_hook = term_curs_godot;
+    t->pict_hook = term_pict_godot;
     t->xtra_hook = term_xtra_godot;
     t->data = static_cast<vptr>(&td);
 
-    // angband_term に登録（ゲームロジック側から参照される）
     if (idx < HENGBAND_TERM_COUNT) {
         angband_term[idx] = t;
     }
@@ -107,6 +140,9 @@ void HengbandGame::_bind_methods()
     ClassDB::bind_method(D_METHOD("start_game"), &HengbandGame::start_game);
     ClassDB::bind_method(D_METHOD("set_game_font", "font", "size"),
         &HengbandGame::set_game_font);
+    ClassDB::bind_method(
+        D_METHOD("load_tileset", "tileset_path", "mask_path", "cell_w", "cell_h"),
+        &HengbandGame::load_tileset);
 }
 
 // ---------------------------------------------------------------------------
@@ -119,6 +155,7 @@ void initialize_hengband_module(ModuleInitializationLevel p_level)
         return;
     }
     ClassDB::register_class<GodotTerminal>();
+    ClassDB::register_class<GodotTileLayer>();
     ClassDB::register_class<HengbandGame>();
 }
 
