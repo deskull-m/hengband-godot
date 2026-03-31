@@ -6,20 +6,21 @@
 #include "hengband-gdextension.h"
 #include "godot-audio-manager.h"
 #include "godot-init.h"
-#include "godot-terminal.h"
-#include "godot-tile-layer.h"
 #include "godot-input-handler.h"
 #include "godot-term-hooks.h"
+#include "godot-terminal.h"
+#include "godot-tile-layer.h"
 
-#include "term/z-term.h"
 #include "term/gameterm.h"
+#include "term/z-term.h"
 
-#include <godot_cpp/variant/callable.hpp>
 #include <godot_cpp/classes/config_file.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
+#include <godot_cpp/variant/callable.hpp>
 
+#include <algorithm>
 #include <filesystem>
 #include <string>
 
@@ -286,6 +287,22 @@ void HengbandGame::load_window_layout(const String &path)
     }
 }
 
+void HengbandGame::fit_term_to_viewport(const Vector2i &viewport_size)
+{
+    auto *term0 = term_data_[0].terminal;
+    if (!term0) {
+        return;
+    }
+    const int cell_w = term0->get_cell_width();
+    const int cell_h = term0->get_cell_height();
+    if (cell_w <= 0 || cell_h <= 0) {
+        return;
+    }
+    const int cols = std::max(10, viewport_size.x / cell_w);
+    const int rows = std::max(3, viewport_size.y / cell_h);
+    set_sub_window_size(0, cols, rows);
+}
+
 void HengbandGame::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("start_game", "lib_path"), &HengbandGame::start_game);
@@ -306,6 +323,9 @@ void HengbandGame::_bind_methods()
     ClassDB::bind_method(
         D_METHOD("load_window_layout", "path"),
         &HengbandGame::load_window_layout);
+    ClassDB::bind_method(
+        D_METHOD("fit_term_to_viewport", "viewport_size"),
+        &HengbandGame::fit_term_to_viewport);
     ClassDB::bind_method(
         D_METHOD("_game_thread_func", "exe_path"),
         &HengbandGame::_game_thread_func);

@@ -18,11 +18,11 @@
  *   Phase 4 では TERM_XTRA_EVENT は即時リターン（スレッドなし）。
  */
 
-#include <godot_cpp/classes/node.hpp>
-#include <godot_cpp/classes/input_event.hpp>
-#include <cstdint>
-#include <mutex>
 #include <condition_variable>
+#include <cstdint>
+#include <godot_cpp/classes/input_event.hpp>
+#include <godot_cpp/classes/node.hpp>
+#include <mutex>
 
 namespace hengband_godot {
 
@@ -80,7 +80,7 @@ private:
 /// 見つからない場合は {0, false} を返す
 struct ScanCodeEntry {
     uint8_t scan_code;
-    bool    is_numpad;
+    bool is_numpad;
 };
 ScanCodeEntry godot_key_to_scancode(godot::Key key);
 

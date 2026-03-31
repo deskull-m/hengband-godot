@@ -33,7 +33,7 @@ class GodotInputHandler;
  */
 struct term_data_godot {
     term_type t{};
-    hengband_godot::GodotTerminal  *terminal{ nullptr }; ///< テキスト描画ノード
+    hengband_godot::GodotTerminal *terminal{ nullptr }; ///< テキスト描画ノード
     hengband_godot::GodotTileLayer *tile_layer{ nullptr }; ///< タイル描画ノード
     int cols{ 80 };
     int rows{ 24 };

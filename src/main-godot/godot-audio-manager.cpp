@@ -245,19 +245,35 @@ std::string GodotAudioManager::pick_music_file(int type, int val) const
         break;
     case TERM_XTRA_MUSIC_DUNGEON:
         section = "Dungeon";
-        { char buf[16]; snprintf(buf, sizeof(buf), "dungeon%03d", val); key = buf; }
+        {
+            char buf[16];
+            snprintf(buf, sizeof(buf), "dungeon%03d", val);
+            key = buf;
+        }
         break;
     case TERM_XTRA_MUSIC_QUEST:
         section = "Quest";
-        { char buf[16]; snprintf(buf, sizeof(buf), "quest%03d", val); key = buf; }
+        {
+            char buf[16];
+            snprintf(buf, sizeof(buf), "quest%03d", val);
+            key = buf;
+        }
         break;
     case TERM_XTRA_MUSIC_TOWN:
         section = "Town";
-        { char buf[16]; snprintf(buf, sizeof(buf), "town%03d", val); key = buf; }
+        {
+            char buf[16];
+            snprintf(buf, sizeof(buf), "town%03d", val);
+            key = buf;
+        }
         break;
     case TERM_XTRA_MUSIC_MONSTER:
         section = "Monster";
-        { char buf[16]; snprintf(buf, sizeof(buf), "monster%04d", val); key = buf; }
+        {
+            char buf[16];
+            snprintf(buf, sizeof(buf), "monster%04d", val);
+            key = buf;
+        }
         break;
     default:
         return {};

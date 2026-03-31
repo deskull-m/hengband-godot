@@ -4,7 +4,7 @@
  */
 
 #include "term-color-map.h"
-#include "term/gameterm.h"  // angband_color_table
+#include "term/gameterm.h" // angband_color_table
 
 namespace hengband_godot {
 

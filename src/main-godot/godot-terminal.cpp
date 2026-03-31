@@ -6,15 +6,15 @@
 #include "godot-terminal.h"
 #include "term-color-map.h"
 
+#include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/rect2.hpp>
 #include <godot_cpp/variant/vector2.hpp>
-#include <godot_cpp/classes/font.hpp>
 
 #include <algorithm>
 #include <cmath>
-#include <string>
 #include <cstring>
+#include <string>
 
 using namespace godot;
 using namespace hengband_godot;
@@ -25,16 +25,16 @@ using namespace hengband_godot;
 /// (East Asian Width = Wide または Fullwidth に相当する範囲)
 static bool is_fullwidth(char32_t cp)
 {
-    return (cp >= 0x1100 && cp <= 0x115F)   // Hangul Jamo
-        || (cp >= 0x2E80 && cp <= 0x303E)   // CJK Radicals / Kangxi
-        || (cp >= 0x3041 && cp <= 0x33BF)   // Hiragana/Katakana/CJK Symbols
-        || (cp >= 0x3400 && cp <= 0x4DBF)   // CJK Extension A
-        || (cp >= 0x4E00 && cp <= 0x9FFF)   // CJK Unified Ideographs
-        || (cp >= 0xAC00 && cp <= 0xD7AF)   // Hangul Syllables
-        || (cp >= 0xF900 && cp <= 0xFAFF)   // CJK Compatibility Ideographs
-        || (cp >= 0xFE10 && cp <= 0xFE6F)   // CJK Compatibility Forms
-        || (cp >= 0xFF01 && cp <= 0xFF60)   // Fullwidth ASCII
-        || (cp >= 0xFFE0 && cp <= 0xFFE6);  // Fullwidth Signs
+    return (cp >= 0x1100 && cp <= 0x115F) // Hangul Jamo
+           || (cp >= 0x2E80 && cp <= 0x303E) // CJK Radicals / Kangxi
+           || (cp >= 0x3041 && cp <= 0x33BF) // Hiragana/Katakana/CJK Symbols
+           || (cp >= 0x3400 && cp <= 0x4DBF) // CJK Extension A
+           || (cp >= 0x4E00 && cp <= 0x9FFF) // CJK Unified Ideographs
+           || (cp >= 0xAC00 && cp <= 0xD7AF) // Hangul Syllables
+           || (cp >= 0xF900 && cp <= 0xFAFF) // CJK Compatibility Ideographs
+           || (cp >= 0xFE10 && cp <= 0xFE6F) // CJK Compatibility Forms
+           || (cp >= 0xFF01 && cp <= 0xFF60) // Fullwidth ASCII
+           || (cp >= 0xFFE0 && cp <= 0xFFE6); // Fullwidth Signs
 }
 
 /// UTF-8 文字列を UTF-32 コードポイント列に変換する (バイト数上限付き)
@@ -130,13 +130,14 @@ void GodotTerminal::draw_cell(int x, int y, const CellData &cell)
 
     // セル背景を黒で塗る
     draw_rect(Rect2(px, py,
-        static_cast<float>(char_cell_w),
-        static_cast<float>(cell_h_)), Color(0, 0, 0));
+                  static_cast<float>(char_cell_w),
+                  static_cast<float>(cell_h_)),
+        Color(0, 0, 0));
 
     // 文字描画 (baseline = py + ascent)
     const float baseline = font_.is_valid()
-        ? font_->get_ascent(font_size_)
-        : static_cast<float>(font_size_);
+                               ? font_->get_ascent(font_size_)
+                               : static_cast<float>(font_size_);
     const Vector2 pos(px, py + baseline);
     font_->draw_char(get_canvas_item(), pos, static_cast<int64_t>(cell.ch), font_size_, fg);
 }
@@ -177,7 +178,7 @@ void GodotTerminal::set_terminal_font(const Ref<Font> &font, int font_size)
         const float char_w = font_->get_char_size('M', font_size_).x;
         cell_w_ = std::max(1, static_cast<int>(std::round(char_w)));
         // 行の高さ = ascent + descent
-        const float ascent  = font_->get_ascent(font_size_);
+        const float ascent = font_->get_ascent(font_size_);
         const float descent = font_->get_descent(font_size_);
         cell_h_ = std::max(1, static_cast<int>(std::round(ascent + descent)));
     }

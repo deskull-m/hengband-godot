@@ -9,11 +9,11 @@
 #include "godot-terminal.h"
 #include "godot-tile-layer.h"
 
-#include "term/z-term.h"
 #include "locale/japanese.h"
+#include "term/z-term.h"
 
-#include <thread>
 #include <chrono>
+#include <thread>
 
 using namespace hengband_godot;
 
