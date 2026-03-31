@@ -18,6 +18,7 @@
 #include <godot_cpp/variant/color.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <cstdint>
+#include <mutex>
 #include <vector>
 #include <string>
 
@@ -105,7 +106,8 @@ private:
     int cursor_y_{ 0 };
 
     godot::Ref<godot::Font> font_;
-    std::vector<CellData> grid_; ///< グリッドバッファ (cols × rows)
+    std::vector<CellData> grid_;   ///< グリッドバッファ (cols × rows)
+    mutable std::mutex grid_mutex_; ///< ゲームスレッド ↔ Godotメインスレッド競合防止
 
     /// グリッド座標 → バッファインデックス
     int cell_idx(int x, int y) const { return y * cols_ + x; }

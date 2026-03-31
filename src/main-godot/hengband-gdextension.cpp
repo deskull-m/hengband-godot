@@ -5,6 +5,7 @@
 
 #include "hengband-gdextension.h"
 #include "godot-audio-manager.h"
+#include "godot-init.h"
 #include "godot-terminal.h"
 #include "godot-tile-layer.h"
 #include "godot-input-handler.h"
@@ -13,10 +14,13 @@
 #include "term/z-term.h"
 #include "term/gameterm.h"
 
+#include <godot_cpp/classes/callable.hpp>
 #include <godot_cpp/classes/config_file.hpp>
+#include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
 
+#include <filesystem>
 #include <string>
 
 using namespace godot;
@@ -60,34 +64,57 @@ void HengbandGame::_ready()
     }
 
     // InputHandler を取得して TERM_XTRA_EVENT に登録
-    auto *input_handler = Object::cast_to<GodotInputHandler>(
+    input_handler_ = Object::cast_to<GodotInputHandler>(
         get_node_or_null(NodePath("InputHandler")));
-    if (input_handler) {
-        set_input_handler(input_handler);
+    if (input_handler_) {
+        set_input_handler(input_handler_);
     }
 
     // term_data 配列を TERM_XTRA_REACT / resize_hook に登録
     set_term_data_array(term_data_.data(), HENGBAND_TERM_COUNT);
-
-    // TODO: Phase 7 でゲームスレッドを起動する
 }
 
 void HengbandGame::_process(double delta)
 {
     (void)delta;
-    // TODO: Phase 4 でキュー処理を実装する
 }
 
 void HengbandGame::_notification(int p_what)
 {
     if (p_what == NOTIFICATION_WM_CLOSE_REQUEST) {
-        // TODO: ゲームスレッドへの終了シグナル
+        // InputHandler のブロック待機を解除してスレッドを終了
+        if (input_handler_) {
+            input_handler_->request_stop();
+        }
+        if (game_thread_.is_valid() && game_thread_->is_started()) {
+            game_thread_->wait_to_finish();
+        }
     }
 }
 
 void HengbandGame::start_game()
 {
-    // TODO: Phase 7 で play_game() 呼び出しを実装する
+    if (game_thread_.is_valid() && game_thread_->is_started()) {
+        return; // 既に起動中
+    }
+
+    // 実行ファイルパスを取得
+    const String exe_path = OS::get_singleton()->get_executable_path();
+    const std::filesystem::path exe_fs(exe_path.utf8().get_data());
+
+    game_thread_.instantiate();
+    game_thread_->start(
+        Callable(this, "_game_thread_func"),
+        Variant(exe_path),
+        Thread::PRIORITY_NORMAL);
+}
+
+/// ゲームスレッド本体 (Godot Thread から呼ばれる)
+void HengbandGame::_game_thread_func(String exe_path)
+{
+    const std::filesystem::path exe_fs(exe_path.utf8().get_data());
+    run_game_thread(exe_fs);
+}
 }
 
 void HengbandGame::set_game_font(const Ref<Font> &font, int size)
@@ -269,6 +296,9 @@ void HengbandGame::_bind_methods()
     ClassDB::bind_method(
         D_METHOD("load_window_layout", "path"),
         &HengbandGame::load_window_layout);
+    ClassDB::bind_method(
+        D_METHOD("_game_thread_func", "exe_path"),
+        &HengbandGame::_game_thread_func);
 }
 
 // ---------------------------------------------------------------------------

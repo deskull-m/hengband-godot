@@ -26,6 +26,7 @@
 #include <godot_cpp/classes/image.hpp>
 #include <godot_cpp/variant/color.hpp>
 #include <cstdint>
+#include <mutex>
 #include <vector>
 #include <string>
 
@@ -115,7 +116,8 @@ private:
 
     godot::Ref<godot::ImageTexture> texture_; ///< マスク合成済みのタイルセットテクスチャ
 
-    std::vector<TileCell> grid_; ///< タイルバッファ
+    std::vector<TileCell> grid_;        ///< タイルバッファ
+    mutable std::mutex grid_mutex_;     ///< スレッド安全グリッドアクセス用
 
     int cell_idx(int x, int y) const { return y * cols_ + x; }
     void resize_grid();

@@ -15,9 +15,11 @@
 
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/node2d.hpp>
+#include <godot_cpp/classes/thread.hpp>
 #include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <array>
+#include <atomic>
 
 /// ターミナル数（メイン + サブウィンドウ最大8）
 static constexpr int HENGBAND_TERM_COUNT = 8;
@@ -41,8 +43,11 @@ public:
     void _process(double delta) override;
     void _notification(int p_what);
 
-    /// ゲームを開始する（別スレッドから呼び出す）
+    /// ゲームを開始する (Godot Thread を起動して play_game() を呼ぶ)
     void start_game();
+
+    /// ゲームスレッド本体 (Callable として Thread に渡す)
+    void _game_thread_func(godot::String exe_path);
 
     /// フォントを設定する（GDScript から呼び出す）
     void set_game_font(const godot::Ref<godot::Font> &font, int size);
@@ -68,6 +73,11 @@ private:
 
     /// サブウィンドウ(idx=1〜7)の Node2D ルートノード
     std::array<godot::Node2D *, HENGBAND_TERM_COUNT> sub_window_roots_{};
+
+    /// ゲームスレッド (Phase 7)
+    godot::Ref<godot::Thread> game_thread_;
+    /// 入力ハンドラへのキャッシュ (停止通知用)
+    GodotInputHandler *input_handler_{ nullptr };
 
     /// 使用するフォント
     godot::Ref<godot::Font> font_;
