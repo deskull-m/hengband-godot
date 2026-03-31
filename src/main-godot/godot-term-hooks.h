@@ -29,6 +29,12 @@ class GodotInputHandler;
 /// GodotInputHandler をグローバル参照として登録する
 void set_input_handler(hengband_godot::GodotInputHandler *handler);
 
+/// term_data_godot 配列をグローバル参照として登録する (TERM_XTRA_REACT 用)
+void set_term_data_array(term_data_godot *arr, int count);
+
+/// resize_hook: ターミナルサイズ変更時のコールバック
+void term_resize_hook_godot();
+
 /*!
  * @brief Godot バックエンド用の term_data 構造体
  *

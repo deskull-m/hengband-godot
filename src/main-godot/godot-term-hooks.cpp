@@ -18,10 +18,43 @@ using namespace hengband_godot;
 
 /// シーン内の GodotInputHandler への参照（HengbandGame が設定する）
 static GodotInputHandler *s_input_handler = nullptr;
+/// term_data_godot 配列への参照（TERM_XTRA_REACT / resize_hook 用）
+static term_data_godot *s_term_data = nullptr;
+static int s_term_count = 0;
 
 void set_input_handler(GodotInputHandler *handler)
 {
     s_input_handler = handler;
+}
+
+void set_term_data_array(term_data_godot *arr, int count)
+{
+    s_term_data = arr;
+    s_term_count = count;
+}
+
+// ---------------------------------------------------------------------------
+// resize_hook: ゲームがターミナルサイズを変更した時のコールバック
+// ---------------------------------------------------------------------------
+void term_resize_hook_godot()
+{
+    if (!game_term || !game_term->data) {
+        return;
+    }
+    auto *td = reinterpret_cast<term_data_godot *>(game_term->data);
+    const int new_cols = static_cast<int>(game_term->wid);
+    const int new_rows = static_cast<int>(game_term->hgt);
+    if (td->cols == new_cols && td->rows == new_rows) {
+        return;
+    }
+    td->cols = new_cols;
+    td->rows = new_rows;
+    if (td->terminal) {
+        td->terminal->set_grid_size(new_cols, new_rows);
+    }
+    if (td->tile_layer) {
+        td->tile_layer->set_grid_size(new_cols, new_rows);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -113,9 +146,28 @@ errr term_xtra_godot(int n, int v)
         return 0;
     case TERM_XTRA_FLUSH:
     case TERM_XTRA_BORED:
-    case TERM_XTRA_REACT:
     case TERM_XTRA_ALIVE:
     case TERM_XTRA_LEVEL:
+        return 0;
+    case TERM_XTRA_REACT:
+        // カラーテーブル更新 + 全ターミナルのサイズ同期
+        if (s_term_data) {
+            for (int i = 0; i < s_term_count; ++i) {
+                auto &td = s_term_data[i];
+                const int w = static_cast<int>(td.t.wid);
+                const int h = static_cast<int>(td.t.hgt);
+                if (w > 0 && h > 0 && (td.cols != w || td.rows != h)) {
+                    td.cols = w;
+                    td.rows = h;
+                    if (td.terminal) {
+                        td.terminal->set_grid_size(w, h);
+                    }
+                    if (td.tile_layer) {
+                        td.tile_layer->set_grid_size(w, h);
+                    }
+                }
+            }
+        }
         return 0;
     case TERM_XTRA_SOUND:
         hengband_godot::audio_play_sound(v);

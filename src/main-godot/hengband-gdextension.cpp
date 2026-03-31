@@ -13,6 +13,7 @@
 #include "term/z-term.h"
 #include "term/gameterm.h"
 
+#include <godot_cpp/classes/config_file.hpp>
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
 
@@ -42,6 +43,9 @@ void HengbandGame::_ready()
         auto *tiles = Object::cast_to<GodotTileLayer>(
             container->get_node_or_null(NodePath(tile_name.c_str())));
 
+        // サブウィンドウのルートノード(Terminal側)を記録
+        sub_window_roots_[i] = term;
+
         if (term) {
             setup_terminal(i, term, tiles, 80, 24);
             if (font_.is_valid()) {
@@ -61,6 +65,9 @@ void HengbandGame::_ready()
     if (input_handler) {
         set_input_handler(input_handler);
     }
+
+    // term_data 配列を TERM_XTRA_REACT / resize_hook に登録
+    set_term_data_array(term_data_.data(), HENGBAND_TERM_COUNT);
 
     // TODO: Phase 7 でゲームスレッドを起動する
 }
@@ -137,10 +144,108 @@ void HengbandGame::setup_terminal(int idx, GodotTerminal *term,
     t->curs_hook = term_curs_godot;
     t->pict_hook = term_pict_godot;
     t->xtra_hook = term_xtra_godot;
+    t->resize_hook = term_resize_hook_godot;
     t->data = static_cast<vptr>(&td);
 
     if (idx < HENGBAND_TERM_COUNT) {
         angband_term[idx] = t;
+    }
+}
+
+void HengbandGame::set_sub_window_visible(int idx, bool visible)
+{
+    if (idx < 0 || idx >= HENGBAND_TERM_COUNT) {
+        return;
+    }
+    auto *root = sub_window_roots_[idx];
+    if (root) {
+        root->set_visible(visible);
+    }
+    // TileLayer も同期
+    auto *tiles = term_data_[idx].tile_layer;
+    if (tiles) {
+        tiles->set_visible(visible);
+    }
+}
+
+void HengbandGame::set_sub_window_size(int idx, int cols, int rows)
+{
+    if (idx < 0 || idx >= HENGBAND_TERM_COUNT) {
+        return;
+    }
+    auto &td = term_data_[idx];
+    if (cols <= 0 || rows <= 0) {
+        return;
+    }
+    td.cols = cols;
+    td.rows = rows;
+    if (td.terminal) {
+        td.terminal->set_grid_size(cols, rows);
+    }
+    if (td.tile_layer) {
+        td.tile_layer->set_grid_size(cols, rows);
+    }
+    // term_resize で z-term 側にも反映
+    term_type *saved = game_term;
+    term_activate(&td.t);
+    term_resize(cols, rows);
+    if (saved) {
+        term_activate(saved);
+    }
+}
+
+void HengbandGame::save_window_layout(const String &path)
+{
+    Ref<ConfigFile> cfg;
+    cfg.instantiate();
+
+    // SubViewport の親ノードから位置を取得して保存
+    Node *container = get_node_or_null(NodePath("GameViewport/SubViewport/TerminalContainer"));
+
+    for (int i = 0; i < HENGBAND_TERM_COUNT; ++i) {
+        const std::string section = "window" + std::to_string(i);
+        const String sec(section.c_str());
+
+        auto *root = sub_window_roots_[i];
+        cfg->set_value(sec, "visible", root ? root->is_visible() : (i == 0));
+        cfg->set_value(sec, "cols", term_data_[i].cols);
+        cfg->set_value(sec, "rows", term_data_[i].rows);
+
+        if (root) {
+            cfg->set_value(sec, "pos_x", static_cast<int>(root->get_position().x));
+            cfg->set_value(sec, "pos_y", static_cast<int>(root->get_position().y));
+        }
+    }
+    cfg->save(path);
+}
+
+void HengbandGame::load_window_layout(const String &path)
+{
+    Ref<ConfigFile> cfg;
+    cfg.instantiate();
+    if (cfg->load(path) != Error::OK) {
+        return;
+    }
+
+    for (int i = 0; i < HENGBAND_TERM_COUNT; ++i) {
+        const std::string section = "window" + std::to_string(i);
+        const String sec(section.c_str());
+
+        const bool visible = cfg->get_value(sec, "visible", i == 0);
+        const int cols = cfg->get_value(sec, "cols", 80);
+        const int rows = cfg->get_value(sec, "rows", 24);
+        const int pos_x = cfg->get_value(sec, "pos_x", 0);
+        const int pos_y = cfg->get_value(sec, "pos_y", 0);
+
+        set_sub_window_visible(i, visible);
+        if (cols > 0 && rows > 0) {
+            set_sub_window_size(i, cols, rows);
+        }
+        auto *root = sub_window_roots_[i];
+        if (root) {
+            root->set_position(Vector2(static_cast<float>(pos_x),
+                static_cast<float>(pos_y)));
+        }
     }
 }
 
@@ -152,6 +257,18 @@ void HengbandGame::_bind_methods()
     ClassDB::bind_method(
         D_METHOD("load_tileset", "tileset_path", "mask_path", "cell_w", "cell_h"),
         &HengbandGame::load_tileset);
+    ClassDB::bind_method(
+        D_METHOD("set_sub_window_visible", "idx", "visible"),
+        &HengbandGame::set_sub_window_visible);
+    ClassDB::bind_method(
+        D_METHOD("set_sub_window_size", "idx", "cols", "rows"),
+        &HengbandGame::set_sub_window_size);
+    ClassDB::bind_method(
+        D_METHOD("save_window_layout", "path"),
+        &HengbandGame::save_window_layout);
+    ClassDB::bind_method(
+        D_METHOD("load_window_layout", "path"),
+        &HengbandGame::load_window_layout);
 }
 
 // ---------------------------------------------------------------------------
