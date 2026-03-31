@@ -166,6 +166,13 @@ void GodotInputHandler::_unhandled_input(const Ref<InputEvent> &event)
         return;
     }
 
+    // Ctrl+A〜Z: Windows の Godot では get_unicode() が 0 を返すことがあるため
+    // キーコードから制御文字 (0x01〜0x1A) を直接計算するフォールバック
+    if (ctrl && kc >= Key::KEY_A && kc <= Key::KEY_Z) {
+        push_key(static_cast<int>(kc) - static_cast<int>(Key::KEY_A) + 1);
+        return;
+    }
+
     // 通常の印字可能文字
     const char32_t unicode = static_cast<char32_t>(key_event->get_unicode());
     if (unicode >= 0x20) {
@@ -173,7 +180,7 @@ void GodotInputHandler::_unhandled_input(const Ref<InputEvent> &event)
         return;
     }
 
-    // ASCII 制御文字 (Ctrl+A 〜 Ctrl+Z など) はそのままプッシュ
+    // ASCII 制御文字 (Ctrl+記号 など): get_unicode() が正しく返した場合
     if (unicode > 0 && unicode < 0x20) {
         push_key(static_cast<int>(unicode));
     }
