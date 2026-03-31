@@ -8,9 +8,9 @@
 #include "term/z-term.h"
 #include "util/string-processor.h"
 
-#include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/classes/input_event_key.hpp>
 #include <godot_cpp/classes/display_server.hpp>
+#include <godot_cpp/classes/input_event_key.hpp>
+#include <godot_cpp/core/class_db.hpp>
 
 using namespace godot;
 using namespace hengband_godot;
@@ -22,68 +22,68 @@ using namespace hengband_godot;
 namespace {
 
 struct KeyEntry {
-    godot::Key  godot_key;
-    uint8_t     scan_code;
-    bool        is_numpad;
+    godot::Key godot_key;
+    uint8_t scan_code;
+    bool is_numpad;
 };
 
 // Windows scan code 参考:
 // https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-6.0/aa299374(v=vs.60)
 static constexpr KeyEntry KEY_MAP[] = {
     // 方向キー
-    { Key::KEY_UP,        0x48, false },
-    { Key::KEY_DOWN,      0x50, false },
-    { Key::KEY_LEFT,      0x4B, false },
-    { Key::KEY_RIGHT,     0x4D, false },
+    { Key::KEY_UP, 0x48, false },
+    { Key::KEY_DOWN, 0x50, false },
+    { Key::KEY_LEFT, 0x4B, false },
+    { Key::KEY_RIGHT, 0x4D, false },
 
     // ナビゲーション
-    { Key::KEY_HOME,      0x47, false },
-    { Key::KEY_END,       0x4F, false },
-    { Key::KEY_PAGEUP,    0x49, false },
-    { Key::KEY_PAGEDOWN,  0x51, false },
-    { Key::KEY_INSERT,    0x52, false },
-    { Key::KEY_DELETE,    0x53, false },
+    { Key::KEY_HOME, 0x47, false },
+    { Key::KEY_END, 0x4F, false },
+    { Key::KEY_PAGEUP, 0x49, false },
+    { Key::KEY_PAGEDOWN, 0x51, false },
+    { Key::KEY_INSERT, 0x52, false },
+    { Key::KEY_DELETE, 0x53, false },
 
     // ファンクションキー
-    { Key::KEY_F1,        0x3B, false },
-    { Key::KEY_F2,        0x3C, false },
-    { Key::KEY_F3,        0x3D, false },
-    { Key::KEY_F4,        0x3E, false },
-    { Key::KEY_F5,        0x3F, false },
-    { Key::KEY_F6,        0x40, false },
-    { Key::KEY_F7,        0x41, false },
-    { Key::KEY_F8,        0x42, false },
-    { Key::KEY_F9,        0x43, false },
-    { Key::KEY_F10,       0x44, false },
-    { Key::KEY_F11,       0x57, false },
-    { Key::KEY_F12,       0x58, false },
+    { Key::KEY_F1, 0x3B, false },
+    { Key::KEY_F2, 0x3C, false },
+    { Key::KEY_F3, 0x3D, false },
+    { Key::KEY_F4, 0x3E, false },
+    { Key::KEY_F5, 0x3F, false },
+    { Key::KEY_F6, 0x40, false },
+    { Key::KEY_F7, 0x41, false },
+    { Key::KEY_F8, 0x42, false },
+    { Key::KEY_F9, 0x43, false },
+    { Key::KEY_F10, 0x44, false },
+    { Key::KEY_F11, 0x57, false },
+    { Key::KEY_F12, 0x58, false },
 
     // テンキー (is_numpad=true → 'K' フラグを付ける)
-    { Key::KEY_KP_0,      0x52, true  },
-    { Key::KEY_KP_1,      0x4F, true  },
-    { Key::KEY_KP_2,      0x50, true  },
-    { Key::KEY_KP_3,      0x51, true  },
-    { Key::KEY_KP_4,      0x4B, true  },
-    { Key::KEY_KP_5,      0x4C, true  },
-    { Key::KEY_KP_6,      0x4D, true  },
-    { Key::KEY_KP_7,      0x47, true  },
-    { Key::KEY_KP_8,      0x48, true  },
-    { Key::KEY_KP_9,      0x49, true  },
-    { Key::KEY_KP_ADD,    0x4E, true  },
+    { Key::KEY_KP_0, 0x52, true },
+    { Key::KEY_KP_1, 0x4F, true },
+    { Key::KEY_KP_2, 0x50, true },
+    { Key::KEY_KP_3, 0x51, true },
+    { Key::KEY_KP_4, 0x4B, true },
+    { Key::KEY_KP_5, 0x4C, true },
+    { Key::KEY_KP_6, 0x4D, true },
+    { Key::KEY_KP_7, 0x47, true },
+    { Key::KEY_KP_8, 0x48, true },
+    { Key::KEY_KP_9, 0x49, true },
+    { Key::KEY_KP_ADD, 0x4E, true },
     { Key::KEY_KP_SUBTRACT, 0x4A, true },
     { Key::KEY_KP_MULTIPLY, 0x37, true },
-    { Key::KEY_KP_DIVIDE,   0x35, true },
-    { Key::KEY_KP_ENTER,    0x1C, true },
-    { Key::KEY_KP_PERIOD,   0x53, true },
+    { Key::KEY_KP_DIVIDE, 0x35, true },
+    { Key::KEY_KP_ENTER, 0x1C, true },
+    { Key::KEY_KP_PERIOD, 0x53, true },
 
     // Clear (テンキー中央)
-    { Key::KEY_CLEAR,     0x4C, false },
+    { Key::KEY_CLEAR, 0x4C, false },
 
     // Pause/Break
-    { Key::KEY_PAUSE,     0x45, false },
+    { Key::KEY_PAUSE, 0x45, false },
 
     // 終端マーカー
-    { Key::KEY_NONE,      0x00, false },
+    { Key::KEY_NONE, 0x00, false },
 };
 
 } // namespace
@@ -118,13 +118,13 @@ void GodotInputHandler::_unhandled_input(const Ref<InputEvent> &event)
     }
 
     const Key kc = key_event->get_keycode();
-    const bool ctrl  = key_event->is_ctrl_pressed();
+    const bool ctrl = key_event->is_ctrl_pressed();
     const bool shift = key_event->is_shift_pressed();
-    const bool alt   = key_event->is_alt_pressed();
+    const bool alt = key_event->is_alt_pressed();
 
     // 修飾キー単体は無視
     if (kc == Key::KEY_CTRL || kc == Key::KEY_SHIFT ||
-        kc == Key::KEY_ALT  || kc == Key::KEY_META) {
+        kc == Key::KEY_ALT || kc == Key::KEY_META) {
         return;
     }
 
@@ -215,11 +215,19 @@ void GodotInputHandler::handle_special_key(uint8_t scan_code,
 {
     // Angband マクロトリガーエンコーディング
     push_key(31); // prefix (0x1F)
-    if (ctrl)  { push_key('C'); }
-    if (shift) { push_key('S'); }
-    if (alt)   { push_key('A'); }
+    if (ctrl) {
+        push_key('C');
+    }
+    if (shift) {
+        push_key('S');
+    }
+    if (alt) {
+        push_key('A');
+    }
     push_key('x');
-    if (is_numpad) { push_key('K'); }
+    if (is_numpad) {
+        push_key('K');
+    }
     push_key(hexify_upper(scan_code));
     push_key(hexify_lower(scan_code));
     push_key(13); // terminator
@@ -269,7 +277,7 @@ void GodotInputHandler::request_stop()
 
 void GodotInputHandler::_bind_methods()
 {
-    ClassDB::bind_method(D_METHOD("wait_for_key"),  &GodotInputHandler::wait_for_key);
-    ClassDB::bind_method(D_METHOD("poll_events"),   &GodotInputHandler::poll_events);
-    ClassDB::bind_method(D_METHOD("request_stop"),  &GodotInputHandler::request_stop);
+    ClassDB::bind_method(D_METHOD("wait_for_key"), &GodotInputHandler::wait_for_key);
+    ClassDB::bind_method(D_METHOD("poll_events"), &GodotInputHandler::poll_events);
+    ClassDB::bind_method(D_METHOD("request_stop"), &GodotInputHandler::request_stop);
 }

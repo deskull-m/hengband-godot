@@ -21,24 +21,24 @@
  *  - (tap[i], tcp[i]) … 背景タイル (terrain)
  */
 
-#include <godot_cpp/classes/node2d.hpp>
-#include <godot_cpp/classes/image_texture.hpp>
-#include <godot_cpp/classes/image.hpp>
-#include <godot_cpp/variant/color.hpp>
 #include <cstdint>
+#include <godot_cpp/classes/image.hpp>
+#include <godot_cpp/classes/image_texture.hpp>
+#include <godot_cpp/classes/node2d.hpp>
+#include <godot_cpp/variant/color.hpp>
 #include <mutex>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace hengband_godot {
 
 /// 1タイルセルのデータ
 struct TileCell {
-    uint8_t fg_row{ 0 };  ///< 前景タイルの行 (ap & 0x7F)
-    uint8_t fg_col{ 0 };  ///< 前景タイルの列 (cp & 0x7F)
-    uint8_t bg_row{ 0 };  ///< 背景タイルの行 (tap & 0x7F)
-    uint8_t bg_col{ 0 };  ///< 背景タイルの列 (tcp & 0x7F)
-    bool    valid{ false }; ///< true = タイル描画あり
+    uint8_t fg_row{ 0 }; ///< 前景タイルの行 (ap & 0x7F)
+    uint8_t fg_col{ 0 }; ///< 前景タイルの列 (cp & 0x7F)
+    uint8_t bg_row{ 0 }; ///< 背景タイルの行 (tap & 0x7F)
+    uint8_t bg_col{ 0 }; ///< 背景タイルの列 (tcp & 0x7F)
+    bool valid{ false }; ///< true = タイル描画あり
 };
 
 /*!
@@ -99,9 +99,18 @@ public:
     /// 全クリア
     void clear_all();
 
-    bool is_tileset_loaded() const { return texture_.is_valid(); }
-    int get_cell_width() const { return cell_w_; }
-    int get_cell_height() const { return cell_h_; }
+    bool is_tileset_loaded() const
+    {
+        return texture_.is_valid();
+    }
+    int get_cell_width() const
+    {
+        return cell_w_;
+    }
+    int get_cell_height() const
+    {
+        return cell_h_;
+    }
 
 protected:
     static void _bind_methods();
@@ -116,10 +125,13 @@ private:
 
     godot::Ref<godot::ImageTexture> texture_; ///< マスク合成済みのタイルセットテクスチャ
 
-    std::vector<TileCell> grid_;        ///< タイルバッファ
-    mutable std::mutex grid_mutex_;     ///< スレッド安全グリッドアクセス用
+    std::vector<TileCell> grid_; ///< タイルバッファ
+    mutable std::mutex grid_mutex_; ///< スレッド安全グリッドアクセス用
 
-    int cell_idx(int x, int y) const { return y * cols_ + x; }
+    int cell_idx(int x, int y) const
+    {
+        return y * cols_ + x;
+    }
     void resize_grid();
 
     /// タイルセット画像にマスクをアルファとして合成する

@@ -8,9 +8,9 @@
  * - SE: AudioStreamPlayer 8台のプール (ポリフォニー)
  */
 
-#include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/audio_stream.hpp>
 #include <godot_cpp/classes/audio_stream_player.hpp>
+#include <godot_cpp/classes/node.hpp>
 
 #include <array>
 #include <map>
@@ -78,7 +78,7 @@ private:
 
     /// INIファイルを解析して section -> (key -> values) を返す
     static std::map<std::string, std::map<std::string, std::vector<std::string>>>
-        parse_ini(const std::string &path);
+    parse_ini(const std::string &path);
 
     /// 音量レベル(0-9)を線形値(0.0-1.0)に変換する
     static float volume_level_to_linear(int level);

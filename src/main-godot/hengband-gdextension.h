@@ -8,18 +8,18 @@
  */
 
 #include "godot-audio-manager.h"
-#include "godot-terminal.h"
-#include "godot-tile-layer.h"
 #include "godot-input-handler.h"
 #include "godot-term-hooks.h"
+#include "godot-terminal.h"
+#include "godot-tile-layer.h"
 
+#include <array>
+#include <atomic>
+#include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/node2d.hpp>
 #include <godot_cpp/classes/thread.hpp>
-#include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/core/class_db.hpp>
-#include <array>
-#include <atomic>
 
 /// ターミナル数（メイン + サブウィンドウ最大8）
 static constexpr int HENGBAND_TERM_COUNT = 8;
@@ -64,6 +64,10 @@ public:
 
     /// ウィンドウレイアウトをConfigFileから復元する
     void load_window_layout(const godot::String &path);
+
+    /// ビューポートのピクセルサイズに合わせてメインターミナルのグリッドを最大化する
+    /// @param viewport_size ビューポートのピクセルサイズ (SubViewport のサイズと同値にして呼ぶこと)
+    void fit_term_to_viewport(const godot::Vector2i &viewport_size);
 
 protected:
     static void _bind_methods();

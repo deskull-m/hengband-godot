@@ -13,21 +13,21 @@
  *  - 複数端末（最大8）はそれぞれ独立した GodotTerminal ノードとして扱う
  */
 
-#include <godot_cpp/classes/node2d.hpp>
+#include <cstdint>
 #include <godot_cpp/classes/font.hpp>
+#include <godot_cpp/classes/node2d.hpp>
 #include <godot_cpp/variant/color.hpp>
 #include <godot_cpp/variant/string.hpp>
-#include <cstdint>
 #include <mutex>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace hengband_godot {
 
 /// 1セルのデータ
 struct CellData {
-    char32_t ch = U' ';  ///< Unicode コードポイント
-    uint8_t  color = 0;  ///< TERM_COLOR インデックス
+    char32_t ch = U' '; ///< Unicode コードポイント
+    uint8_t color = 0; ///< TERM_COLOR インデックス
 };
 
 /*!
@@ -86,10 +86,22 @@ public:
     void clear_all();
 
     // --- GDScript 公開プロパティ ---
-    int get_cols() const { return cols_; }
-    int get_rows() const { return rows_; }
-    int get_cell_width() const { return cell_w_; }
-    int get_cell_height() const { return cell_h_; }
+    int get_cols() const
+    {
+        return cols_;
+    }
+    int get_rows() const
+    {
+        return rows_;
+    }
+    int get_cell_width() const
+    {
+        return cell_w_;
+    }
+    int get_cell_height() const
+    {
+        return cell_h_;
+    }
 
 protected:
     static void _bind_methods();
@@ -106,11 +118,14 @@ private:
     int cursor_y_{ 0 };
 
     godot::Ref<godot::Font> font_;
-    std::vector<CellData> grid_;   ///< グリッドバッファ (cols × rows)
+    std::vector<CellData> grid_; ///< グリッドバッファ (cols × rows)
     mutable std::mutex grid_mutex_; ///< ゲームスレッド ↔ Godotメインスレッド競合防止
 
     /// グリッド座標 → バッファインデックス
-    int cell_idx(int x, int y) const { return y * cols_ + x; }
+    int cell_idx(int x, int y) const
+    {
+        return y * cols_ + x;
+    }
 
     /// バッファを (cols × rows) でリサイズし空白で初期化する
     void resize_grid();

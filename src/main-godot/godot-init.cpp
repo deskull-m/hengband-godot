@@ -5,17 +5,17 @@
 
 #include "godot-init.h"
 
-#include "main/angband-initializer.h"
 #include "core/game-play.h"
-#include "term/z-term.h"
-#include "term/gameterm.h"
-#include "term/z-util.h"
 #include "io/files-util.h"
-#include "system/system-variables.h"
+#include "main/angband-initializer.h"
 #include "system/player-type-definition.h"
+#include "system/system-variables.h"
+#include "term/gameterm.h"
+#include "term/z-term.h"
+#include "term/z-util.h"
 
-#include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/scene_tree.hpp>
 
 #include <filesystem>
 

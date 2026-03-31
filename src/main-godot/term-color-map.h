@@ -8,8 +8,8 @@
  */
 
 #include "term/term-color-types.h"
-#include <godot_cpp/variant/color.hpp>
 #include <cstdint>
+#include <godot_cpp/variant/color.hpp>
 
 namespace hengband_godot {
 
