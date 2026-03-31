@@ -129,7 +129,7 @@ private:
 
     /// 単一タイルを draw_texture_rect_region で描画する
     void draw_one_tile(int dst_x, int dst_y,
-        uint8_t row, uint8_t col) const;
+        uint8_t row, uint8_t col);
 };
 
 } // namespace hengband_godot

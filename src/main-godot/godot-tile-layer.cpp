@@ -91,7 +91,7 @@ void GodotTileLayer::_draw()
 }
 
 void GodotTileLayer::draw_one_tile(int dst_x, int dst_y,
-    uint8_t row, uint8_t col) const
+    uint8_t row, uint8_t col)
 {
     const Rect2 dst(
         static_cast<float>(dst_x),
@@ -146,7 +146,7 @@ void GodotTileLayer::set_grid_size(int cols, int rows)
     cols_ = cols;
     rows_ = rows;
     resize_grid();
-    queue_redraw();
+    call_deferred("queue_redraw");
 }
 
 void GodotTileLayer::draw_tiles(int x, int y, int n,
@@ -168,7 +168,7 @@ void GodotTileLayer::draw_tiles(int x, int y, int n,
             cell.valid = true;
         }
     }
-    queue_redraw();
+    call_deferred("queue_redraw");
 }
 
 void GodotTileLayer::wipe_tiles(int x, int y, int n)
@@ -179,7 +179,7 @@ void GodotTileLayer::wipe_tiles(int x, int y, int n)
             grid_[cell_idx(x + i, y)].valid = false;
         }
     }
-    queue_redraw();
+    call_deferred("queue_redraw");
 }
 
 void GodotTileLayer::clear_all()
@@ -190,7 +190,7 @@ void GodotTileLayer::clear_all()
             cell.valid = false;
         }
     }
-    queue_redraw();
+    call_deferred("queue_redraw");
 }
 
 void GodotTileLayer::resize_grid()
@@ -201,9 +201,8 @@ void GodotTileLayer::resize_grid()
 
 void GodotTileLayer::_bind_methods()
 {
-    ClassDB::bind_method(D_METHOD("load_tileset",
-        "tileset_path", "mask_path", "cell_w", "cell_h", "tile_w", "tile_h"),
-        &GodotTileLayer::load_tileset);
+    // load_tileset は C++ 側 (HengbandGame) からのみ呼ばれるため bind 不要
+    // (std::string は GDExtension 型システム外)
     ClassDB::bind_method(D_METHOD("set_grid_size", "cols", "rows"),
         &GodotTileLayer::set_grid_size);
     ClassDB::bind_method(D_METHOD("clear_all"),

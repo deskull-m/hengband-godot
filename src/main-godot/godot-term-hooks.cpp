@@ -114,9 +114,18 @@ errr term_xtra_godot(int n, int v)
         return 0;
     }
     case TERM_XTRA_FRESH:
-    case TERM_XTRA_FROSH:
-        // Godot の queue_redraw() で対応済みなので何もしない
+    case TERM_XTRA_FROSH: {
+        // 全ターミナルの再描画をメインスレッドにキュー
+        auto *term = get_terminal(game_term);
+        if (term) {
+            term->call_deferred("queue_redraw");
+        }
+        auto *tiles = get_tile_layer(game_term);
+        if (tiles) {
+            tiles->call_deferred("queue_redraw");
+        }
         return 0;
+    }
     case TERM_XTRA_SHAPE:
         // カーソル表示/非表示 (v=0 で非表示)
         if (v == 0) {
