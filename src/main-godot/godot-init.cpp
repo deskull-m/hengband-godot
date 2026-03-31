@@ -17,23 +17,18 @@
 
 namespace hengband_godot {
 
-void init_godot_game_paths(const std::filesystem::path &exe_path)
+void init_godot_game_paths(const std::filesystem::path &lib_path)
 {
-    // lib/ ディレクトリを実行ファイルの隣に想定
-    // Godot エクスポート時: exe と同階層に lib/ を配置
-    const std::filesystem::path libdir =
-        exe_path.parent_path() / "lib";
-
-    init_file_paths(libdir);
+    init_file_paths(lib_path);
 
     // システム識別子 (プリファレンスファイル選択に使用される)
     ANGBAND_SYS = "godot";
     ANGBAND_KEYBOARD = "JAPAN";
 }
 
-void run_game_thread(const std::filesystem::path &exe_path)
+void run_game_thread(const std::filesystem::path &lib_path)
 {
-    init_godot_game_paths(exe_path);
+    init_godot_game_paths(lib_path);
 
     term_activate(term_screen);
 
