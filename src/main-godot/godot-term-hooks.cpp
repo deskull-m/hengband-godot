@@ -4,12 +4,24 @@
  */
 
 #include "godot-term-hooks.h"
+#include "godot-input-handler.h"
 #include "godot-terminal.h"
 #include "godot-tile-layer.h"
 
 #include "term/z-term.h"
 
+#include <thread>
+#include <chrono>
+
 using namespace hengband_godot;
+
+/// シーン内の GodotInputHandler への参照（HengbandGame が設定する）
+static GodotInputHandler *s_input_handler = nullptr;
+
+void set_input_handler(GodotInputHandler *handler)
+{
+    s_input_handler = handler;
+}
 
 // ---------------------------------------------------------------------------
 // text_hook: テキスト描画
@@ -83,15 +95,28 @@ errr term_xtra_godot(int n, int v)
         }
         return 0;
     case TERM_XTRA_DELAY:
-        // TODO: Phase 4 でスレッドセーフな待機を実装
+        // v = ミリ秒
+        // Phase 4: シングルスレッドのため sleep で実装
+        // Phase 7: ゲームスレッド内での sleep に置き換える
+        if (v > 0) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(v));
+        }
         return 0;
     case TERM_XTRA_EVENT:
+        // v=true: キーが来るまで待機、v=false: ノンブロッキング
+        if (s_input_handler) {
+            if (v) {
+                s_input_handler->wait_for_key(); // Phase 4: 即時リターン
+            } else {
+                s_input_handler->poll_events();
+            }
+        }
+        return 0;
     case TERM_XTRA_FLUSH:
     case TERM_XTRA_BORED:
     case TERM_XTRA_REACT:
     case TERM_XTRA_ALIVE:
     case TERM_XTRA_LEVEL:
-        // TODO: Phase 4・5 で実装
         return 0;
     case TERM_XTRA_SOUND:
     case TERM_XTRA_MUSIC_BASIC:

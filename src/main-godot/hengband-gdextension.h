@@ -9,6 +9,7 @@
 
 #include "godot-terminal.h"
 #include "godot-tile-layer.h"
+#include "godot-input-handler.h"
 #include "godot-term-hooks.h"
 
 #include <godot_cpp/classes/node.hpp>
