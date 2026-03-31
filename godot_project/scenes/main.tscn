@@ -9,6 +9,8 @@ script = ExtResource("1_main")
 
 [node name="InputHandler" type="Node" parent="HengbandGame"]
 
+[node name="AudioManager" type="Node" parent="."]
+
 [node name="GameViewport" type="SubViewportContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15

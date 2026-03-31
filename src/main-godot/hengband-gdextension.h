@@ -7,6 +7,7 @@
  * エントリポイントおよびコアクラス宣言。
  */
 
+#include "godot-audio-manager.h"
 #include "godot-terminal.h"
 #include "godot-tile-layer.h"
 #include "godot-input-handler.h"

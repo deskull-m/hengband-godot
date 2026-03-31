@@ -4,6 +4,7 @@
  */
 
 #include "hengband-gdextension.h"
+#include "godot-audio-manager.h"
 #include "godot-terminal.h"
 #include "godot-tile-layer.h"
 #include "godot-input-handler.h"
@@ -165,6 +166,7 @@ void initialize_hengband_module(ModuleInitializationLevel p_level)
     ClassDB::register_class<GodotTerminal>();
     ClassDB::register_class<GodotTileLayer>();
     ClassDB::register_class<GodotInputHandler>();
+    ClassDB::register_class<GodotAudioManager>();
     ClassDB::register_class<HengbandGame>();
 }
 

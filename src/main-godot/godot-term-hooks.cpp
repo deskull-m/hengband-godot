@@ -4,6 +4,7 @@
  */
 
 #include "godot-term-hooks.h"
+#include "godot-audio-manager.h"
 #include "godot-input-handler.h"
 #include "godot-terminal.h"
 #include "godot-tile-layer.h"
@@ -64,11 +65,9 @@ errr term_curs_godot(int x, int y)
 
 // ---------------------------------------------------------------------------
 // xtra_hook: 拡張アクション
-// Phase 2 では TERM_XTRA_CLEAR のみ実装。他は後続 Phase で実装。
 // ---------------------------------------------------------------------------
 errr term_xtra_godot(int n, int v)
 {
-    (void)v;
     switch (n) {
     case TERM_XTRA_CLEAR: {
         auto *term = get_terminal(game_term);
@@ -119,13 +118,17 @@ errr term_xtra_godot(int n, int v)
     case TERM_XTRA_LEVEL:
         return 0;
     case TERM_XTRA_SOUND:
+        hengband_godot::audio_play_sound(v);
+        return 0;
     case TERM_XTRA_MUSIC_BASIC:
     case TERM_XTRA_MUSIC_DUNGEON:
     case TERM_XTRA_MUSIC_QUEST:
     case TERM_XTRA_MUSIC_TOWN:
     case TERM_XTRA_MUSIC_MONSTER:
+        hengband_godot::audio_play_music(n, v);
+        return 0;
     case TERM_XTRA_MUSIC_MUTE:
-        // TODO: Phase 5 で AudioStreamPlayer を使って実装
+        hengband_godot::audio_stop_music();
         return 0;
     default:
         return 1; // 未サポート
