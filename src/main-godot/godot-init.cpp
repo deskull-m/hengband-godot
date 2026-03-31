@@ -42,7 +42,9 @@ void init_godot_game_paths(const std::filesystem::path &lib_path)
     init_file_paths(lib_path);
 
     // システム識別子 (プリファレンスファイル選択に使用される)
-    ANGBAND_SYS = "godot";
+    // "win" を指定することで pref-win.prf のマクロトリガー定義を読み込む
+    // (Windows スキャンコード形式 ^_[CSA]x[K]sc1sc2\r を使用するため)
+    ANGBAND_SYS = "win";
     ANGBAND_KEYBOARD = "JAPAN";
 
     // quit() が std::exit() を呼ばないよう Godot 用フックを設定

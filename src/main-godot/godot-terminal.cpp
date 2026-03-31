@@ -11,6 +11,8 @@
 #include <godot_cpp/variant/vector2.hpp>
 #include <godot_cpp/classes/font.hpp>
 
+#include <algorithm>
+#include <cmath>
 #include <string>
 #include <cstring>
 
@@ -131,8 +133,11 @@ void GodotTerminal::draw_cell(int x, int y, const CellData &cell)
         static_cast<float>(char_cell_w),
         static_cast<float>(cell_h_)), Color(0, 0, 0));
 
-    // 文字描画 (baseline = py + font_size_)
-    const Vector2 pos(px, py + static_cast<float>(font_size_));
+    // 文字描画 (baseline = py + ascent)
+    const float baseline = font_.is_valid()
+        ? font_->get_ascent(font_size_)
+        : static_cast<float>(font_size_);
+    const Vector2 pos(px, py + baseline);
     font_->draw_char(get_canvas_item(), pos, static_cast<int64_t>(cell.ch), font_size_, fg);
 }
 
@@ -166,6 +171,17 @@ void GodotTerminal::set_terminal_font(const Ref<Font> &font, int font_size)
 {
     font_ = font;
     font_size_ = font_size;
+
+    if (font_.is_valid()) {
+        // 半角ASCII文字の幅を cell_w_ に設定
+        const float char_w = font_->get_char_size('M', font_size_).x;
+        cell_w_ = std::max(1, static_cast<int>(std::round(char_w)));
+        // 行の高さ = ascent + descent
+        const float ascent  = font_->get_ascent(font_size_);
+        const float descent = font_->get_descent(font_size_);
+        cell_h_ = std::max(1, static_cast<int>(std::round(ascent + descent)));
+    }
+
     call_deferred("queue_redraw");
 }
 
@@ -175,12 +191,14 @@ void GodotTerminal::draw_text(int x, int y, int n, uint8_t color, const char *st
         return;
     }
 
-    const auto codepoints = utf8_to_codepoints(str, n);
+    // n はセル数（半角=1、全角=2）。UTF-8文字列を全て変換してからセル数で打ち切る
+    const auto codepoints = utf8_to_codepoints(str, 512);
     {
         std::lock_guard<std::mutex> lock(grid_mutex_);
         int col = x;
+        const int col_end = x + n; // セル上限
         for (const char32_t cp : codepoints) {
-            if (col >= cols_) {
+            if (col >= col_end || col >= cols_) {
                 break;
             }
             auto &cell = grid_[cell_idx(col, y)];
@@ -189,7 +207,7 @@ void GodotTerminal::draw_text(int x, int y, int n, uint8_t color, const char *st
             if (is_fullwidth(cp)) {
                 // 全角文字は2セル占有: 次のセルをプレースホルダにする
                 ++col;
-                if (col < cols_) {
+                if (col < col_end && col < cols_) {
                     auto &cell2 = grid_[cell_idx(col, y)];
                     cell2.ch = 0; // 描画スキップ用プレースホルダ
                     cell2.color = color;
