@@ -120,25 +120,28 @@
 #endif
 
 // Detect consteval, C++20 constexpr extensions and std::is_constant_evaluated.
-#if !defined(__cpp_lib_is_constant_evaluated)
-#  define FMT_USE_CONSTEVAL 0
-#elif FMT_CPLUSPLUS < 201709L
-#  define FMT_USE_CONSTEVAL 0
-#elif FMT_GLIBCXX_RELEASE && FMT_GLIBCXX_RELEASE < 10
-#  define FMT_USE_CONSTEVAL 0
-#elif FMT_LIBCPP_VERSION && FMT_LIBCPP_VERSION < 10000
-#  define FMT_USE_CONSTEVAL 0
-#elif defined(__apple_build_version__) && __apple_build_version__ < 14000029L
-#  define FMT_USE_CONSTEVAL 0  // consteval is broken in Apple clang < 14.
-#elif FMT_MSC_VERSION && FMT_MSC_VERSION < 1929
-#  define FMT_USE_CONSTEVAL 0  // consteval is broken in MSVC VS2019 < 16.10.
-#elif defined(__cpp_consteval)
-#  define FMT_USE_CONSTEVAL 1
-#elif FMT_GCC_VERSION >= 1002 || FMT_CLANG_VERSION >= 1101
-#  define FMT_USE_CONSTEVAL 1
-#else
-#  define FMT_USE_CONSTEVAL 0
-#endif
+// Allow command-line override: -DFMT_USE_CONSTEVAL=0 disables compile-time checking.
+#ifndef FMT_USE_CONSTEVAL
+#  if !defined(__cpp_lib_is_constant_evaluated)
+#    define FMT_USE_CONSTEVAL 0
+#  elif FMT_CPLUSPLUS < 201709L
+#    define FMT_USE_CONSTEVAL 0
+#  elif FMT_GLIBCXX_RELEASE && FMT_GLIBCXX_RELEASE < 10
+#    define FMT_USE_CONSTEVAL 0
+#  elif FMT_LIBCPP_VERSION && FMT_LIBCPP_VERSION < 10000
+#    define FMT_USE_CONSTEVAL 0
+#  elif defined(__apple_build_version__) && __apple_build_version__ < 14000029L
+#    define FMT_USE_CONSTEVAL 0  // consteval is broken in Apple clang < 14.
+#  elif FMT_MSC_VERSION && FMT_MSC_VERSION < 1929
+#    define FMT_USE_CONSTEVAL 0  // consteval is broken in MSVC VS2019 < 16.10.
+#  elif defined(__cpp_consteval)
+#    define FMT_USE_CONSTEVAL 1
+#  elif FMT_GCC_VERSION >= 1002 || FMT_CLANG_VERSION >= 1101
+#    define FMT_USE_CONSTEVAL 1
+#  else
+#    define FMT_USE_CONSTEVAL 0
+#  endif
+#endif  // FMT_USE_CONSTEVAL
 #if FMT_USE_CONSTEVAL
 #  define FMT_CONSTEVAL consteval
 #  define FMT_CONSTEXPR20 constexpr

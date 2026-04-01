@@ -1,0 +1,92 @@
+[gd_scene load_steps=2 format=3 uid="uid://hengband_main"]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+
+[node name="Main" type="Node"]
+script = ExtResource("1_main")
+
+[node name="HengbandGame" type="HengbandGame" parent="."]
+
+[node name="InputHandler" type="GodotInputHandler" parent="HengbandGame"]
+
+[node name="AudioManager" type="GodotAudioManager" parent="."]
+
+[node name="GameViewport" type="SubViewportContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SubViewport" type="SubViewport" parent="GameViewport"]
+size = Vector2i(1280, 800)
+render_target_update_mode = 3
+
+[node name="TerminalContainer" type="Node2D" parent="GameViewport/SubViewport"]
+
+; --- ターミナル0 (メイン) ---
+[node name="TileLayer0" type="GodotTileLayer" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(0, 0)
+z_index = 0
+
+[node name="Terminal0" type="GodotTerminal" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(0, 0)
+z_index = 1
+
+; --- ターミナル1〜7 (サブウィンドウ、初期非表示) ---
+[node name="TileLayer1" type="GodotTileLayer" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(0, 384)
+visible = false
+
+[node name="Terminal1" type="GodotTerminal" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(0, 384)
+visible = false
+
+[node name="TileLayer2" type="GodotTileLayer" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(640, 384)
+visible = false
+
+[node name="Terminal2" type="GodotTerminal" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(640, 384)
+visible = false
+
+[node name="TileLayer3" type="GodotTileLayer" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(0, 576)
+visible = false
+
+[node name="Terminal3" type="GodotTerminal" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(0, 576)
+visible = false
+
+[node name="TileLayer4" type="GodotTileLayer" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(640, 576)
+visible = false
+
+[node name="Terminal4" type="GodotTerminal" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(640, 576)
+visible = false
+
+[node name="TileLayer5" type="GodotTileLayer" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(0, 672)
+visible = false
+
+[node name="Terminal5" type="GodotTerminal" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(0, 672)
+visible = false
+
+[node name="TileLayer6" type="GodotTileLayer" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(640, 672)
+visible = false
+
+[node name="Terminal6" type="GodotTerminal" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(640, 672)
+visible = false
+
+[node name="TileLayer7" type="GodotTileLayer" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(0, 736)
+visible = false
+
+[node name="Terminal7" type="GodotTerminal" parent="GameViewport/SubViewport/TerminalContainer"]
+position = Vector2(0, 736)
+visible = false
