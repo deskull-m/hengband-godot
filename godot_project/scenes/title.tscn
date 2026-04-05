@@ -1,7 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://hengband_title"]
+[gd_scene load_steps=2 format=3 uid="uid://hengband_title"]
 
 [ext_resource type="Script" path="res://scripts/title.gd" id="1_title"]
-[ext_resource type="Texture2D" path="res://assets/hengband_title.png" id="2_title_img"]
 
 [node name="Title" type="Control"]
 layout_mode = 3
@@ -10,15 +9,19 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("1_title")
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="BlackBackground" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("2_title_img")
-stretch_mode = 6
+color = Color(0, 0, 0, 1)
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 0
+expand_mode = 1
+stretch_mode = 5
 
 [node name="ButtonContainer" type="CenterContainer" parent="."]
 layout_mode = 1
