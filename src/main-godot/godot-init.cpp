@@ -51,9 +51,16 @@ void init_godot_game_paths(const std::filesystem::path &lib_path)
     quit_aux = godot_quit_aux;
 }
 
-void run_game_thread(const std::filesystem::path &lib_path)
+void run_game_thread(const std::filesystem::path &lib_path,
+    const std::filesystem::path &save_path)
 {
     init_godot_game_paths(lib_path);
+
+    // セーブファイルパスが指定されていればグローバル変数に設定する
+    if (!save_path.empty()) {
+        savefile = save_path;
+        savefile_base = save_path.filename();
+    }
 
     term_activate(term_screen);
 

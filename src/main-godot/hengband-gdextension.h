@@ -44,11 +44,13 @@ public:
     void _notification(int p_what);
 
     /// ゲームを開始する (Godot Thread を起動して play_game() を呼ぶ)
-    /// @param lib_path lib/ ディレクトリの絶対パス。省略時は実行ファイルの隣を使う。
-    void start_game(const godot::String &lib_path = godot::String());
+    /// @param lib_path  lib/ ディレクトリの絶対パス。省略時は実行ファイルの隣を使う。
+    /// @param save_path セーブファイルのパス。空文字列 = 新規ゲーム。
+    void start_game(const godot::String &lib_path = godot::String(),
+        const godot::String &save_path = godot::String());
 
     /// ゲームスレッド本体 (Callable として Thread に渡す)
-    void _game_thread_func(godot::String exe_path);
+    void _game_thread_func(godot::String lib_path, godot::String save_path);
 
     /// フォントを設定する（GDScript から呼び出す）
     void set_game_font(const godot::Ref<godot::Font> &font, int size);

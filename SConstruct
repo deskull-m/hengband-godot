@@ -76,6 +76,8 @@ if env["platform"] == "windows":
     # /execution-charset は省略 → システムデフォルト (日本語 Windows = CP932) を使用
     #   → z-term の 1バイト/セル・SJIS モデルと一致させるため必須
     hengband_env.Append(CCFLAGS=["/source-charset:utf-8"])
+    # godot-cpp が /std:c++17 を追加するため除去してから /std:c++20 を設定する
+    hengband_env["CXXFLAGS"] = [f for f in hengband_env.get("CXXFLAGS", []) if f not in ("/std:c++17", "/std:c++20")]
     # C++ 例外ハンドラ有効化 (MSVC 既定では無効)
     hengband_env.Append(CXXFLAGS=["/std:c++20", "/EHsc"])
     # timeGetTime (record-play-movie.cpp) と DbgHelp (stack-trace) に必要

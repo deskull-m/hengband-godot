@@ -94,7 +94,7 @@ void HengbandGame::_notification(int p_what)
     }
 }
 
-void HengbandGame::start_game(const String &lib_path)
+void HengbandGame::start_game(const String &lib_path, const String &save_path)
 {
     if (game_thread_.is_valid() && game_thread_->is_started()) {
         return; // 既に起動中
@@ -111,15 +111,16 @@ void HengbandGame::start_game(const String &lib_path)
 
     game_thread_.instantiate();
     game_thread_->start(
-        Callable(this, "_game_thread_func").bind(resolved_lib),
+        Callable(this, "_game_thread_func").bind(resolved_lib, save_path),
         Thread::PRIORITY_NORMAL);
 }
 
 /// ゲームスレッド本体 (Godot Thread から呼ばれる)
-void HengbandGame::_game_thread_func(String lib_path)
+void HengbandGame::_game_thread_func(String lib_path, String save_path)
 {
     const std::filesystem::path lib_fs(lib_path.utf8().get_data());
-    run_game_thread(lib_fs);
+    const std::filesystem::path save_fs(save_path.utf8().get_data());
+    run_game_thread(lib_fs, save_fs);
 }
 
 void HengbandGame::set_game_font(const Ref<Font> &font, int size)
@@ -305,7 +306,7 @@ void HengbandGame::fit_term_to_viewport(const Vector2i &viewport_size)
 
 void HengbandGame::_bind_methods()
 {
-    ClassDB::bind_method(D_METHOD("start_game", "lib_path"), &HengbandGame::start_game);
+    ClassDB::bind_method(D_METHOD("start_game", "lib_path", "save_path"), &HengbandGame::start_game);
     ClassDB::bind_method(D_METHOD("set_game_font", "font", "size"),
         &HengbandGame::set_game_font);
     ClassDB::bind_method(
@@ -327,7 +328,7 @@ void HengbandGame::_bind_methods()
         D_METHOD("fit_term_to_viewport", "viewport_size"),
         &HengbandGame::fit_term_to_viewport);
     ClassDB::bind_method(
-        D_METHOD("_game_thread_func", "exe_path"),
+        D_METHOD("_game_thread_func", "lib_path", "save_path"),
         &HengbandGame::_game_thread_func);
 }
 
