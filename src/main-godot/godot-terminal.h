@@ -15,6 +15,7 @@
 
 #include <cstdint>
 #include <godot_cpp/classes/font.hpp>
+#include <godot_cpp/classes/image_texture.hpp>
 #include <godot_cpp/classes/node2d.hpp>
 #include <godot_cpp/variant/color.hpp>
 #include <godot_cpp/variant/string.hpp>
@@ -118,6 +119,7 @@ private:
     int cursor_y_{ 0 };
 
     godot::Ref<godot::Font> font_;
+    godot::Ref<godot::ImageTexture> wall_texture_; ///< wall.bmp 由来の 8x8 パターンテクスチャ
     std::vector<CellData> grid_; ///< グリッドバッファ (cols × rows)
     mutable std::mutex grid_mutex_; ///< ゲームスレッド ↔ Godotメインスレッド競合防止
 
@@ -129,6 +131,9 @@ private:
 
     /// バッファを (cols × rows) でリサイズし空白で初期化する
     void resize_grid();
+
+    /// wall.bmp パターンから ImageTexture を生成する
+    void create_wall_texture();
 
     void draw_cell(int x, int y, const CellData &cell);
     void draw_cursor_rect(int x, int y);

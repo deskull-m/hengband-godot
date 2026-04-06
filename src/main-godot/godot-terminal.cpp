@@ -7,6 +7,8 @@
 #include "term-color-map.h"
 
 #include <godot_cpp/classes/font.hpp>
+#include <godot_cpp/classes/image.hpp>
+#include <godot_cpp/classes/image_texture.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/rect2.hpp>
 #include <godot_cpp/variant/vector2.hpp>
@@ -68,6 +70,19 @@ static std::vector<char32_t> utf8_to_codepoints(const char *str, int max_chars)
     return result;
 }
 
+// wall.bmp から抽出した 8×8 モノクロパターン（上から下の順、MSB が左端ピクセル）
+// Windows 版では ASCII 127 ('DEL' / 壁文字) の描画にこのパターンブラシが使われる。
+static const uint8_t kWallPattern[8] = {
+    0xAA, // 10101010
+    0x41, // 01000001
+    0x96, // 10010110
+    0x20, // 00100000
+    0xAA, // 10101010
+    0x05, // 00000101
+    0xAA, // 10101010
+    0x44, // 01000100
+};
+
 // --- GodotTerminal 実装 ---
 
 GodotTerminal::GodotTerminal()
@@ -78,6 +93,7 @@ GodotTerminal::GodotTerminal()
 void GodotTerminal::_ready()
 {
     resize_grid();
+    create_wall_texture();
 }
 
 void GodotTerminal::_draw()
@@ -115,6 +131,22 @@ void GodotTerminal::_draw()
     }
 }
 
+void GodotTerminal::create_wall_texture()
+{
+    using namespace godot;
+    Ref<Image> img = Image::create(8, 8, false, Image::FORMAT_RGBA8);
+    for (int row = 0; row < 8; ++row) {
+        for (int col = 0; col < 8; ++col) {
+            // MSB が左端ピクセル (col=0)
+            const bool is_fg = (kWallPattern[row] >> (7 - col)) & 1;
+            // 前景ビット → 白不透明 (描画時に fg カラーで変調)
+            // 背景ビット → 完全透明 (黒背景が透けて見える)
+            img->set_pixel(col, row, is_fg ? Color(1, 1, 1, 1) : Color(0, 0, 0, 0));
+        }
+    }
+    wall_texture_ = ImageTexture::create_from_image(img);
+}
+
 void GodotTerminal::draw_cell(int x, int y, const CellData &cell)
 {
     if (cell.ch == U' ' || cell.ch == 0) {
@@ -127,12 +159,21 @@ void GodotTerminal::draw_cell(int x, int y, const CellData &cell)
 
     const float px = static_cast<float>(x * cell_w_);
     const float py = static_cast<float>(y * cell_h_);
+    const Rect2 cell_rect(px, py,
+        static_cast<float>(char_cell_w),
+        static_cast<float>(cell_h_));
 
     // セル背景を黒で塗る
-    draw_rect(Rect2(px, py,
-                  static_cast<float>(char_cell_w),
-                  static_cast<float>(cell_h_)),
-        Color(0, 0, 0));
+    draw_rect(cell_rect, Color(0, 0, 0));
+
+    // ASCII 127 (DEL) = Windows 版の wall.bmp パターンブラシ相当
+    // 壁・暗闇タイルの描画に使用される
+    if (cell.ch == 0x7F) {
+        if (wall_texture_.is_valid()) {
+            draw_texture_rect(wall_texture_, cell_rect, true, fg);
+        }
+        return;
+    }
 
     // 文字描画 (baseline = py + ascent)
     const float baseline = font_.is_valid()
