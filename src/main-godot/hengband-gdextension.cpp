@@ -10,6 +10,7 @@
 #include "godot-term-hooks.h"
 #include "godot-terminal.h"
 #include "godot-tile-layer.h"
+#include "save-file-scanner.h"
 
 #include "term/gameterm.h"
 #include "term/z-term.h"
@@ -18,11 +19,78 @@
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
+#include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/callable.hpp>
+#include <godot_cpp/variant/dictionary.hpp>
+#include <godot_cpp/variant/string.hpp>
 
 #include <algorithm>
 #include <filesystem>
 #include <string>
+
+#ifdef _WIN32
+#include <windows.h>
+
+/// UTF-8 std::string → Windows UTF-16 wstring
+static std::wstring utf8_to_wstring(const std::string &utf8)
+{
+    if (utf8.empty()) {
+        return {};
+    }
+    const int wlen = ::MultiByteToWideChar(
+        CP_UTF8, 0, utf8.c_str(), -1, nullptr, 0);
+    if (wlen <= 1) {
+        return {};
+    }
+    std::wstring result(wlen - 1, L'\0');
+    ::MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), -1, result.data(), wlen);
+    return result;
+}
+
+/// Windows UTF-16 wstring → UTF-8 std::string
+static std::string wstring_to_utf8(const std::wstring &wstr)
+{
+    if (wstr.empty()) {
+        return {};
+    }
+    const int len = ::WideCharToMultiByte(
+        CP_UTF8, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
+    if (len <= 1) {
+        return {};
+    }
+    std::string result(len - 1, '\0');
+    ::WideCharToMultiByte(
+        CP_UTF8, 0, wstr.c_str(), -1, result.data(), len, nullptr, nullptr);
+    return result;
+}
+
+/// Godot String (UTF-8) → std::filesystem::path (Windows では wstring 経由)
+static std::filesystem::path godot_string_to_path(const godot::String &s)
+{
+    const std::string utf8 = s.utf8().get_data();
+    if (utf8.empty()) {
+        return {};
+    }
+    return std::filesystem::path(utf8_to_wstring(utf8));
+}
+
+/// std::filesystem::path → Godot String
+/// Windows: wchar_t* コンストラクタが UTF-16 として正しく処理される
+static godot::String path_to_godot_string(const std::filesystem::path &p)
+{
+    return godot::String(p.wstring().c_str());
+}
+#else
+static std::filesystem::path godot_string_to_path(const godot::String &s)
+{
+    return std::filesystem::path(s.utf8().get_data());
+}
+static godot::String path_to_godot_string(const std::filesystem::path &p)
+{
+    const auto u8 = p.u8string();
+    return godot::String::utf8(reinterpret_cast<const char *>(u8.c_str()));
+}
+#endif
 
 using namespace godot;
 using namespace hengband_godot;
@@ -118,8 +186,8 @@ void HengbandGame::start_game(const String &lib_path, const String &save_path)
 /// ゲームスレッド本体 (Godot Thread から呼ばれる)
 void HengbandGame::_game_thread_func(String lib_path, String save_path)
 {
-    const std::filesystem::path lib_fs(lib_path.utf8().get_data());
-    const std::filesystem::path save_fs(save_path.utf8().get_data());
+    const auto lib_fs = godot_string_to_path(lib_path);
+    const auto save_fs = godot_string_to_path(save_path);
     run_game_thread(lib_fs, save_fs);
 }
 
@@ -304,6 +372,30 @@ void HengbandGame::fit_term_to_viewport(const Vector2i &viewport_size)
     set_sub_window_size(0, cols, rows);
 }
 
+Array HengbandGame::scan_save_files(const String &lib_path)
+{
+    const auto lib_fs = godot_string_to_path(lib_path);
+    const auto save_dir = lib_fs / "save";
+
+    const auto summaries = hengband_godot::scan_save_files(save_dir);
+
+    Array result;
+    result.resize(static_cast<int>(summaries.size()));
+    for (int i = 0; i < static_cast<int>(summaries.size()); ++i) {
+        const auto &s = summaries[i];
+
+        Dictionary d;
+        d["path"] = path_to_godot_string(s.path); // wstring → Godot String
+        d["name"] = String::utf8(s.char_name.c_str()); // UTF-8 → Godot String
+        d["level"] = s.level;
+        d["prace"] = s.prace;
+        d["pclass"] = s.pclass;
+        d["ppersonality"] = s.ppersonality;
+        result[i] = d;
+    }
+    return result;
+}
+
 void HengbandGame::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("start_game", "lib_path", "save_path"), &HengbandGame::start_game);
@@ -327,6 +419,9 @@ void HengbandGame::_bind_methods()
     ClassDB::bind_method(
         D_METHOD("fit_term_to_viewport", "viewport_size"),
         &HengbandGame::fit_term_to_viewport);
+    ClassDB::bind_method(
+        D_METHOD("scan_save_files", "lib_path"),
+        &HengbandGame::scan_save_files);
     ClassDB::bind_method(
         D_METHOD("_game_thread_func", "lib_path", "save_path"),
         &HengbandGame::_game_thread_func);
