@@ -66,11 +66,12 @@ func _fit_main_term() -> void:
 	sub_vp.size = win_size
 	game.fit_term_to_viewport(win_size)
 
-## SystemFont を生成してゲームに適用する
+## SystemFont を生成してゲームに適用し、セルサイズ変化に合わせてグリッドを再フィットする
 func _apply_font(game: Node) -> void:
 	var font := SystemFont.new()
 	font.font_names = [GameState.font_name, "Courier New", "Monospace"]
 	game.set_game_font(font, GameState.font_size)
+	_fit_main_term()
 
 ## コンフィグ UI の初期化とシグナル接続
 func _setup_config_ui() -> void:
@@ -89,10 +90,12 @@ func _setup_config_ui() -> void:
 	if idx < 0:
 		idx = FONT_PRESETS.size() - 1
 	option.selected = idx
-	_on_font_preset_changed(idx)
+	_sync_font_edit_from_preset(idx)
 
 	$ConfigLayer/GearButton.pressed.connect(_on_gear_pressed)
-	option.item_selected.connect(_on_font_preset_changed)
+	option.item_selected.connect(_on_font_preset_selected)
+	font_edit.text_changed.connect(_on_font_name_changed)
+	spin.value_changed.connect(_on_font_size_changed)
 	$ConfigLayer/ConfigPanel/PanelVBox/ButtonRow/ApplyButton.pressed.connect(_on_apply_config)
 	$ConfigLayer/ConfigPanel/PanelVBox/ButtonRow/CloseButton.pressed.connect(_on_close_config)
 
@@ -100,8 +103,13 @@ func _on_gear_pressed() -> void:
 	var panel: Panel = $ConfigLayer/ConfigPanel
 	panel.visible = not panel.visible
 
-## プリセット選択時: プリセット名を FontNameEdit に反映し、カスタム以外は編集不可にする
-func _on_font_preset_changed(idx: int) -> void:
+## プリセット選択時: FontNameEdit に反映してリアルタイム適用
+func _on_font_preset_selected(idx: int) -> void:
+	_sync_font_edit_from_preset(idx)
+	_apply_config_live()
+
+## カスタム以外はプリセット名を FontNameEdit に設定して読み取り専用にする
+func _sync_font_edit_from_preset(idx: int) -> void:
 	var font_edit: LineEdit = $ConfigLayer/ConfigPanel/PanelVBox/FontNameRow/FontNameEdit
 	if idx < FONT_PRESETS.size() - 1:
 		font_edit.text = FONT_PRESETS[idx]
@@ -109,14 +117,26 @@ func _on_font_preset_changed(idx: int) -> void:
 	else:
 		font_edit.editable = true
 
-## 設定を適用して保存し、パネルを閉じる
-func _on_apply_config() -> void:
+## フォント名を直接編集したときにリアルタイム適用
+func _on_font_name_changed(_text: String) -> void:
+	_apply_config_live()
+
+## フォントサイズを変更したときにリアルタイム適用
+func _on_font_size_changed(_value: float) -> void:
+	_apply_config_live()
+
+## UI の現在値を GameState に反映してフォントを即時適用する（保存はしない）
+func _apply_config_live() -> void:
 	var font_edit: LineEdit = $ConfigLayer/ConfigPanel/PanelVBox/FontNameRow/FontNameEdit
 	var spin: SpinBox = $ConfigLayer/ConfigPanel/PanelVBox/FontSizeRow/FontSizeSpinBox
 	GameState.font_name = font_edit.text
 	GameState.font_size = int(spin.value)
-	GameState.save_config()
 	_apply_font($HengbandGame)
+
+## 設定を保存してパネルを閉じる
+func _on_apply_config() -> void:
+	_apply_config_live()
+	GameState.save_config()
 	$ConfigLayer/ConfigPanel.visible = false
 
 func _on_close_config() -> void:
