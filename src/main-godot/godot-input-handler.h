@@ -53,6 +53,9 @@ public:
     /// ゲームスレッド停止時に wait_for_key() のブロックを解除する
     void request_stop();
 
+    /// 任意のキーコードをキューに直接注入する（GDScript / 外部から呼び出す）
+    void inject_key(int k);
+
 protected:
     static void _bind_methods();
 

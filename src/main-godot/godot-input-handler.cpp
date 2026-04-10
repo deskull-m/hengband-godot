@@ -275,9 +275,15 @@ void GodotInputHandler::request_stop()
     key_cv_.notify_all();
 }
 
+void GodotInputHandler::inject_key(int k)
+{
+    push_key(k);
+}
+
 void GodotInputHandler::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("wait_for_key"), &GodotInputHandler::wait_for_key);
     ClassDB::bind_method(D_METHOD("poll_events"), &GodotInputHandler::poll_events);
     ClassDB::bind_method(D_METHOD("request_stop"), &GodotInputHandler::request_stop);
+    ClassDB::bind_method(D_METHOD("inject_key", "key_code"), &GodotInputHandler::inject_key);
 }

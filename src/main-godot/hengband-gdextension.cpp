@@ -151,8 +151,14 @@ void HengbandGame::_process(double delta)
 
 void HengbandGame::_notification(int p_what)
 {
-    if (p_what == NOTIFICATION_WM_CLOSE_REQUEST) {
-        // InputHandler のブロック待機を解除してスレッドを終了
+    // WM_CLOSE_REQUEST ではゲームスレッドを強制停止しない。
+    // main.gd 側がキューに Ctrl+X を注入して Hengband にセーブ＆終了させ、
+    // godot_quit_aux が tree->quit() を呼ぶことで自然終了する。
+
+    if (p_what == NOTIFICATION_EXIT_TREE) {
+        // ノードがシーンツリーから取り除かれる直前にスレッドを安全に終了させる。
+        // 通常は godot_quit_aux → tree->quit() の流れでゲームスレッドが
+        // 既に終了しているため、ここでは即座に返る。
         if (input_handler_) {
             input_handler_->request_stop();
         }
@@ -160,6 +166,11 @@ void HengbandGame::_notification(int p_what)
             game_thread_->wait_to_finish();
         }
     }
+}
+
+bool HengbandGame::is_game_started() const
+{
+    return game_thread_.is_valid() && game_thread_->is_started();
 }
 
 void HengbandGame::start_game(const String &lib_path, const String &save_path)
@@ -422,6 +433,7 @@ void HengbandGame::_bind_methods()
     ClassDB::bind_method(
         D_METHOD("scan_save_files", "lib_path"),
         &HengbandGame::scan_save_files);
+    ClassDB::bind_method(D_METHOD("is_game_started"), &HengbandGame::is_game_started);
     ClassDB::bind_method(
         D_METHOD("_game_thread_func", "lib_path", "save_path"),
         &HengbandGame::_game_thread_func);

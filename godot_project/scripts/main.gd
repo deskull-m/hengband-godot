@@ -20,6 +20,9 @@ const FONT_PRESETS: Array[String] = [
 ]
 
 func _ready() -> void:
+	# ウィンドウ × ボタンを自前で処理するため自動終了を無効化する
+	get_tree().set_auto_accept_quit(false)
+
 	GameState.load_config()
 
 	var game := $HengbandGame
@@ -47,7 +50,20 @@ func _ready() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
-		get_tree().quit()
+		var game := $HengbandGame
+		if game and game.is_game_started():
+			# ゲームが起動中 → セーブ＆終了をキューに注入する。
+			# ESC×2 で現在の画面から抜け、Ctrl+X で終了ダイアログを開き、
+			# 'y' で確定する。
+			var ih := $HengbandGame/InputHandler
+			ih.inject_key(0x1B)  # ESC
+			ih.inject_key(0x1B)  # ESC
+			ih.inject_key(0x18)  # Ctrl+X (Save & Quit)
+			ih.inject_key(0x79)  # 'y' (確認)
+			# 実際の終了は Hengband の godot_quit_aux が tree->quit() を呼ぶことで行われる
+		else:
+			# ゲーム未起動（タイトル画面など）はそのまま終了
+			get_tree().quit()
 
 func _on_viewport_size_changed() -> void:
 	_fit_main_term()
