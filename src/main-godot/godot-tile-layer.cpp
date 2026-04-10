@@ -79,27 +79,34 @@ void GodotTileLayer::_draw()
         snap_rows = rows_;
     }
 
+    // bigtile モード時は描画先幅を2倍にする (Windows版 tw2 *= 2 相当)
+    const int draw_w = bigtile_ ? tile_w_ * 2 : tile_w_;
+
     for (int y = 0; y < snap_rows; ++y) {
         for (int x = 0; x < snap_cols; ++x) {
             const auto &cell = snapshot[y * snap_cols + x];
             if (!cell.valid) {
                 continue;
             }
-            draw_one_tile(x * tile_w_, y * tile_h_, cell.bg_row, cell.bg_col);
+            // AF_BIGTILE2 (0xf0) は右半分ダミーセル — 描画スキップ
+            if ((cell.fg_row & 0xF0) == 0xF0) {
+                continue;
+            }
+            draw_one_tile(x * tile_w_, y * tile_h_, cell.bg_row, cell.bg_col, draw_w);
             if (cell.fg_row != cell.bg_row || cell.fg_col != cell.bg_col) {
-                draw_one_tile(x * tile_w_, y * tile_h_, cell.fg_row, cell.fg_col);
+                draw_one_tile(x * tile_w_, y * tile_h_, cell.fg_row, cell.fg_col, draw_w);
             }
         }
     }
 }
 
 void GodotTileLayer::draw_one_tile(int dst_x, int dst_y,
-    uint8_t row, uint8_t col)
+    uint8_t row, uint8_t col, int dst_w)
 {
     const Rect2 dst(
         static_cast<float>(dst_x),
         static_cast<float>(dst_y),
-        static_cast<float>(tile_w_),
+        static_cast<float>(dst_w),
         static_cast<float>(tile_h_));
 
     const Rect2 src(
@@ -148,6 +155,12 @@ void GodotTileLayer::set_tile_size(int tw, int th)
 {
     tile_w_ = tw;
     tile_h_ = th;
+    call_deferred("queue_redraw");
+}
+
+void GodotTileLayer::set_bigtile(bool enabled)
+{
+    bigtile_ = enabled;
     call_deferred("queue_redraw");
 }
 

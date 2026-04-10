@@ -102,6 +102,9 @@ public:
     /// タイルの描画先サイズを更新する（フォント変更時に呼ぶ）
     void set_tile_size(int tw, int th);
 
+    /// 2倍幅タイルモードを設定する（use_bigtile に対応）
+    void set_bigtile(bool enabled);
+
     bool is_tileset_loaded() const
     {
         return texture_.is_valid();
@@ -123,8 +126,9 @@ private:
     int rows_{ 24 };
     int cell_w_{ 32 }; ///< ソース上のタイル幅
     int cell_h_{ 32 }; ///< ソース上のタイル高さ
-    int tile_w_{ 32 }; ///< 描画先タイル幅
+    int tile_w_{ 32 }; ///< 描画先タイル幅（1倍時）
     int tile_h_{ 32 }; ///< 描画先タイル高さ
+    bool bigtile_{ false }; ///< 2倍幅モード (use_bigtile)
 
     godot::Ref<godot::ImageTexture> texture_; ///< マスク合成済みのタイルセットテクスチャ
 
@@ -144,7 +148,7 @@ private:
 
     /// 単一タイルを draw_texture_rect_region で描画する
     void draw_one_tile(int dst_x, int dst_y,
-        uint8_t row, uint8_t col);
+        uint8_t row, uint8_t col, int dst_w);
 };
 
 } // namespace hengband_godot
