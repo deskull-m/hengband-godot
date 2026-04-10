@@ -12,6 +12,9 @@
 #include "godot-tile-layer.h"
 #include "save-file-scanner.h"
 
+#include "game-option/special-options.h"
+#include "system/system-variables.h"
+
 #include "term/gameterm.h"
 #include "term/z-term.h"
 
@@ -212,6 +215,30 @@ void HengbandGame::set_game_font(const Ref<Font> &font, int size)
             td.terminal->set_terminal_font(font_, font_size_);
         }
     }
+
+    // タイルモードが有効な場合、フォント変更後のセルサイズをタイルレイヤーに反映する
+    auto *tiles = term_data_[0].tile_layer;
+    auto *term0 = term_data_[0].terminal;
+    if (use_graphics && tiles && term0) {
+        const int tw = term0->get_cell_width();
+        const int th = term0->get_cell_height();
+        if (tw > 0 && th > 0) {
+            tiles->set_tile_size(tw, th);
+        }
+    }
+}
+
+void HengbandGame::set_tile_rendering_enabled(bool enabled)
+{
+    auto &td0 = term_data_[0];
+    if (td0.tile_layer) {
+        if (!enabled) {
+            td0.tile_layer->clear_all();
+        }
+        td0.tile_layer->set_visible(enabled);
+    }
+    // use_graphics / ANGBAND_GRAF / higher_pict / reset_visuals を一括設定
+    apply_tile_mode(enabled);
 }
 
 bool HengbandGame::load_tileset(const String &tileset_path,
@@ -224,14 +251,20 @@ bool HengbandGame::load_tileset(const String &tileset_path,
     if (!tiles) {
         return false;
     }
+    // 描画先サイズはフォントが決定するターミナルのセルサイズに合わせる
+    const auto *term = term_data_[0].terminal;
+    const int tile_w = (term && term->get_cell_width() > 0) ? term->get_cell_width() : cell_w;
+    const int tile_h = (term && term->get_cell_height() > 0) ? term->get_cell_height() : cell_h;
+
     const bool ok = tiles->load_tileset(
         tileset_path.utf8().get_data(),
         mask_path.utf8().get_data(),
-        cell_w, cell_h, cell_w, cell_h);
+        cell_w, cell_h, tile_w, tile_h);
 
     if (ok) {
-        // pict_hook を有効化
-        term_data_[0].t.higher_pict = true;
+        tiles->set_visible(true);
+        // use_graphics / ANGBAND_GRAF / higher_pict / reset_visuals を一括設定
+        apply_tile_mode(true);
     }
     return ok;
 }
@@ -433,6 +466,9 @@ void HengbandGame::_bind_methods()
     ClassDB::bind_method(
         D_METHOD("scan_save_files", "lib_path"),
         &HengbandGame::scan_save_files);
+    ClassDB::bind_method(
+        D_METHOD("set_tile_rendering_enabled", "enabled"),
+        &HengbandGame::set_tile_rendering_enabled);
     ClassDB::bind_method(D_METHOD("is_game_started"), &HengbandGame::is_game_started);
     ClassDB::bind_method(
         D_METHOD("_game_thread_func", "lib_path", "save_path"),

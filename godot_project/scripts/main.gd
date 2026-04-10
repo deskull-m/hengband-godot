@@ -19,6 +19,9 @@ const FONT_PRESETS: Array[String] = [
 	"カスタム",
 ]
 
+## 解決済み lib/ パス（タイル読み込みなどで再利用する）
+var _lib_path: String = ""
+
 func _ready() -> void:
 	# ウィンドウ × ボタンを自前で処理するため自動終了を無効化する
 	get_tree().set_auto_accept_quit(false)
@@ -40,13 +43,16 @@ func _ready() -> void:
 	_setup_config_ui()
 
 	# lib_path が未設定の場合はプロジェクトディレクトリの隣の lib/ を使う
-	var lib_path := game_lib_path
-	if lib_path.is_empty():
-		lib_path = ProjectSettings.globalize_path("res://../lib")
+	_lib_path = game_lib_path
+	if _lib_path.is_empty():
+		_lib_path = ProjectSettings.globalize_path("res://../lib")
 
-	print("Hengband: lib_path = ", lib_path)
+	print("Hengband: lib_path = ", _lib_path)
 	print("Hengband: save_path = ", GameState.save_path)
-	game.start_game(lib_path, GameState.save_path)
+	game.start_game(_lib_path, GameState.save_path)
+
+	# 起動時にタイル設定を適用する
+	_apply_tiles(game)
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
@@ -89,6 +95,20 @@ func _apply_font(game: Node) -> void:
 	game.set_game_font(font, GameState.font_size)
 	_fit_main_term()
 
+## タイル設定を適用する。失敗時は use_tiles を false に戻してチェックボックスを更新する
+func _apply_tiles(game: Node) -> void:
+	if GameState.use_tiles:
+		var tileset := _lib_path + "/xtra/graf/8x8.bmp"
+		var mask := _lib_path + "/xtra/graf/8x8a.bmp"
+		var ok: bool = game.load_tileset(tileset, mask, 8, 8)
+		if not ok:
+			push_warning("タイルセットの読み込みに失敗しました: " + tileset)
+			GameState.use_tiles = false
+			var tile_check: CheckBox = $ConfigLayer/ConfigPanel/PanelVBox/TileRow/TileCheck
+			tile_check.set_pressed_no_signal(false)
+	else:
+		game.set_tile_rendering_enabled(false)
+
 ## コンフィグ UI の初期化とシグナル接続
 func _setup_config_ui() -> void:
 	var option: OptionButton = $ConfigLayer/ConfigPanel/PanelVBox/FontRow/FontOption
@@ -101,6 +121,9 @@ func _setup_config_ui() -> void:
 	var spin: SpinBox = $ConfigLayer/ConfigPanel/PanelVBox/FontSizeRow/FontSizeSpinBox
 	spin.value = GameState.font_size
 
+	var tile_check: CheckBox = $ConfigLayer/ConfigPanel/PanelVBox/TileRow/TileCheck
+	tile_check.button_pressed = GameState.use_tiles
+
 	# 現在のフォント名にマッチするプリセットを選択（なければ "カスタム"）
 	var idx := FONT_PRESETS.find(GameState.font_name)
 	if idx < 0:
@@ -112,6 +135,7 @@ func _setup_config_ui() -> void:
 	option.item_selected.connect(_on_font_preset_selected)
 	font_edit.text_changed.connect(_on_font_name_changed)
 	spin.value_changed.connect(_on_font_size_changed)
+	tile_check.toggled.connect(_on_tile_check_toggled)
 	$ConfigLayer/ConfigPanel/PanelVBox/ButtonRow/ApplyButton.pressed.connect(_on_apply_config)
 	$ConfigLayer/ConfigPanel/PanelVBox/ButtonRow/CloseButton.pressed.connect(_on_close_config)
 
@@ -140,6 +164,15 @@ func _on_font_name_changed(_text: String) -> void:
 ## フォントサイズを変更したときにリアルタイム適用
 func _on_font_size_changed(_value: float) -> void:
 	_apply_config_live()
+
+## タイル表示チェックボックスが変化したときにリアルタイム適用
+func _on_tile_check_toggled(toggled: bool) -> void:
+	GameState.use_tiles = toggled
+	_apply_tiles($HengbandGame)
+	# Ctrl+R (do_cmd_redraw) を注入して TERM_XTRA_REACT → reset_visuals をトリガーする
+	# apply_tile_mode() はフラグ設定のみなので、実際の prf 再ロードはここで起動する
+	if $HengbandGame.is_game_started():
+		$HengbandGame/InputHandler.inject_key(0x12)  # Ctrl+R: 画面再描画
 
 ## UI の現在値を GameState に反映してフォントを即時適用する（保存はしない）
 func _apply_config_live() -> void:

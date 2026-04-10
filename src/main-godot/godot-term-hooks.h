@@ -47,6 +47,13 @@ void set_input_handler(hengband_godot::GodotInputHandler *handler);
 /// term_data_godot 配列をグローバル参照として登録する (TERM_XTRA_REACT 用)
 void set_term_data_array(term_data_godot *arr, int count);
 
+/// タイル描画の有効/無効を切り替える
+/// use_graphics / ANGBAND_GRAF / higher_pict を一括設定し、
+/// ゲームスレッドが起動済みであれば reset_visuals() を呼び出す。
+/// @param enabled  true = タイルモード、false = テキストモード
+/// @param graf_name  "old"(8x8) / "new"(16x16) / "ne2"(32x32) / "ascii"
+void apply_tile_mode(bool enabled, const char *graf_name = "old");
+
 /// resize_hook: ターミナルサイズ変更時のコールバック
 void term_resize_hook_godot();
 

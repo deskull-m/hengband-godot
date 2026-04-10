@@ -9,9 +9,15 @@
 #include "godot-terminal.h"
 #include "godot-tile-layer.h"
 
+#include "core/visuals-reseter.h"
+#include "game-option/special-options.h"
 #include "locale/japanese.h"
+#include "system/player-type-definition.h"
+#include "system/system-variables.h"
+#include "term/gameterm.h"
 #include "term/z-term.h"
 
+#include <atomic>
 #include <chrono>
 #include <thread>
 
@@ -22,6 +28,10 @@ static GodotInputHandler *s_input_handler = nullptr;
 /// term_data_godot 配列への参照（TERM_XTRA_REACT / resize_hook 用）
 static term_data_godot *s_term_data = nullptr;
 static int s_term_count = 0;
+
+/// Godot スレッドからタイルモードが変更されたことをゲームスレッドに伝えるフラグ
+/// apply_tile_mode() がセット → TERM_XTRA_REACT がクリアして reset_visuals() を呼ぶ
+static std::atomic<bool> s_graphics_mode_changed{ false };
 
 void set_input_handler(GodotInputHandler *handler)
 {
@@ -169,7 +179,13 @@ errr term_xtra_godot(int n, int v)
     case TERM_XTRA_LEVEL:
         return 0;
     case TERM_XTRA_REACT:
-        // カラーテーブル更新 + 全ターミナルのサイズ同期
+        // Windows 版 term_xtra_win_react() 相当:
+        //   1. タイルモードが変化していれば prf ファイルを再ロード (reset_visuals)
+        //      ※ このケースは必ずゲームスレッドから呼ばれるので安全
+        //   2. 全ターミナルのサイズ同期
+        if (s_graphics_mode_changed.exchange(false) && p_ptr) {
+            reset_visuals(p_ptr);
+        }
         if (s_term_data) {
             for (int i = 0; i < s_term_count; ++i) {
                 auto &td = s_term_data[i];
@@ -218,6 +234,14 @@ errr term_pict_godot(TERM_LEN x, TERM_LEN y, int n,
         // タイルセット未ロード時はテキスト消去で代替
         return term_wipe_godot(x, y, n);
     }
+
+    // タイルを描画する位置のテキスト層セルを空白にする。
+    // GodotTerminal は空白セルを描画スキップするため、タイル層が透けて見える。
+    auto *term = get_terminal(game_term);
+    if (term) {
+        term->wipe_cells(x, y, n);
+    }
+
     tiles->draw_tiles(x, y, n,
         reinterpret_cast<const uint8_t *>(ap), cp,
         reinterpret_cast<const uint8_t *>(tap), tcp);
@@ -237,4 +261,25 @@ void term_nuke_godot(term_type *t)
 {
     // GodotTerminal はシーンのライフサイクルで管理されるため何もしない
     (void)t;
+}
+
+// ---------------------------------------------------------------------------
+// タイルモード切り替えユーティリティ
+// ---------------------------------------------------------------------------
+
+void apply_tile_mode(bool enabled, const char *graf_name)
+{
+    // フラグ類の設定は Godot メインスレッドから呼ばれても安全な単純代入のみ行う。
+    // reset_visuals() の呼び出しはゲームスレッドで TERM_XTRA_REACT が処理する。
+
+    use_graphics = enabled;
+    ANGBAND_GRAF = enabled ? graf_name : "ascii";
+
+    // term_screen の higher_pict フラグを更新する
+    if (term_screen) {
+        term_screen->higher_pict = enabled;
+    }
+
+    // ゲームスレッドへの通知: 次の TERM_XTRA_REACT で reset_visuals() を呼ばせる
+    s_graphics_mode_changed.store(true);
 }
