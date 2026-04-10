@@ -90,3 +90,113 @@ visible = false
 [node name="Terminal7" type="GodotTerminal" parent="GameViewport/SubViewport/TerminalContainer"]
 position = Vector2(0, 736)
 visible = false
+
+; --- コンフィグ UI (ゲーム画面上に常時表示) ---
+[node name="ConfigLayer" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="GearButton" type="Button" parent="ConfigLayer"]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -52.0
+offset_top = -52.0
+offset_right = -4.0
+offset_bottom = -4.0
+grow_horizontal = 0
+grow_vertical = 0
+text = "⚙"
+tooltip_text = "設定"
+
+[node name="ConfigPanel" type="Panel" parent="ConfigLayer"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -135.0
+offset_right = 200.0
+offset_bottom = 135.0
+grow_horizontal = 2
+grow_vertical = 2
+visible = false
+
+[node name="PanelVBox" type="VBoxContainer" parent="ConfigLayer/ConfigPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = -12.0
+theme_override_constants/separation = 10
+
+[node name="TitleLabel" type="Label" parent="ConfigLayer/ConfigPanel/PanelVBox"]
+layout_mode = 2
+text = "設定"
+horizontal_alignment = 1
+
+[node name="HSep" type="HSeparator" parent="ConfigLayer/ConfigPanel/PanelVBox"]
+layout_mode = 2
+
+[node name="FontRow" type="HBoxContainer" parent="ConfigLayer/ConfigPanel/PanelVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="FontLabel" type="Label" parent="ConfigLayer/ConfigPanel/PanelVBox/FontRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+size_flags_horizontal = 0
+text = "フォント"
+
+[node name="FontOption" type="OptionButton" parent="ConfigLayer/ConfigPanel/PanelVBox/FontRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="FontNameRow" type="HBoxContainer" parent="ConfigLayer/ConfigPanel/PanelVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="FontNameLabel" type="Label" parent="ConfigLayer/ConfigPanel/PanelVBox/FontNameRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+size_flags_horizontal = 0
+text = "フォント名"
+
+[node name="FontNameEdit" type="LineEdit" parent="ConfigLayer/ConfigPanel/PanelVBox/FontNameRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="FontSizeRow" type="HBoxContainer" parent="ConfigLayer/ConfigPanel/PanelVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="FontSizeLabel" type="Label" parent="ConfigLayer/ConfigPanel/PanelVBox/FontSizeRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+size_flags_horizontal = 0
+text = "サイズ"
+
+[node name="FontSizeSpinBox" type="SpinBox" parent="ConfigLayer/ConfigPanel/PanelVBox/FontSizeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 8.0
+max_value = 48.0
+step = 1.0
+value = 16.0
+
+[node name="ButtonRow" type="HBoxContainer" parent="ConfigLayer/ConfigPanel/PanelVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ApplyButton" type="Button" parent="ConfigLayer/ConfigPanel/PanelVBox/ButtonRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "適用"
+
+[node name="CloseButton" type="Button" parent="ConfigLayer/ConfigPanel/PanelVBox/ButtonRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "閉じる"
