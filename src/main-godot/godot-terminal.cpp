@@ -112,13 +112,10 @@ void GodotTerminal::_draw()
         snap_rows = rows_;
     }
 
-    // 背景を黒で塗りつぶす
-    const Rect2 bg_rect(0, 0,
-        static_cast<float>(snap_cols * cell_w_),
-        static_cast<float>(snap_rows * cell_h_));
-    draw_rect(bg_rect, Color(0, 0, 0));
-
     // 全セルを描画
+    // NOTE: 全面黒塗りは行わない。タイルモード時は TileLayer0 (z_index=0) が
+    // 背面に描画され、空白セル(U' ')は透過して見えるようにする。
+    // 非タイルモード時は SubViewport 背景色(黒)が代わりに見える。
     for (int y = 0; y < snap_rows; ++y) {
         for (int x = 0; x < snap_cols; ++x) {
             draw_cell(x, y, snapshot[y * snap_cols + x]);

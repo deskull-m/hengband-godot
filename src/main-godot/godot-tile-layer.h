@@ -99,6 +99,9 @@ public:
     /// 全クリア
     void clear_all();
 
+    /// タイルの描画先サイズを更新する（フォント変更時に呼ぶ）
+    void set_tile_size(int tw, int th);
+
     bool is_tileset_loaded() const
     {
         return texture_.is_valid();

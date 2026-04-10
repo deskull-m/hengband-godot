@@ -12,12 +12,16 @@ var font_name: String = "MS Gothic"
 ## フォントサイズ (pt)
 var font_size: int = 16
 
+## タイル表示を使用するかどうか
+var use_tiles: bool = false
+
 const _CONFIG_PATH := "user://hengband_config.cfg"
 
 func save_config() -> void:
 	var cfg := ConfigFile.new()
 	cfg.set_value("display", "font_name", font_name)
 	cfg.set_value("display", "font_size", font_size)
+	cfg.set_value("display", "use_tiles", use_tiles)
 	cfg.save(_CONFIG_PATH)
 
 func load_config() -> void:
@@ -26,3 +30,4 @@ func load_config() -> void:
 		return
 	font_name = cfg.get_value("display", "font_name", font_name)
 	font_size = cfg.get_value("display", "font_size", font_size)
+	use_tiles = cfg.get_value("display", "use_tiles", use_tiles)

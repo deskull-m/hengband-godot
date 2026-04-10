@@ -72,6 +72,10 @@ public:
     /// @param viewport_size ビューポートのピクセルサイズ (SubViewport のサイズと同値にして呼ぶこと)
     void fit_term_to_viewport(const godot::Vector2i &viewport_size);
 
+    /// タイル描画を有効/無効にする
+    /// enabled=false のときは TileLayer0 を非表示にして higher_pict を下げる
+    void set_tile_rendering_enabled(bool enabled);
+
     /// ゲームスレッドが起動済みかどうかを返す（WM_CLOSE_REQUEST 判定用）
     bool is_game_started() const;
 

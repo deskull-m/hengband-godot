@@ -57,6 +57,9 @@ Ref<Image> GodotTileLayer::apply_mask(Ref<Image> src, Ref<Image> mask)
 
 void GodotTileLayer::_ready()
 {
+    // ピクセルアートタイルにバイリニア補間がかかると色が薄く・グレー混じりになるため
+    // ニアレストネイバーフィルタを使用する
+    set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
     resize_grid();
 }
 
@@ -139,6 +142,13 @@ bool GodotTileLayer::load_tileset(const std::string &tileset_path,
 
     texture_ = ImageTexture::create_from_image(img);
     return texture_.is_valid();
+}
+
+void GodotTileLayer::set_tile_size(int tw, int th)
+{
+    tile_w_ = tw;
+    tile_h_ = th;
+    call_deferred("queue_redraw");
 }
 
 void GodotTileLayer::set_grid_size(int cols, int rows)
