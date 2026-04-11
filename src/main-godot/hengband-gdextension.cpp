@@ -228,6 +228,15 @@ void HengbandGame::set_game_font(const Ref<Font> &font, int size)
     }
 }
 
+void HengbandGame::set_bigtile_enabled(bool enabled)
+{
+    auto *tiles = term_data_[0].tile_layer;
+    if (tiles) {
+        tiles->set_bigtile(enabled);
+    }
+    apply_bigtile_mode(enabled);
+}
+
 void HengbandGame::set_tile_rendering_enabled(bool enabled)
 {
     auto &td0 = term_data_[0];
@@ -469,6 +478,9 @@ void HengbandGame::_bind_methods()
     ClassDB::bind_method(
         D_METHOD("set_tile_rendering_enabled", "enabled"),
         &HengbandGame::set_tile_rendering_enabled);
+    ClassDB::bind_method(
+        D_METHOD("set_bigtile_enabled", "enabled"),
+        &HengbandGame::set_bigtile_enabled);
     ClassDB::bind_method(D_METHOD("is_game_started"), &HengbandGame::is_game_started);
     ClassDB::bind_method(
         D_METHOD("_game_thread_func", "lib_path", "save_path"),

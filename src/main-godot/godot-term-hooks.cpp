@@ -10,12 +10,16 @@
 #include "godot-tile-layer.h"
 
 #include "core/visuals-reseter.h"
+#include "game-option/runtime-arguments.h"
 #include "game-option/special-options.h"
 #include "locale/japanese.h"
+#include "system/floor/floor-info.h"
 #include "system/player-type-definition.h"
 #include "system/system-variables.h"
+#include "target/target-checker.h"
 #include "term/gameterm.h"
 #include "term/z-term.h"
+#include "window/main-window-util.h"
 
 #include <atomic>
 #include <chrono>
@@ -32,6 +36,10 @@ static int s_term_count = 0;
 /// Godot スレッドからタイルモードが変更されたことをゲームスレッドに伝えるフラグ
 /// apply_tile_mode() がセット → TERM_XTRA_REACT がクリアして reset_visuals() を呼ぶ
 static std::atomic<bool> s_graphics_mode_changed{ false };
+
+/// ビッグタイルの ON/OFF が変化したことをゲームスレッドに伝えるフラグ
+/// apply_bigtile_mode() がセット → TERM_XTRA_REACT がクリアして resize_map() を呼ぶ
+static std::atomic<bool> s_bigtile_mode_changed{ false };
 
 void set_input_handler(GodotInputHandler *handler)
 {
@@ -186,6 +194,17 @@ errr term_xtra_godot(int n, int v)
         if (s_graphics_mode_changed.exchange(false) && p_ptr) {
             reset_visuals(p_ptr);
         }
+        // ビッグタイル変更時: パネル境界のみ再計算し、スクロール幅を補正する。
+        // resize_map() は内部で term_redraw() を呼ぶため、
+        // do_cmd_redraw 内から TERM_XTRA_REACT に来た場合に二重クリアが起きる。
+        // そのため verify_panel() だけ呼び、描画は do_cmd_redraw 本体に任せる。
+        if (s_bigtile_mode_changed.exchange(false) && p_ptr) {
+            panel_row_max = 0;
+            panel_col_max = 0;
+            panel_row_min = p_ptr->current_floor_ptr->height;
+            panel_col_min = p_ptr->current_floor_ptr->width;
+            verify_panel(p_ptr);
+        }
         if (s_term_data) {
             for (int i = 0; i < s_term_count; ++i) {
                 auto &td = s_term_data[i];
@@ -266,6 +285,15 @@ void term_nuke_godot(term_type *t)
 // ---------------------------------------------------------------------------
 // タイルモード切り替えユーティリティ
 // ---------------------------------------------------------------------------
+
+void apply_bigtile_mode(bool enabled)
+{
+    arg_bigtile = enabled;
+    use_bigtile = enabled;
+    // ゲームスレッドに panel_col_max の再計算を依頼する
+    s_bigtile_mode_changed.store(true);
+    s_graphics_mode_changed.store(true);
+}
 
 void apply_tile_mode(bool enabled, const char *graf_name)
 {

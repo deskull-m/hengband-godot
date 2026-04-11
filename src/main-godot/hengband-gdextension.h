@@ -72,6 +72,9 @@ public:
     /// @param viewport_size ビューポートのピクセルサイズ (SubViewport のサイズと同値にして呼ぶこと)
     void fit_term_to_viewport(const godot::Vector2i &viewport_size);
 
+    /// 2倍幅タイルモードを有効/無効にする（use_bigtile 相当）
+    void set_bigtile_enabled(bool enabled);
+
     /// タイル描画を有効/無効にする
     /// enabled=false のときは TileLayer0 を非表示にして higher_pict を下げる
     void set_tile_rendering_enabled(bool enabled);

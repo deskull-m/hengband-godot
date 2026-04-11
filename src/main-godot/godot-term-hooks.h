@@ -47,6 +47,10 @@ void set_input_handler(hengband_godot::GodotInputHandler *handler);
 /// term_data_godot 配列をグローバル参照として登録する (TERM_XTRA_REACT 用)
 void set_term_data_array(term_data_godot *arr, int count);
 
+/// 2倍幅タイルモードを切り替える
+/// arg_bigtile を設定し term_resize() で use_bigtile と同期させる
+void apply_bigtile_mode(bool enabled);
+
 /// タイル描画の有効/無効を切り替える
 /// use_graphics / ANGBAND_GRAF / higher_pict を一括設定し、
 /// ゲームスレッドが起動済みであれば reset_visuals() を呼び出す。

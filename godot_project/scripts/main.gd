@@ -106,8 +106,11 @@ func _apply_tiles(game: Node) -> void:
 			GameState.use_tiles = false
 			var tile_check: CheckBox = $ConfigLayer/ConfigPanel/PanelVBox/TileRow/TileCheck
 			tile_check.set_pressed_no_signal(false)
+		else:
+			game.set_bigtile_enabled(GameState.use_bigtile)
 	else:
 		game.set_tile_rendering_enabled(false)
+		game.set_bigtile_enabled(false)
 
 ## コンフィグ UI の初期化とシグナル接続
 func _setup_config_ui() -> void:
@@ -124,6 +127,10 @@ func _setup_config_ui() -> void:
 	var tile_check: CheckBox = $ConfigLayer/ConfigPanel/PanelVBox/TileRow/TileCheck
 	tile_check.button_pressed = GameState.use_tiles
 
+	var bigtile_check: CheckBox = $ConfigLayer/ConfigPanel/PanelVBox/BigtileRow/BigtileCheck
+	bigtile_check.button_pressed = GameState.use_bigtile
+	bigtile_check.disabled = not GameState.use_tiles
+
 	# 現在のフォント名にマッチするプリセットを選択（なければ "カスタム"）
 	var idx := FONT_PRESETS.find(GameState.font_name)
 	if idx < 0:
@@ -136,6 +143,7 @@ func _setup_config_ui() -> void:
 	font_edit.text_changed.connect(_on_font_name_changed)
 	spin.value_changed.connect(_on_font_size_changed)
 	tile_check.toggled.connect(_on_tile_check_toggled)
+	bigtile_check.toggled.connect(_on_bigtile_check_toggled)
 	$ConfigLayer/ConfigPanel/PanelVBox/ButtonRow/ApplyButton.pressed.connect(_on_apply_config)
 	$ConfigLayer/ConfigPanel/PanelVBox/ButtonRow/CloseButton.pressed.connect(_on_close_config)
 
@@ -168,11 +176,19 @@ func _on_font_size_changed(_value: float) -> void:
 ## タイル表示チェックボックスが変化したときにリアルタイム適用
 func _on_tile_check_toggled(toggled: bool) -> void:
 	GameState.use_tiles = toggled
+	# タイル無効時はビッグタイルも無効化してチェックボックスを grayout
+	var bigtile_check: CheckBox = $ConfigLayer/ConfigPanel/PanelVBox/BigtileRow/BigtileCheck
+	bigtile_check.disabled = not toggled
 	_apply_tiles($HengbandGame)
 	# Ctrl+R (do_cmd_redraw) を注入して TERM_XTRA_REACT → reset_visuals をトリガーする
-	# apply_tile_mode() はフラグ設定のみなので、実際の prf 再ロードはここで起動する
 	if $HengbandGame.is_game_started():
 		$HengbandGame/InputHandler.inject_key(0x12)  # Ctrl+R: 画面再描画
+
+func _on_bigtile_check_toggled(toggled: bool) -> void:
+	GameState.use_bigtile = toggled
+	$HengbandGame.set_bigtile_enabled(toggled)
+	if $HengbandGame.is_game_started():
+		$HengbandGame/InputHandler.inject_key(0x12)  # Ctrl+R: 再描画で bigtile 反映
 
 ## UI の現在値を GameState に反映してフォントを即時適用する（保存はしない）
 func _apply_config_live() -> void:

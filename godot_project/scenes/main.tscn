@@ -116,9 +116,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -200.0
-offset_top = -160.0
+offset_top = -185.0
 offset_right = 200.0
-offset_bottom = 160.0
+offset_bottom = 185.0
 grow_horizontal = 2
 grow_vertical = 2
 visible = false
@@ -202,6 +202,21 @@ text = "タイル"
 layout_mode = 2
 size_flags_horizontal = 3
 text = "8×8.bmp を使用する"
+
+[node name="BigtileRow" type="HBoxContainer" parent="ConfigLayer/ConfigPanel/PanelVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BigtileLabel" type="Label" parent="ConfigLayer/ConfigPanel/PanelVBox/BigtileRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+size_flags_horizontal = 0
+text = "ビッグタイル"
+
+[node name="BigtileCheck" type="CheckBox" parent="ConfigLayer/ConfigPanel/PanelVBox/BigtileRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "2倍幅で表示する"
 
 [node name="ButtonRow" type="HBoxContainer" parent="ConfigLayer/ConfigPanel/PanelVBox"]
 layout_mode = 2
