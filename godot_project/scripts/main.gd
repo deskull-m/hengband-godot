@@ -19,6 +19,9 @@ const FONT_PRESETS: Array[String] = [
 	"カスタム",
 ]
 
+## タイルモード選択肢: インデックスが GameState.tile_mode に対応
+const TILE_ITEMS: Array[String] = ["なし", "8×8.bmp", "16×16.bmp"]
+
 ## 解決済み lib/ パス（タイル読み込みなどで再利用する）
 var _lib_path: String = ""
 
@@ -95,28 +98,45 @@ func _apply_font(game: Node) -> void:
 	game.set_game_font(font, GameState.font_size)
 	_fit_main_term()
 
-## タイル設定を適用する。失敗時は use_tiles を false に戻してチェックボックスを更新する
+## タイル設定を適用する。失敗時は tile_mode を 0 に戻して UI を更新する
 func _apply_tiles(game: Node) -> void:
-	if GameState.use_tiles:
-		var tileset := _lib_path + "/xtra/graf/8x8.bmp"
-		var mask := _lib_path + "/xtra/graf/8x8a.bmp"
-		var ok: bool = game.load_tileset(tileset, mask, 8, 8)
-		if not ok:
-			push_warning("タイルセットの読み込みに失敗しました: " + tileset)
-			GameState.use_tiles = false
-			var tile_check: CheckBox = $ConfigLayer/ConfigPanel/PanelVBox/TileRow/TileCheck
-			tile_check.set_pressed_no_signal(false)
-		else:
-			game.set_bigtile_enabled(GameState.use_bigtile)
-	else:
-		game.set_tile_rendering_enabled(false)
-		game.set_bigtile_enabled(false)
+	match GameState.tile_mode:
+		1:
+			var tileset := _lib_path + "/xtra/graf/8x8.bmp"
+			var mask := _lib_path + "/xtra/graf/8x8a.bmp"
+			var ok: bool = game.load_tileset(tileset, mask, 8, 8, "old")
+			if not ok:
+				push_warning("タイルセットの読み込みに失敗しました: " + tileset)
+				GameState.tile_mode = 0
+				_sync_tile_ui()
+			else:
+				game.set_bigtile_enabled(GameState.use_bigtile)
+		2:
+			var tileset := _lib_path + "/xtra/graf/16x16.bmp"
+			var mask := _lib_path + "/xtra/graf/mask.bmp"
+			var ok: bool = game.load_tileset(tileset, mask, 16, 16, "new")
+			if not ok:
+				push_warning("タイルセットの読み込みに失敗しました: " + tileset)
+				GameState.tile_mode = 0
+				_sync_tile_ui()
+			else:
+				game.set_bigtile_enabled(GameState.use_bigtile)
+		_:
+			game.set_tile_rendering_enabled(false)
+			game.set_bigtile_enabled(false)
+
+## TileOption と BigtileCheck を GameState.tile_mode に同期する
+func _sync_tile_ui() -> void:
+	var tile_option: OptionButton = $ConfigLayer/ConfigPanel/PanelVBox/TileRow/TileOption
+	tile_option.select(GameState.tile_mode)
+	var bigtile_check: CheckBox = $ConfigLayer/ConfigPanel/PanelVBox/BigtileRow/BigtileCheck
+	bigtile_check.disabled = (GameState.tile_mode == 0)
 
 ## コンフィグ UI の初期化とシグナル接続
 func _setup_config_ui() -> void:
-	var option: OptionButton = $ConfigLayer/ConfigPanel/PanelVBox/FontRow/FontOption
+	var font_option: OptionButton = $ConfigLayer/ConfigPanel/PanelVBox/FontRow/FontOption
 	for preset in FONT_PRESETS:
-		option.add_item(preset)
+		font_option.add_item(preset)
 
 	var font_edit: LineEdit = $ConfigLayer/ConfigPanel/PanelVBox/FontNameRow/FontNameEdit
 	font_edit.text = GameState.font_name
@@ -124,25 +144,27 @@ func _setup_config_ui() -> void:
 	var spin: SpinBox = $ConfigLayer/ConfigPanel/PanelVBox/FontSizeRow/FontSizeSpinBox
 	spin.value = GameState.font_size
 
-	var tile_check: CheckBox = $ConfigLayer/ConfigPanel/PanelVBox/TileRow/TileCheck
-	tile_check.button_pressed = GameState.use_tiles
+	var tile_option: OptionButton = $ConfigLayer/ConfigPanel/PanelVBox/TileRow/TileOption
+	for item in TILE_ITEMS:
+		tile_option.add_item(item)
+	tile_option.selected = GameState.tile_mode
 
 	var bigtile_check: CheckBox = $ConfigLayer/ConfigPanel/PanelVBox/BigtileRow/BigtileCheck
 	bigtile_check.button_pressed = GameState.use_bigtile
-	bigtile_check.disabled = not GameState.use_tiles
+	bigtile_check.disabled = (GameState.tile_mode == 0)
 
 	# 現在のフォント名にマッチするプリセットを選択（なければ "カスタム"）
 	var idx := FONT_PRESETS.find(GameState.font_name)
 	if idx < 0:
 		idx = FONT_PRESETS.size() - 1
-	option.selected = idx
+	font_option.selected = idx
 	_sync_font_edit_from_preset(idx)
 
 	$ConfigLayer/GearButton.pressed.connect(_on_gear_pressed)
-	option.item_selected.connect(_on_font_preset_selected)
+	font_option.item_selected.connect(_on_font_preset_selected)
 	font_edit.text_changed.connect(_on_font_name_changed)
 	spin.value_changed.connect(_on_font_size_changed)
-	tile_check.toggled.connect(_on_tile_check_toggled)
+	tile_option.item_selected.connect(_on_tile_option_selected)
 	bigtile_check.toggled.connect(_on_bigtile_check_toggled)
 	$ConfigLayer/ConfigPanel/PanelVBox/ButtonRow/ApplyButton.pressed.connect(_on_apply_config)
 	$ConfigLayer/ConfigPanel/PanelVBox/ButtonRow/CloseButton.pressed.connect(_on_close_config)
@@ -173,14 +195,12 @@ func _on_font_name_changed(_text: String) -> void:
 func _on_font_size_changed(_value: float) -> void:
 	_apply_config_live()
 
-## タイル表示チェックボックスが変化したときにリアルタイム適用
-func _on_tile_check_toggled(toggled: bool) -> void:
-	GameState.use_tiles = toggled
-	# タイル無効時はビッグタイルも無効化してチェックボックスを grayout
+## タイル選択ドロップダウンが変化したときにリアルタイム適用
+func _on_tile_option_selected(idx: int) -> void:
+	GameState.tile_mode = idx
 	var bigtile_check: CheckBox = $ConfigLayer/ConfigPanel/PanelVBox/BigtileRow/BigtileCheck
-	bigtile_check.disabled = not toggled
+	bigtile_check.disabled = (idx == 0)
 	_apply_tiles($HengbandGame)
-	# Ctrl+R (do_cmd_redraw) を注入して TERM_XTRA_REACT → reset_visuals をトリガーする
 	if $HengbandGame.is_game_started():
 		$HengbandGame/InputHandler.inject_key(0x12)  # Ctrl+R: 画面再描画
 

@@ -12,8 +12,8 @@ var font_name: String = "MS Gothic"
 ## フォントサイズ (pt)
 var font_size: int = 16
 
-## タイル表示を使用するかどうか
-var use_tiles: bool = false
+## タイル表示モード: 0=なし / 1=8×8 / 2=16×16
+var tile_mode: int = 0
 
 ## タイルを2倍幅で表示するかどうか
 var use_bigtile: bool = false
@@ -24,7 +24,7 @@ func save_config() -> void:
 	var cfg := ConfigFile.new()
 	cfg.set_value("display", "font_name", font_name)
 	cfg.set_value("display", "font_size", font_size)
-	cfg.set_value("display", "use_tiles", use_tiles)
+	cfg.set_value("display", "tile_mode", tile_mode)
 	cfg.set_value("display", "use_bigtile", use_bigtile)
 	cfg.save(_CONFIG_PATH)
 
@@ -34,5 +34,7 @@ func load_config() -> void:
 		return
 	font_name = cfg.get_value("display", "font_name", font_name)
 	font_size = cfg.get_value("display", "font_size", font_size)
-	use_tiles = cfg.get_value("display", "use_tiles", use_tiles)
+	# 旧設定 use_tiles (bool) からの移行
+	var old_use_tiles: bool = cfg.get_value("display", "use_tiles", false)
+	tile_mode = cfg.get_value("display", "tile_mode", 1 if old_use_tiles else 0)
 	use_bigtile = cfg.get_value("display", "use_bigtile", use_bigtile)
