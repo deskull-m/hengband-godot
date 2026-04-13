@@ -198,10 +198,9 @@ custom_minimum_size = Vector2(80, 0)
 size_flags_horizontal = 0
 text = "タイル"
 
-[node name="TileCheck" type="CheckBox" parent="ConfigLayer/ConfigPanel/PanelVBox/TileRow"]
+[node name="TileOption" type="OptionButton" parent="ConfigLayer/ConfigPanel/PanelVBox/TileRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "8×8.bmp を使用する"
 
 [node name="BigtileRow" type="HBoxContainer" parent="ConfigLayer/ConfigPanel/PanelVBox"]
 layout_mode = 2

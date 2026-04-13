@@ -107,9 +107,11 @@ private:
     int font_size_{ 14 };
 
     /// タイルセットを読み込む（GDScript から呼び出す）
+    /// @param graf_name  ANGBAND_GRAF に設定する値 ("old" / "new" / "ne2")
     bool load_tileset(const godot::String &tileset_path,
         const godot::String &mask_path,
-        int cell_w, int cell_h);
+        int cell_w, int cell_h,
+        const godot::String &graf_name = godot::String());
 
     /// ターミナルを初期化して term_type フックを設定する
     void setup_terminal(int idx, GodotTerminal *term,

@@ -193,6 +193,9 @@ void GodotTerminal::draw_cursor_rect(int x, int y)
 
 void GodotTerminal::set_grid_size(int cols, int rows)
 {
+    if (cols == cols_ && rows == rows_) {
+        return;
+    }
     cols_ = cols;
     rows_ = rows;
     resize_grid();

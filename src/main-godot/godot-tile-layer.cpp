@@ -166,6 +166,9 @@ void GodotTileLayer::set_bigtile(bool enabled)
 
 void GodotTileLayer::set_grid_size(int cols, int rows)
 {
+    if (cols == cols_ && rows == rows_) {
+        return;
+    }
     cols_ = cols;
     rows_ = rows;
     resize_grid();

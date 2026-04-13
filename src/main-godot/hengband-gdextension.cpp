@@ -252,7 +252,8 @@ void HengbandGame::set_tile_rendering_enabled(bool enabled)
 
 bool HengbandGame::load_tileset(const String &tileset_path,
     const String &mask_path,
-    int cell_w, int cell_h)
+    int cell_w, int cell_h,
+    const String &graf_name)
 {
     // メインターミナルの TileLayer にタイルセットを読み込む
     // tile_w / tile_h はフォントサイズに合わせる（cell_w と同じ値でよい）
@@ -271,9 +272,14 @@ bool HengbandGame::load_tileset(const String &tileset_path,
         cell_w, cell_h, tile_w, tile_h);
 
     if (ok) {
+        // 旧タイルセットの描画バッファを先にクリアする。
+        // テクスチャ差し替え後に古い座標データで queue_redraw が走ると
+        // 旧座標 × 新テクスチャで黒く描画されてしまうため。
+        tiles->clear_all();
         tiles->set_visible(true);
-        // use_graphics / ANGBAND_GRAF / higher_pict / reset_visuals を一括設定
-        apply_tile_mode(true);
+        // graf_name 未指定の場合は "old" (8x8) をデフォルトとする
+        const char *gname = graf_name.is_empty() ? "old" : graf_name.utf8().get_data();
+        apply_tile_mode(true, gname);
     }
     return ok;
 }
@@ -455,7 +461,7 @@ void HengbandGame::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_game_font", "font", "size"),
         &HengbandGame::set_game_font);
     ClassDB::bind_method(
-        D_METHOD("load_tileset", "tileset_path", "mask_path", "cell_w", "cell_h"),
+        D_METHOD("load_tileset", "tileset_path", "mask_path", "cell_w", "cell_h", "graf_name"),
         &HengbandGame::load_tileset);
     ClassDB::bind_method(
         D_METHOD("set_sub_window_visible", "idx", "visible"),
