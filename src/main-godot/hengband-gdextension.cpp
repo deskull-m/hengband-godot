@@ -277,9 +277,11 @@ bool HengbandGame::load_tileset(const String &tileset_path,
         // 旧座標 × 新テクスチャで黒く描画されてしまうため。
         tiles->clear_all();
         tiles->set_visible(true);
-        // graf_name 未指定の場合は "old" (8x8) をデフォルトとする
-        const char *gname = graf_name.is_empty() ? "old" : graf_name.utf8().get_data();
-        apply_tile_mode(true, gname);
+        // graf_name 未指定の場合は "old" (8x8) をデフォルトとする。
+        // utf8().get_data() は一時 CharString を指すため、std::string に格納して
+        // 呼び出し中はポインタが有効であることを保証する。
+        const std::string gname = graf_name.is_empty() ? "old" : graf_name.utf8().get_data();
+        apply_tile_mode(true, gname.c_str());
     }
     return ok;
 }
