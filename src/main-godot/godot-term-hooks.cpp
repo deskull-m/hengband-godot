@@ -301,7 +301,17 @@ void apply_tile_mode(bool enabled, const char *graf_name)
     // reset_visuals() の呼び出しはゲームスレッドで TERM_XTRA_REACT が処理する。
 
     use_graphics = enabled;
-    ANGBAND_GRAF = enabled ? graf_name : "ascii";
+    // graf_name が一時バッファを指している場合に備えて、
+    // ANGBAND_GRAF には必ず静的な文字列リテラルを代入する。
+    if (!enabled) {
+        ANGBAND_GRAF = "ascii";
+    } else if (strcmp(graf_name, "new") == 0) {
+        ANGBAND_GRAF = "new";
+    } else if (strcmp(graf_name, "ne2") == 0) {
+        ANGBAND_GRAF = "ne2";
+    } else {
+        ANGBAND_GRAF = "old"; // "old" またはデフォルト
+    }
 
     // term_screen の higher_pict フラグを更新する
     if (term_screen) {
