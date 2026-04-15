@@ -22,6 +22,9 @@ const FONT_PRESETS: Array[String] = [
 ## タイルモード選択肢: インデックスが GameState.tile_mode に対応
 const TILE_ITEMS: Array[String] = ["なし", "8×8.bmp", "16×16.bmp"]
 
+## 下部ツールバーの高さ (px) — main.tscn の GameViewport offset_bottom と合わせること
+const BOTTOM_BAR_HEIGHT: int = 45
+
 ## 解決済み lib/ パス（タイル読み込みなどで再利用する）
 var _lib_path: String = ""
 
@@ -78,6 +81,7 @@ func _on_viewport_size_changed() -> void:
 	_fit_main_term()
 
 ## SubViewport をウィンドウサイズに合わせ、ターミナルグリッドを最大化する
+## 下部ツールバー分 (BOTTOM_BAR_HEIGHT px) を除いた領域を使用する
 func _fit_main_term() -> void:
 	var game := $HengbandGame
 	var sub_vp: SubViewport = $GameViewport/SubViewport
@@ -88,8 +92,10 @@ func _fit_main_term() -> void:
 	if win_size.x <= 0 or win_size.y <= 0:
 		return
 
-	sub_vp.size = win_size
-	game.fit_term_to_viewport(win_size)
+	# ツールバー分を差し引いたサイズでゲーム領域を確定する
+	var game_size := Vector2i(win_size.x, win_size.y - BOTTOM_BAR_HEIGHT)
+	sub_vp.size = game_size
+	game.fit_term_to_viewport(game_size)
 
 ## SystemFont を生成してゲームに適用し、セルサイズ変化に合わせてグリッドを再フィットする
 func _apply_font(game: Node) -> void:
@@ -160,7 +166,7 @@ func _setup_config_ui() -> void:
 	font_option.selected = idx
 	_sync_font_edit_from_preset(idx)
 
-	$ConfigLayer/GearButton.pressed.connect(_on_gear_pressed)
+	$ConfigLayer/BottomBar/GearButton.pressed.connect(_on_gear_pressed)
 	font_option.item_selected.connect(_on_font_preset_selected)
 	font_edit.text_changed.connect(_on_font_name_changed)
 	spin.value_changed.connect(_on_font_size_changed)
