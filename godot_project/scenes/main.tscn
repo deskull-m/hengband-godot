@@ -1,6 +1,71 @@
-[gd_scene load_steps=2 format=3 uid="uid://hengband_main"]
+[gd_scene load_steps=7 format=3 uid="uid://hengband_main"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+
+; --- コンフィグパネル背景: 暗めの赤みがかったグレー + 白縁 ---
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.2, 0.1, 0.1, 0.93)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+
+; --- ボタン通常状態 ---
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_normal"]
+bg_color = Color(0.28, 0.15, 0.15, 1.0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.85)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+; --- ボタンホバー状態 ---
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_hover"]
+bg_color = Color(0.4, 0.22, 0.22, 1.0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+; --- ボタン押下状態 ---
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_pressed"]
+bg_color = Color(0.15, 0.07, 0.07, 1.0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.7)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+; --- 下部ツールバー背景: 上端のみ白線 ---
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar"]
+bg_color = Color(0.16, 0.07, 0.07, 0.95)
+border_width_left = 0
+border_width_top = 1
+border_width_right = 0
+border_width_bottom = 0
+border_color = Color(1, 1, 1, 0.6)
 
 [node name="Main" type="Node"]
 script = ExtResource("1_main")
@@ -16,6 +81,7 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_bottom = -45.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -96,17 +162,32 @@ visible = false
 [node name="ConfigLayer" type="CanvasLayer" parent="."]
 layer = 10
 
-[node name="GearButton" type="Button" parent="ConfigLayer"]
-anchor_left = 1.0
+; --- 下部ツールバー (画面下端 45px) ---
+[node name="BottomBar" type="Panel" parent="ConfigLayer"]
+anchor_left = 0.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -52.0
-offset_top = -52.0
+offset_top = -45.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_bar")
+
+[node name="GearButton" type="Button" parent="ConfigLayer/BottomBar"]
+anchor_left = 1.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -45.0
+offset_top = 4.0
 offset_right = -4.0
 offset_bottom = -4.0
 grow_horizontal = 0
-grow_vertical = 0
+grow_vertical = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "⚙"
 tooltip_text = "設定"
 
@@ -122,6 +203,7 @@ offset_bottom = 185.0
 grow_horizontal = 2
 grow_vertical = 2
 visible = false
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
 [node name="PanelVBox" type="VBoxContainer" parent="ConfigLayer/ConfigPanel"]
 layout_mode = 1
@@ -224,9 +306,15 @@ theme_override_constants/separation = 8
 [node name="ApplyButton" type="Button" parent="ConfigLayer/ConfigPanel/PanelVBox/ButtonRow"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "適用"
 
 [node name="CloseButton" type="Button" parent="ConfigLayer/ConfigPanel/PanelVBox/ButtonRow"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "閉じる"
