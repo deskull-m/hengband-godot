@@ -80,6 +80,27 @@ func _notification(what: int) -> void:
 func _on_viewport_size_changed() -> void:
 	_fit_main_term()
 
+## マウスホイールでフォントサイズを拡大縮小する
+func _input(event: InputEvent) -> void:
+	if not (event is InputEventMouseButton) or not event.pressed:
+		return
+	var delta := 0
+	if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+		delta = 1
+	elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+		delta = -1
+	else:
+		return
+	var new_size := clampi(GameState.font_size + delta, 8, 48)
+	if new_size == GameState.font_size:
+		return
+	GameState.font_size = new_size
+	# SpinBox の値をホイール操作に追従させる
+	var spin: SpinBox = $ConfigLayer/ConfigPanel/PanelVBox/FontSizeRow/FontSizeSpinBox
+	spin.value = new_size
+	_apply_font($HengbandGame)
+	get_viewport().set_input_as_handled()
+
 ## SubViewport をウィンドウサイズに合わせ、ターミナルグリッドを最大化する
 ## 下部ツールバー分 (BOTTOM_BAR_HEIGHT px) を除いた領域を使用する
 func _fit_main_term() -> void:
