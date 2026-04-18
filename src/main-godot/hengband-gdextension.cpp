@@ -104,36 +104,12 @@ using namespace hengband_godot;
 
 void HengbandGame::_ready()
 {
-    // TerminalContainer 以下から Terminal0〜7 と TileLayer0〜7 を探して設定
-    // シーン構造: HengbandGame の兄弟 GameViewport/SubViewport/TerminalContainer
-    Node *container = get_node_or_null(NodePath("../GameViewport/SubViewport/TerminalContainer"));
-    if (!container) {
-        return;
-    }
-
+    // 全ターミナルをプレースホルダとして事前初期化する。
+    // angband_terms[0..7] が有効なポインタを持つようにしつつ、
+    // terminal/tile_layer は nullptr のままにしておく。
+    // 実際のノードは GDScript から register_terminal() で登録される。
     for (int i = 0; i < HENGBAND_TERM_COUNT; ++i) {
-        const std::string term_name = "Terminal" + std::to_string(i);
-        const std::string tile_name = "TileLayer" + std::to_string(i);
-
-        auto *term = Object::cast_to<GodotTerminal>(
-            container->get_node_or_null(NodePath(term_name.c_str())));
-        auto *tiles = Object::cast_to<GodotTileLayer>(
-            container->get_node_or_null(NodePath(tile_name.c_str())));
-
-        // サブウィンドウのルートノード(Terminal側)を記録
-        sub_window_roots_[i] = term;
-
-        if (term) {
-            setup_terminal(i, term, tiles, 80, 24);
-            if (font_.is_valid()) {
-                term->set_terminal_font(font_, font_size_);
-            }
-        }
-    }
-
-    // game_term をメインターミナルに設定
-    if (term_data_[0].terminal) {
-        term_activate(&term_data_[0].t);
+        setup_terminal(i, nullptr, nullptr, 80, 24);
     }
 
     // InputHandler を取得して TERM_XTRA_EVENT に登録
@@ -295,7 +271,9 @@ void HengbandGame::setup_terminal(int idx, GodotTerminal *term,
     td.cols = cols;
     td.rows = rows;
 
-    term->set_grid_size(cols, rows);
+    if (term) {
+        term->set_grid_size(cols, rows);
+    }
     if (tiles) {
         tiles->set_grid_size(cols, rows);
     }
@@ -336,6 +314,50 @@ void HengbandGame::set_sub_window_visible(int idx, bool visible)
     }
 }
 
+void HengbandGame::register_terminal(int idx, Object *term_obj, Object *tile_obj)
+{
+    if (idx < 0 || idx >= HENGBAND_TERM_COUNT) {
+        return;
+    }
+    auto *term = Object::cast_to<GodotTerminal>(term_obj);
+    auto *tiles = Object::cast_to<GodotTileLayer>(tile_obj);
+    if (!term) {
+        return;
+    }
+
+    auto &td = term_data_[idx];
+    td.terminal = term;
+    td.tile_layer = tiles;
+    sub_window_roots_[idx] = term;
+
+    // 既存のグリッドサイズでノードを初期化する
+    term->set_grid_size(td.cols, td.rows);
+    if (tiles) {
+        tiles->set_grid_size(td.cols, td.rows);
+    }
+
+    // フォントを適用する
+    if (font_.is_valid()) {
+        term->set_terminal_font(font_, font_size_);
+    }
+
+    // メインターミナルはアクティブにする
+    if (idx == 0) {
+        term_activate(&td.t);
+    }
+}
+
+void HengbandGame::unregister_terminal(int idx)
+{
+    if (idx <= 0 || idx >= HENGBAND_TERM_COUNT) {
+        return; // idx=0 (メイン) は解除しない
+    }
+    auto &td = term_data_[idx];
+    td.terminal = nullptr;
+    td.tile_layer = nullptr;
+    sub_window_roots_[idx] = nullptr;
+}
+
 void HengbandGame::set_sub_window_size(int idx, int cols, int rows)
 {
     if (idx < 0 || idx >= HENGBAND_TERM_COUNT) {
@@ -367,9 +389,6 @@ void HengbandGame::save_window_layout(const String &path)
     Ref<ConfigFile> cfg;
     cfg.instantiate();
 
-    // SubViewport の親ノードから位置を取得して保存
-    Node *container = get_node_or_null(NodePath("../GameViewport/SubViewport/TerminalContainer"));
-
     for (int i = 0; i < HENGBAND_TERM_COUNT; ++i) {
         const std::string section = "window" + std::to_string(i);
         const String sec(section.c_str());
@@ -378,11 +397,6 @@ void HengbandGame::save_window_layout(const String &path)
         cfg->set_value(sec, "visible", root ? root->is_visible() : (i == 0));
         cfg->set_value(sec, "cols", term_data_[i].cols);
         cfg->set_value(sec, "rows", term_data_[i].rows);
-
-        if (root) {
-            cfg->set_value(sec, "pos_x", static_cast<int>(root->get_position().x));
-            cfg->set_value(sec, "pos_y", static_cast<int>(root->get_position().y));
-        }
     }
     cfg->save(path);
 }
@@ -493,6 +507,12 @@ void HengbandGame::_bind_methods()
     ClassDB::bind_method(
         D_METHOD("_game_thread_func", "lib_path", "save_path"),
         &HengbandGame::_game_thread_func);
+    ClassDB::bind_method(
+        D_METHOD("register_terminal", "idx", "term_obj", "tile_obj"),
+        &HengbandGame::register_terminal);
+    ClassDB::bind_method(
+        D_METHOD("unregister_terminal", "idx"),
+        &HengbandGame::unregister_terminal);
 }
 
 // ---------------------------------------------------------------------------

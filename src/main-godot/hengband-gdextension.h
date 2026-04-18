@@ -87,6 +87,16 @@ public:
     /// @return Array[Dictionary{path,name,level,prace,pclass,ppersonality}]
     godot::Array scan_save_files(const godot::String &lib_path);
 
+    /// GDScript 側で動的に作成したターミナルノードを登録する
+    /// @param idx      ターミナルインデックス (0〜HENGBAND_TERM_COUNT-1)
+    /// @param term_obj GodotTerminal ノード
+    /// @param tile_obj GodotTileLayer ノード (null 可)
+    void register_terminal(int idx, godot::Object *term_obj, godot::Object *tile_obj);
+
+    /// 登録済みターミナルの参照を解除する（ペインクローズ時に呼ぶ）
+    /// idx=0 は無視する
+    void unregister_terminal(int idx);
+
 protected:
     static void _bind_methods();
 

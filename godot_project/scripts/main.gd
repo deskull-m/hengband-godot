@@ -22,11 +22,20 @@ const FONT_PRESETS: Array[String] = [
 ## タイルモード選択肢: インデックスが GameState.tile_mode に対応
 const TILE_ITEMS: Array[String] = ["なし", "8×8.bmp", "16×16.bmp"]
 
-## 下部ツールバーの高さ (px) — main.tscn の GameViewport offset_bottom と合わせること
+## 下部ツールバーの高さ (px) — main.tscn の LayoutRoot offset_bottom と合わせること
 const BOTTOM_BAR_HEIGHT: int = 45
+
+## ターミナルの最大数 (0=メイン, 1〜7=サブ)
+const MAX_TERMINALS: int = 8
+
+## TerminalPane プレハブ
+const TerminalPaneScene = preload("res://scenes/terminal_pane.tscn")
 
 ## 解決済み lib/ パス（タイル読み込みなどで再利用する）
 var _lib_path: String = ""
+
+## 次に割り当てるサブターミナルインデックス (1〜7)
+var _next_term_idx: int = 1
 
 func _ready() -> void:
 	# ウィンドウ × ボタンを自前で処理するため自動終了を無効化する
@@ -43,8 +52,6 @@ func _ready() -> void:
 
 	# ウィンドウリサイズ時にターミナルグリッドを追従させる
 	get_viewport().size_changed.connect(_on_viewport_size_changed)
-	# 初期サイズでグリッドをフィット (start_game 前に確定させる)
-	_fit_main_term()
 
 	_setup_config_ui()
 
@@ -52,6 +59,14 @@ func _ready() -> void:
 	_lib_path = game_lib_path
 	if _lib_path.is_empty():
 		_lib_path = ProjectSettings.globalize_path("res://../lib")
+
+	# 初期レイアウト: メインターミナルペイン (idx=0) を作成
+	var main_pane := _create_terminal_pane(0)
+	$LayoutRoot.add_child(main_pane)
+	main_pane.setup(game, 0)
+
+	# レイアウト確定後にグリッドをフィット（1フレーム後に実行）
+	_fit_main_term.call_deferred()
 
 	print("Hengband: lib_path = ", _lib_path)
 	print("Hengband: save_path = ", GameState.save_path)
@@ -101,24 +116,12 @@ func _input(event: InputEvent) -> void:
 	_apply_font($HengbandGame)
 	get_viewport().set_input_as_handled()
 
-## SubViewport をウィンドウサイズに合わせ、ターミナルグリッドを最大化する
-## 下部ツールバー分 (BOTTOM_BAR_HEIGHT px) を除いた領域を使用する
+## 全ペインの SubViewport サイズとターミナルグリッドを更新する
 func _fit_main_term() -> void:
-	var game := $HengbandGame
-	var sub_vp: SubViewport = $GameViewport/SubViewport
-	if not game or not sub_vp:
-		return
+	for pane in get_tree().get_nodes_in_group("terminal_panes"):
+		pane.fit_subviewport()
 
-	var win_size := Vector2i(get_viewport().get_visible_rect().size)
-	if win_size.x <= 0 or win_size.y <= 0:
-		return
-
-	# ツールバー分を差し引いたサイズでゲーム領域を確定する
-	var game_size := Vector2i(win_size.x, win_size.y - BOTTOM_BAR_HEIGHT)
-	sub_vp.size = game_size
-	game.fit_term_to_viewport(game_size)
-
-## SystemFont を生成してゲームに適用し、セルサイズ変化に合わせてグリッドを再フィットする
+## SystemFont を生成してゲームに適用し、全ペインのグリッドを再フィットする
 func _apply_font(game: Node) -> void:
 	var font := SystemFont.new()
 	font.font_names = [GameState.font_name, "Courier New", "Monospace"]
@@ -253,3 +256,89 @@ func _on_apply_config() -> void:
 
 func _on_close_config() -> void:
 	$ConfigLayer/ConfigPanel.visible = false
+
+# ---------------------------------------------------------------------------
+# 分割レイアウト管理
+# ---------------------------------------------------------------------------
+
+## TerminalPane インスタンスを生成してシグナルを接続する（add_child前に呼ぶ）
+func _create_terminal_pane(term_idx: int) -> Node:
+	var pane = TerminalPaneScene.instantiate()
+	pane.v_split_requested.connect(_on_v_split_requested)
+	pane.h_split_requested.connect(_on_h_split_requested)
+	pane.close_requested.connect(_on_close_requested)
+	return pane
+
+## 縦に追加（左右分割: VSplitContainer）
+func _on_v_split_requested(pane: Node) -> void:
+	_do_split(pane, false)
+
+## 横に追加（上下分割: HSplitContainer）
+func _on_h_split_requested(pane: Node) -> void:
+	_do_split(pane, true)
+
+## pane を分割して新しいターミナルペインを追加する
+## horizontal=true → 上下分割 (HSplitContainer)
+## horizontal=false → 左右分割 (VSplitContainer)
+func _do_split(pane: Node, horizontal: bool) -> void:
+	if _next_term_idx >= MAX_TERMINALS:
+		return  # 最大ターミナル数に達した
+
+	var new_idx := _next_term_idx
+	_next_term_idx += 1
+
+	var parent := pane.get_parent()
+	var pane_pos := pane.get_index()
+
+	# 分割コンテナを作成
+	var split: SplitContainer
+	if horizontal:
+		split = HSplitContainer.new()
+	else:
+		split = VSplitContainer.new()
+	split.size_flags_horizontal = Control.SIZE_FILL | Control.SIZE_EXPAND
+	split.size_flags_vertical = Control.SIZE_FILL | Control.SIZE_EXPAND
+
+	# 既存ペインを現在の親から外して split の第1スロットへ
+	parent.remove_child(pane)
+	split.add_child(pane)
+
+	# 新ペインを作成して split の第2スロットへ
+	var new_pane := _create_terminal_pane(new_idx)
+	split.add_child(new_pane)
+
+	# split を元の位置に挿入
+	parent.add_child(split)
+	parent.move_child(split, pane_pos)
+
+	# setup はシーンツリーに入った後（new_pane は split 経由で既に入っている）
+	new_pane.setup($HengbandGame, new_idx)
+	new_pane.fit_subviewport.call_deferred()
+
+## ペインを閉じる（メインペインは閉じない）
+func _on_close_requested(pane: Node) -> void:
+	if pane.terminal_index == 0:
+		return  # メインターミナルは閉じない
+
+	# C++ 側のターミナル参照を解除する（ダングリングポインタ防止）
+	$HengbandGame.unregister_terminal(pane.terminal_index)
+
+	var parent := pane.get_parent()
+	if parent is SplitContainer:
+		# 兄弟ノードを探して親と入れ替える
+		var sibling: Node = null
+		for child in parent.get_children():
+			if child != pane:
+				sibling = child
+				break
+
+		if sibling:
+			var grandparent := parent.get_parent()
+			var parent_pos := parent.get_index()
+			parent.remove_child(sibling)
+			grandparent.add_child(sibling)
+			grandparent.move_child(sibling, parent_pos)
+
+		parent.queue_free()  # pane も含めて解放
+	else:
+		pane.queue_free()
