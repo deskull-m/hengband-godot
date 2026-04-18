@@ -70,13 +70,16 @@ border_color = Color(1, 1, 1, 0.6)
 [node name="Main" type="Node"]
 script = ExtResource("1_main")
 
-[node name="HengbandGame" type="HengbandGame" parent="."]
-
-[node name="InputHandler" type="GodotInputHandler" parent="HengbandGame"]
+; HengbandGame は最後の子ノードとして宣言する。
+; Godot は NOTIFICATION_EXIT_TREE をシーン子ノードの逆順に発行するため、
+; 最後 = 最初に終了 = ゲームスレッドがターミナルノード解放前に停止する。
+; (AudioManager / LayoutRoot / ConfigLayer より先に HengbandGame が終了)
 
 [node name="AudioManager" type="GodotAudioManager" parent="."]
 
-[node name="GameViewport" type="SubViewportContainer" parent="."]
+; --- ゲームエリア: TerminalPane を動的に追加するルートコンテナ ---
+; MarginContainer にすることで直接の子ノードが自動的にコンテナを埋める
+[node name="LayoutRoot" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -84,79 +87,10 @@ anchor_bottom = 1.0
 offset_bottom = -45.0
 grow_horizontal = 2
 grow_vertical = 2
-
-[node name="SubViewport" type="SubViewport" parent="GameViewport"]
-size = Vector2i(1280, 800)
-transparent_bg = false
-render_target_update_mode = 3
-
-[node name="TerminalContainer" type="Node2D" parent="GameViewport/SubViewport"]
-
-; --- ターミナル0 (メイン) ---
-[node name="TileLayer0" type="GodotTileLayer" parent="GameViewport/SubViewport/TerminalContainer"]
-position = Vector2(0, 0)
-z_index = 0
-
-[node name="Terminal0" type="GodotTerminal" parent="GameViewport/SubViewport/TerminalContainer"]
-position = Vector2(0, 0)
-z_index = 1
-
-; --- ターミナル1〜7 (サブウィンドウ、初期非表示) ---
-[node name="TileLayer1" type="GodotTileLayer" parent="GameViewport/SubViewport/TerminalContainer"]
-position = Vector2(0, 384)
-visible = false
-
-[node name="Terminal1" type="GodotTerminal" parent="GameViewport/SubViewport/TerminalContainer"]
-position = Vector2(0, 384)
-visible = false
-
-[node name="TileLayer2" type="GodotTileLayer" parent="GameViewport/SubViewport/TerminalContainer"]
-position = Vector2(640, 384)
-visible = false
-
-[node name="Terminal2" type="GodotTerminal" parent="GameViewport/SubViewport/TerminalContainer"]
-position = Vector2(640, 384)
-visible = false
-
-[node name="TileLayer3" type="GodotTileLayer" parent="GameViewport/SubViewport/TerminalContainer"]
-position = Vector2(0, 576)
-visible = false
-
-[node name="Terminal3" type="GodotTerminal" parent="GameViewport/SubViewport/TerminalContainer"]
-position = Vector2(0, 576)
-visible = false
-
-[node name="TileLayer4" type="GodotTileLayer" parent="GameViewport/SubViewport/TerminalContainer"]
-position = Vector2(640, 576)
-visible = false
-
-[node name="Terminal4" type="GodotTerminal" parent="GameViewport/SubViewport/TerminalContainer"]
-position = Vector2(640, 576)
-visible = false
-
-[node name="TileLayer5" type="GodotTileLayer" parent="GameViewport/SubViewport/TerminalContainer"]
-position = Vector2(0, 672)
-visible = false
-
-[node name="Terminal5" type="GodotTerminal" parent="GameViewport/SubViewport/TerminalContainer"]
-position = Vector2(0, 672)
-visible = false
-
-[node name="TileLayer6" type="GodotTileLayer" parent="GameViewport/SubViewport/TerminalContainer"]
-position = Vector2(640, 672)
-visible = false
-
-[node name="Terminal6" type="GodotTerminal" parent="GameViewport/SubViewport/TerminalContainer"]
-position = Vector2(640, 672)
-visible = false
-
-[node name="TileLayer7" type="GodotTileLayer" parent="GameViewport/SubViewport/TerminalContainer"]
-position = Vector2(0, 736)
-visible = false
-
-[node name="Terminal7" type="GodotTerminal" parent="GameViewport/SubViewport/TerminalContainer"]
-position = Vector2(0, 736)
-visible = false
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
 
 ; --- コンフィグ UI (ゲーム画面上に常時表示) ---
 [node name="ConfigLayer" type="CanvasLayer" parent="."]
@@ -197,9 +131,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -200.0
-offset_top = -185.0
+offset_top = -210.0
 offset_right = 200.0
-offset_bottom = 185.0
+offset_bottom = 210.0
 grow_horizontal = 2
 grow_vertical = 2
 visible = false
@@ -223,6 +157,11 @@ horizontal_alignment = 1
 
 [node name="HSep" type="HSeparator" parent="ConfigLayer/ConfigPanel/PanelVBox"]
 layout_mode = 2
+
+[node name="WindowTabBar" type="TabBar" parent="ConfigLayer/ConfigPanel/PanelVBox"]
+layout_mode = 2
+focus_mode = 0
+tab_close_display_policy = 0
 
 [node name="FontRow" type="HBoxContainer" parent="ConfigLayer/ConfigPanel/PanelVBox"]
 layout_mode = 2
@@ -318,3 +257,10 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "閉じる"
+
+; HengbandGame を最後の子ノードとして宣言する。
+; Godot は NOTIFICATION_EXIT_TREE をシーン子ノードの逆順に発行するため、
+; 最後 = 最初に終了 = ゲームスレッドがターミナルノード解放前に停止する。
+[node name="HengbandGame" type="HengbandGame" parent="."]
+
+[node name="InputHandler" type="GodotInputHandler" parent="HengbandGame"]
