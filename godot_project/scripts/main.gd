@@ -34,8 +34,11 @@ const TerminalPaneScene = preload("res://scenes/terminal_pane.tscn")
 ## 解決済み lib/ パス（タイル読み込みなどで再利用する）
 var _lib_path: String = ""
 
-## 次に割り当てるサブターミナルインデックス (1〜7)
-var _next_term_idx: int = 1
+## サブターミナル番号選択ポップアップ
+var _term_select_popup: PopupMenu = null
+## ポップアップ表示中に保持する分割先ペインと方向
+var _pending_pane: Node = null
+var _pending_vertical: bool = false
 
 func _ready() -> void:
 	# ウィンドウ × ボタンを自前で処理するため自動終了を無効化する
@@ -54,6 +57,7 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_on_viewport_size_changed)
 
 	_setup_config_ui()
+	_setup_term_popup()
 
 	# lib_path が未設定の場合はプロジェクトディレクトリの隣の lib/ を使う
 	_lib_path = game_lib_path
@@ -262,35 +266,76 @@ func _on_close_config() -> void:
 # ---------------------------------------------------------------------------
 
 ## TerminalPane インスタンスを生成してシグナルを接続する（add_child前に呼ぶ）
-func _create_terminal_pane(term_idx: int) -> Node:
+func _create_terminal_pane(_term_idx: int) -> Node:
 	var pane = TerminalPaneScene.instantiate()
 	pane.v_split_requested.connect(_on_v_split_requested)
 	pane.h_split_requested.connect(_on_h_split_requested)
 	pane.close_requested.connect(_on_close_requested)
 	return pane
 
-## 縦に追加（左右分割: HSplitContainer）
+## サブターミナル選択ポップアップを初期化する
+func _setup_term_popup() -> void:
+	_term_select_popup = PopupMenu.new()
+	add_child(_term_select_popup)
+	_term_select_popup.id_pressed.connect(_on_term_popup_id_pressed)
+
+## 現在使用中でないサブターミナル番号 (1〜7) を返す
+func _get_available_term_indices() -> Array[int]:
+	var used: Array[int] = []
+	for pane in get_tree().get_nodes_in_group("terminal_panes"):
+		used.append(pane.terminal_index)
+	var available: Array[int] = []
+	for i in range(1, MAX_TERMINALS):
+		if i not in used:
+			available.append(i)
+	return available
+
+## 左右分割ボタン → ポップアップでサブ番号選択
 func _on_v_split_requested(pane: Node) -> void:
-	_do_split(pane, false)
+	_show_term_select_popup(pane, false)
 
-## 横に追加（上下分割: VSplitContainer）
+## 上下分割ボタン → ポップアップでサブ番号選択
 func _on_h_split_requested(pane: Node) -> void:
-	_do_split(pane, true)
+	_show_term_select_popup(pane, true)
 
-## pane を分割して新しいターミナルペインを追加する
-## vertical=true  → 上下分割 (VSplitContainer) … 横のセパレータを上下にドラッグ
-## vertical=false → 左右分割 (HSplitContainer) … 縦のセパレータを左右にドラッグ
-func _do_split(pane: Node, vertical: bool) -> void:
-	if _next_term_idx >= MAX_TERMINALS:
-		return  # 最大ターミナル数に達した
+## 分割方向と待機ペインを保存してサブ番号選択ポップアップを表示する
+func _show_term_select_popup(pane: Node, vertical: bool) -> void:
+	var available := _get_available_term_indices()
+	if available.is_empty():
+		return  # 空きスロットなし
 
-	var new_idx := _next_term_idx
-	_next_term_idx += 1
+	_pending_pane = pane
+	_pending_vertical = vertical
 
+	_term_select_popup.clear()
+	for idx in available:
+		_term_select_popup.add_item("Sub %d" % idx, idx)
+
+	# ▶/▼ ボタン二つの直下にポップアップを配置する
+	var v_btn := pane.get_node("PaneVBox/Header/VSplitButton") as Control
+	var h_btn := pane.get_node("PaneVBox/Header/HSplitButton") as Control
+	var vp_pos := Vector2(
+		v_btn.get_global_rect().position.x,
+		v_btn.get_global_rect().end.y
+	)
+	var screen_pos := pane.get_viewport().get_screen_transform() * vp_pos
+	_term_select_popup.position = Vector2i(screen_pos)
+	_term_select_popup.popup()
+
+## ポップアップで番号が選ばれたら実際に分割する
+func _on_term_popup_id_pressed(id: int) -> void:
+	if _pending_pane == null:
+		return
+	_do_split(_pending_pane, _pending_vertical, id)
+	_pending_pane = null
+
+## pane を分割して指定インデックスの新しいターミナルペインを追加する
+## vertical=true  → 上下分割 (VSplitContainer)
+## vertical=false → 左右分割 (HSplitContainer)
+func _do_split(pane: Node, vertical: bool, new_idx: int) -> void:
 	var parent := pane.get_parent()
 	var pane_pos := pane.get_index()
 
-	# 分割コンテナを作成
 	# Godot 4: HSplitContainer = 左右並び, VSplitContainer = 上下積み
 	var split: SplitContainer
 	if vertical:
@@ -299,25 +344,21 @@ func _do_split(pane: Node, vertical: bool) -> void:
 		split = HSplitContainer.new()
 	split.size_flags_horizontal = Control.SIZE_FILL | Control.SIZE_EXPAND
 	split.size_flags_vertical = Control.SIZE_FILL | Control.SIZE_EXPAND
-	# セパレータを掴みやすくする（デフォルトだと細すぎる場合がある）
 	split.add_theme_constant_override("separation", 8)
+	# フォーカスを無効化してゲームへの矢印キー入力を横取りしないようにする
+	split.focus_mode = Control.FOCUS_NONE
 
 	# 既存ペインを現在の親から外し、split を元の位置に差し込んでからペインを移す。
-	# こうすることで一瞬でも親コンテナの子数が変動しない。
-	parent.remove_child(pane)         # 先に pane を外す
-	parent.add_child(split)           # split を元の親へ
+	parent.remove_child(pane)
+	parent.add_child(split)
 	parent.move_child(split, pane_pos)
-	split.add_child(pane)             # pane を split 第1スロットへ
+	split.add_child(pane)
 
-	# 新ペインを作成して split の第2スロットへ
 	var new_pane := _create_terminal_pane(new_idx)
 	split.add_child(new_pane)
 
-	# setup はシーンツリーに入った後（new_pane は split 経由で既に入っている）
 	new_pane.setup($HengbandGame, new_idx)
-	# 両ペインの SubViewport サイズをレイアウト確定後に更新する。
-	# 既存ペインの sv.size が古いままだと SubViewportContainer の最小サイズが
-	# 旧サイズに固定されたまま残り、SplitContainer のドラッグを妨げるため両方更新する。
+	# 両ペインの SubViewport サイズをレイアウト確定後に更新する
 	pane.fit_subviewport.call_deferred()
 	new_pane.fit_subviewport.call_deferred()
 
