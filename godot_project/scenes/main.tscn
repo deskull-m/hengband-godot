@@ -70,14 +70,16 @@ border_color = Color(1, 1, 1, 0.6)
 [node name="Main" type="Node"]
 script = ExtResource("1_main")
 
-[node name="HengbandGame" type="HengbandGame" parent="."]
-
-[node name="InputHandler" type="GodotInputHandler" parent="HengbandGame"]
+; HengbandGame は最後の子ノードとして宣言する。
+; Godot は NOTIFICATION_EXIT_TREE をシーン子ノードの逆順に発行するため、
+; 最後 = 最初に終了 = ゲームスレッドがターミナルノード解放前に停止する。
+; (AudioManager / LayoutRoot / ConfigLayer より先に HengbandGame が終了)
 
 [node name="AudioManager" type="GodotAudioManager" parent="."]
 
 ; --- ゲームエリア: TerminalPane を動的に追加するルートコンテナ ---
-[node name="LayoutRoot" type="Control" parent="."]
+; MarginContainer にすることで直接の子ノードが自動的にコンテナを埋める
+[node name="LayoutRoot" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -85,6 +87,10 @@ anchor_bottom = 1.0
 offset_bottom = -45.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
 
 ; --- コンフィグ UI (ゲーム画面上に常時表示) ---
 [node name="ConfigLayer" type="CanvasLayer" parent="."]
@@ -246,3 +252,10 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "閉じる"
+
+; HengbandGame を最後の子ノードとして宣言する。
+; Godot は NOTIFICATION_EXIT_TREE をシーン子ノードの逆順に発行するため、
+; 最後 = 最初に終了 = ゲームスレッドがターミナルノード解放前に停止する。
+[node name="HengbandGame" type="HengbandGame" parent="."]
+
+[node name="InputHandler" type="GodotInputHandler" parent="HengbandGame"]

@@ -144,6 +144,16 @@ void HengbandGame::_notification(int p_what)
         if (game_thread_.is_valid() && game_thread_->is_started()) {
             game_thread_->wait_to_finish();
         }
+        // スレッド停止後に全ターミナル参照を無効化する。
+        // LayoutRoot / TerminalPane は HengbandGame より後に解放されるが、
+        // ゲームスレッドが停止しているため queue_redraw 等の呼び出しは発生しない。
+        for (auto &td : term_data_) {
+            td.terminal = nullptr;
+            td.tile_layer = nullptr;
+        }
+        for (auto &root : sub_window_roots_) {
+            root = nullptr;
+        }
     }
 }
 

@@ -269,18 +269,18 @@ func _create_terminal_pane(term_idx: int) -> Node:
 	pane.close_requested.connect(_on_close_requested)
 	return pane
 
-## 縦に追加（左右分割: VSplitContainer）
+## 縦に追加（左右分割: HSplitContainer）
 func _on_v_split_requested(pane: Node) -> void:
 	_do_split(pane, false)
 
-## 横に追加（上下分割: HSplitContainer）
+## 横に追加（上下分割: VSplitContainer）
 func _on_h_split_requested(pane: Node) -> void:
 	_do_split(pane, true)
 
 ## pane を分割して新しいターミナルペインを追加する
-## horizontal=true → 上下分割 (HSplitContainer)
-## horizontal=false → 左右分割 (VSplitContainer)
-func _do_split(pane: Node, horizontal: bool) -> void:
+## vertical=true  → 上下分割 (VSplitContainer) … 横のセパレータを上下にドラッグ
+## vertical=false → 左右分割 (HSplitContainer) … 縦のセパレータを左右にドラッグ
+func _do_split(pane: Node, vertical: bool) -> void:
 	if _next_term_idx >= MAX_TERMINALS:
 		return  # 最大ターミナル数に達した
 
@@ -291,28 +291,34 @@ func _do_split(pane: Node, horizontal: bool) -> void:
 	var pane_pos := pane.get_index()
 
 	# 分割コンテナを作成
+	# Godot 4: HSplitContainer = 左右並び, VSplitContainer = 上下積み
 	var split: SplitContainer
-	if horizontal:
-		split = HSplitContainer.new()
-	else:
+	if vertical:
 		split = VSplitContainer.new()
+	else:
+		split = HSplitContainer.new()
 	split.size_flags_horizontal = Control.SIZE_FILL | Control.SIZE_EXPAND
 	split.size_flags_vertical = Control.SIZE_FILL | Control.SIZE_EXPAND
+	# セパレータを掴みやすくする（デフォルトだと細すぎる場合がある）
+	split.add_theme_constant_override("separation", 8)
 
-	# 既存ペインを現在の親から外して split の第1スロットへ
-	parent.remove_child(pane)
-	split.add_child(pane)
+	# 既存ペインを現在の親から外し、split を元の位置に差し込んでからペインを移す。
+	# こうすることで一瞬でも親コンテナの子数が変動しない。
+	parent.remove_child(pane)         # 先に pane を外す
+	parent.add_child(split)           # split を元の親へ
+	parent.move_child(split, pane_pos)
+	split.add_child(pane)             # pane を split 第1スロットへ
 
 	# 新ペインを作成して split の第2スロットへ
 	var new_pane := _create_terminal_pane(new_idx)
 	split.add_child(new_pane)
 
-	# split を元の位置に挿入
-	parent.add_child(split)
-	parent.move_child(split, pane_pos)
-
 	# setup はシーンツリーに入った後（new_pane は split 経由で既に入っている）
 	new_pane.setup($HengbandGame, new_idx)
+	# 両ペインの SubViewport サイズをレイアウト確定後に更新する。
+	# 既存ペインの sv.size が古いままだと SubViewportContainer の最小サイズが
+	# 旧サイズに固定されたまま残り、SplitContainer のドラッグを妨げるため両方更新する。
+	pane.fit_subviewport.call_deferred()
 	new_pane.fit_subviewport.call_deferred()
 
 ## ペインを閉じる（メインペインは閉じない）
@@ -325,7 +331,7 @@ func _on_close_requested(pane: Node) -> void:
 
 	var parent := pane.get_parent()
 	if parent is SplitContainer:
-		# 兄弟ノードを探して親と入れ替える
+		# 兄弟ノードを探す
 		var sibling: Node = null
 		for child in parent.get_children():
 			if child != pane:
@@ -335,10 +341,15 @@ func _on_close_requested(pane: Node) -> void:
 		if sibling:
 			var grandparent := parent.get_parent()
 			var parent_pos := parent.get_index()
+
+			# sibling を parent から外してから parent を grandparent から外す。
+			# この順序により grandparent の子数が一時的に増えず、
+			# SplitContainer が3子持ちになるレイアウト崩れを防ぐ。
 			parent.remove_child(sibling)
+			grandparent.remove_child(parent)
 			grandparent.add_child(sibling)
 			grandparent.move_child(sibling, parent_pos)
 
-		parent.queue_free()  # pane も含めて解放
+		parent.queue_free()  # parent ごと pane を解放
 	else:
 		pane.queue_free()

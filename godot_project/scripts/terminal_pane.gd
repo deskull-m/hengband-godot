@@ -13,8 +13,14 @@ signal close_requested(pane: Node)    ## このペインを閉じる
 ## ゲームノードから割り当てられたターミナルインデックス
 var terminal_index: int = -1
 var _game_node: Node = null
+## _do_split でペインが親から外れて再追加されると Godot 4.6 は _ready() を再呼び出しする。
+## このフラグでシグナルの二重接続を防ぐ。
+var _initialized: bool = false
 
 func _ready() -> void:
+	if _initialized:
+		return
+	_initialized = true
 	$PaneVBox/Header/VSplitButton.pressed.connect(func(): v_split_requested.emit(self))
 	$PaneVBox/Header/HSplitButton.pressed.connect(func(): h_split_requested.emit(self))
 	$PaneVBox/Header/CloseButton.pressed.connect(func(): close_requested.emit(self))
