@@ -40,6 +40,9 @@ var _term_select_popup: PopupMenu = null
 var _pending_pane: Node = null
 var _pending_vertical: bool = false
 
+## コンフィグパネルで現在選択中のペイン
+var _config_target_pane: Node = null
+
 func _ready() -> void:
 	# ウィンドウ × ボタンを自前で処理するため自動終了を無効化する
 	get_tree().set_auto_accept_quit(false)
@@ -114,9 +117,11 @@ func _input(event: InputEvent) -> void:
 	if new_size == GameState.font_size:
 		return
 	GameState.font_size = new_size
-	# SpinBox の値をホイール操作に追従させる
+	# SpinBox の値をホイール操作に追従させる（signal は block して二重適用を防ぐ）
 	var spin: SpinBox = $ConfigLayer/ConfigPanel/PanelVBox/FontSizeRow/FontSizeSpinBox
+	spin.set_block_signals(true)
 	spin.value = new_size
+	spin.set_block_signals(false)
 	_apply_font($HengbandGame)
 	get_viewport().set_input_as_handled()
 
@@ -125,12 +130,20 @@ func _fit_main_term() -> void:
 	for pane in get_tree().get_nodes_in_group("terminal_panes"):
 		pane.fit_subviewport()
 
-## SystemFont を生成してゲームに適用し、全ペインのグリッドを再フィットする
+## グローバルフォントをゲームに適用し、ペイン固有設定があれば上書き再適用する
 func _apply_font(game: Node) -> void:
 	var font := SystemFont.new()
 	font.font_names = [GameState.font_name, "Courier New", "Monospace"]
 	game.set_game_font(font, GameState.font_size)
 	_fit_main_term()
+	# ペイン固有フォントを再適用（set_game_font でリセットされるため）
+	for pane in get_tree().get_nodes_in_group("terminal_panes"):
+		if pane.pane_font_name != "" or pane.pane_font_size > 0:
+			var pfn: String = pane.pane_font_name if pane.pane_font_name != "" else GameState.font_name
+			var pfs: int = pane.pane_font_size if pane.pane_font_size > 0 else GameState.font_size
+			var pf := SystemFont.new()
+			pf.font_names = [pfn, "Courier New", "Monospace"]
+			pane.apply_pane_font(pf, pfs)
 
 ## タイル設定を適用する。失敗時は tile_mode を 0 に戻して UI を更新する
 func _apply_tiles(game: Node) -> void:
@@ -195,6 +208,8 @@ func _setup_config_ui() -> void:
 	_sync_font_edit_from_preset(idx)
 
 	$ConfigLayer/BottomBar/GearButton.pressed.connect(_on_gear_pressed)
+	var window_tabs: TabBar = $ConfigLayer/ConfigPanel/PanelVBox/WindowTabBar
+	window_tabs.tab_changed.connect(_on_window_tab_changed)
 	font_option.item_selected.connect(_on_font_preset_selected)
 	font_edit.text_changed.connect(_on_font_name_changed)
 	spin.value_changed.connect(_on_font_size_changed)
@@ -205,6 +220,8 @@ func _setup_config_ui() -> void:
 
 func _on_gear_pressed() -> void:
 	var panel: Panel = $ConfigLayer/ConfigPanel
+	if not panel.visible:
+		_sync_window_tabs()
 	panel.visible = not panel.visible
 
 ## プリセット選択時: FontNameEdit に反映してリアルタイム適用
@@ -244,13 +261,23 @@ func _on_bigtile_check_toggled(toggled: bool) -> void:
 	if $HengbandGame.is_game_started():
 		$HengbandGame/InputHandler.inject_key(0x12)  # Ctrl+R: 再描画で bigtile 反映
 
-## UI の現在値を GameState に反映してフォントを即時適用する（保存はしない）
+## UI の現在値を選択ペインに反映してフォントを即時適用する（保存はしない）
 func _apply_config_live() -> void:
+	if _config_target_pane == null:
+		return
 	var font_edit: LineEdit = $ConfigLayer/ConfigPanel/PanelVBox/FontNameRow/FontNameEdit
 	var spin: SpinBox = $ConfigLayer/ConfigPanel/PanelVBox/FontSizeRow/FontSizeSpinBox
-	GameState.font_name = font_edit.text
-	GameState.font_size = int(spin.value)
-	_apply_font($HengbandGame)
+	var fn := font_edit.text
+	var fs := int(spin.value)
+	# Main (idx=0) はグローバルデフォルトも更新する
+	if _config_target_pane.terminal_index == 0:
+		GameState.font_name = fn
+		GameState.font_size = fs
+	_config_target_pane.pane_font_name = fn
+	_config_target_pane.pane_font_size = fs
+	var font := SystemFont.new()
+	font.font_names = [fn, "Courier New", "Monospace"]
+	_config_target_pane.apply_pane_font(font, fs)
 
 ## 設定を保存してパネルを閉じる
 func _on_apply_config() -> void:
@@ -260,6 +287,60 @@ func _on_apply_config() -> void:
 
 func _on_close_config() -> void:
 	$ConfigLayer/ConfigPanel.visible = false
+
+## 開いているペインをターミナルインデックス順に返す
+func _get_sorted_panes() -> Array:
+	var panes: Array = get_tree().get_nodes_in_group("terminal_panes")
+	panes.sort_custom(func(a, b): return a.terminal_index < b.terminal_index)
+	return panes
+
+## 開いているペインで WindowTabBar を更新し、先頭タブを選択する
+func _sync_window_tabs() -> void:
+	var tabs: TabBar = $ConfigLayer/ConfigPanel/PanelVBox/WindowTabBar
+	tabs.set_block_signals(true)
+	while tabs.tab_count > 0:
+		tabs.remove_tab(0)
+	for pane in _get_sorted_panes():
+		var label := "Main" if pane.terminal_index == 0 else "Sub %d" % pane.terminal_index
+		tabs.add_tab(label)
+	tabs.set_block_signals(false)
+	if tabs.tab_count > 0:
+		tabs.current_tab = 0
+		_on_window_tab_changed(0)
+
+## タブが切り替わったらそのペインのフォント設定を UI に反映する
+func _on_window_tab_changed(tab_idx: int) -> void:
+	var panes := _get_sorted_panes()
+	if tab_idx < 0 or tab_idx >= panes.size():
+		return
+	_config_target_pane = panes[tab_idx]
+	var fn: String = _config_target_pane.pane_font_name
+	var fs: int = _config_target_pane.pane_font_size
+	if fn == "":
+		fn = GameState.font_name
+	if fs == 0:
+		fs = GameState.font_size
+	_load_font_to_ui(fn, fs)
+
+## フォント名・サイズを UI コントロールに反映する（signal はブロックして適用を抑制）
+func _load_font_to_ui(fn: String, fs: int) -> void:
+	var font_option: OptionButton = $ConfigLayer/ConfigPanel/PanelVBox/FontRow/FontOption
+	var font_edit: LineEdit = $ConfigLayer/ConfigPanel/PanelVBox/FontNameRow/FontNameEdit
+	var spin: SpinBox = $ConfigLayer/ConfigPanel/PanelVBox/FontSizeRow/FontSizeSpinBox
+	font_option.set_block_signals(true)
+	font_edit.set_block_signals(true)
+	spin.set_block_signals(true)
+	var idx := FONT_PRESETS.find(fn)
+	if idx < 0:
+		idx = FONT_PRESETS.size() - 1
+	font_option.selected = idx
+	_sync_font_edit_from_preset(idx)
+	if idx == FONT_PRESETS.size() - 1:
+		font_edit.text = fn  # カスタムフォントの場合は手入力値を復元
+	spin.value = fs
+	font_option.set_block_signals(false)
+	font_edit.set_block_signals(false)
+	spin.set_block_signals(false)
 
 # ---------------------------------------------------------------------------
 # 分割レイアウト管理

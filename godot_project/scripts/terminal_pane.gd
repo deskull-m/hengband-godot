@@ -17,6 +17,10 @@ var _game_node: Node = null
 ## このフラグでシグナルの二重接続を防ぐ。
 var _initialized: bool = false
 
+## ペイン固有のフォント設定（空文字/0 = グローバル設定を使用）
+var pane_font_name: String = ""
+var pane_font_size: int = 0
+
 func _ready() -> void:
 	if _initialized:
 		return
@@ -39,6 +43,14 @@ func setup(game: Node, term_idx: int) -> void:
 	var term = $PaneVBox/SubViewportContainer/SubViewport/TerminalContainer/Terminal
 	var tiles = $PaneVBox/SubViewportContainer/SubViewport/TerminalContainer/TileLayer
 	game.register_terminal(term_idx, term, tiles)
+
+## このペインのターミナルにフォントを直接適用してグリッドを再フィットする
+func apply_pane_font(font: Font, size: int) -> void:
+	var term = $PaneVBox/SubViewportContainer/SubViewport/TerminalContainer/Terminal
+	if not term:
+		return
+	term.set_terminal_font(font, size)
+	fit_subviewport()
 
 ## SubViewport のサイズをコンテナのピクセルサイズに合わせ、
 ## グリッドサイズをセルサイズで割った値で更新する。
