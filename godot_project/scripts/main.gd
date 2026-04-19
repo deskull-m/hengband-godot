@@ -275,9 +275,8 @@ func _apply_config_live() -> void:
 		GameState.font_size = fs
 	_config_target_pane.pane_font_name = fn
 	_config_target_pane.pane_font_size = fs
-	var font := SystemFont.new()
-	font.font_names = [fn, "Courier New", "Monospace"]
-	_config_target_pane.apply_pane_font(font, fs)
+	# set_game_font 経由で呼ぶことで、タイルレイヤーのセルサイズも更新される
+	_apply_font($HengbandGame)
 
 ## 設定を保存してパネルを閉じる
 func _on_apply_config() -> void:
