@@ -18,7 +18,23 @@ var tile_mode: int = 0
 ## タイルを2倍幅で表示するかどうか
 var use_bigtile: bool = false
 
+## ウィンドウ配置 (size が 0,0 = 未保存、OS デフォルトを使用)
+var window_rect: Rect2i = Rect2i(0, 0, 0, 0)
+
+## サブウィンドウレイアウトツリー（空辞書 = デフォルト単一ペイン）
+var layout_data: Dictionary = {}
+
 const _CONFIG_PATH := "user://hengband_config.cfg"
+
+func _ready() -> void:
+	load_config()
+	_restore_window()
+
+## 保存済みウィンドウ位置・サイズを OS ウィンドウに適用する
+func _restore_window() -> void:
+	if window_rect.size.x >= 400 and window_rect.size.y >= 300:
+		DisplayServer.window_set_size(window_rect.size)
+		DisplayServer.window_set_position(window_rect.position)
 
 func save_config() -> void:
 	var cfg := ConfigFile.new()
@@ -26,6 +42,11 @@ func save_config() -> void:
 	cfg.set_value("display", "font_size", font_size)
 	cfg.set_value("display", "tile_mode", tile_mode)
 	cfg.set_value("display", "use_bigtile", use_bigtile)
+	cfg.set_value("window", "x", window_rect.position.x)
+	cfg.set_value("window", "y", window_rect.position.y)
+	cfg.set_value("window", "w", window_rect.size.x)
+	cfg.set_value("window", "h", window_rect.size.y)
+	cfg.set_value("layout", "tree", layout_data)
 	cfg.save(_CONFIG_PATH)
 
 func load_config() -> void:
@@ -38,3 +59,9 @@ func load_config() -> void:
 	var old_use_tiles: bool = cfg.get_value("display", "use_tiles", false)
 	tile_mode = cfg.get_value("display", "tile_mode", 1 if old_use_tiles else 0)
 	use_bigtile = cfg.get_value("display", "use_bigtile", use_bigtile)
+	var wx: int = cfg.get_value("window", "x", 0)
+	var wy: int = cfg.get_value("window", "y", 0)
+	var ww: int = cfg.get_value("window", "w", 0)
+	var wh: int = cfg.get_value("window", "h", 0)
+	window_rect = Rect2i(wx, wy, ww, wh)
+	layout_data = cfg.get_value("layout", "tree", {})

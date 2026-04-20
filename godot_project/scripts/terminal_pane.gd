@@ -67,14 +67,13 @@ func apply_pane_font(font: Font, size: int) -> void:
 ## グリッドサイズをセルサイズで割った値で更新する。
 func fit_subviewport() -> void:
 	var svc: SubViewportContainer = $PaneVBox/SubViewportContainer
-	var sv: SubViewport = $PaneVBox/SubViewportContainer/SubViewport
 	var term = $PaneVBox/SubViewportContainer/SubViewport/TerminalContainer/Terminal
-	if not svc or not sv or not term:
+	if not svc or not term:
 		return
 	var px := Vector2i(int(svc.size.x), int(svc.size.y))
 	if px.x <= 0 or px.y <= 0:
 		return
-	sv.size = px
+	# stretch=true 時は SubViewportContainer が sv.size を自動管理するため手動設定不要
 	if _game_node == null or terminal_index < 0:
 		return
 	var cw: int = term.get_cell_width()
