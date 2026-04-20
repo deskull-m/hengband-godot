@@ -392,8 +392,8 @@ func _show_term_select_popup(pane: Node, vertical: bool) -> void:
 		_term_select_popup.add_item("Sub %d" % idx, idx)
 
 	# ▶/▼ ボタン二つの直下にポップアップを配置する
-	var v_btn := pane.get_node("PaneVBox/Header/VSplitButton") as Control
-	var h_btn := pane.get_node("PaneVBox/Header/HSplitButton") as Control
+	var v_btn := pane.get_node("PaneVBox/Header/HBox/VSplitButton") as Control
+	var h_btn := pane.get_node("PaneVBox/Header/HBox/HSplitButton") as Control
 	var vp_pos := Vector2(
 		v_btn.get_global_rect().position.x,
 		v_btn.get_global_rect().end.y

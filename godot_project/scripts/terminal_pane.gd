@@ -25,9 +25,9 @@ func _ready() -> void:
 	if _initialized:
 		return
 	_initialized = true
-	$PaneVBox/Header/VSplitButton.pressed.connect(func(): v_split_requested.emit(self))
-	$PaneVBox/Header/HSplitButton.pressed.connect(func(): h_split_requested.emit(self))
-	$PaneVBox/Header/CloseButton.pressed.connect(func(): close_requested.emit(self))
+	$PaneVBox/Header/HBox/VSplitButton.pressed.connect(func(): v_split_requested.emit(self))
+	$PaneVBox/Header/HBox/HSplitButton.pressed.connect(func(): h_split_requested.emit(self))
+	$PaneVBox/Header/HBox/CloseButton.pressed.connect(func(): close_requested.emit(self))
 	$PaneVBox/SubViewportContainer.resized.connect(fit_subviewport)
 	add_to_group("terminal_panes")
 
@@ -37,12 +37,23 @@ func setup(game: Node, term_idx: int) -> void:
 	terminal_index = term_idx
 	_game_node = game
 
-	$PaneVBox/Header/TitleLabel.text = "Main" if term_idx == 0 else "Sub %d" % term_idx
-	$PaneVBox/Header/CloseButton.visible = (term_idx != 0)
+	$PaneVBox/Header/HBox/TitleLabel.text = "Main" if term_idx == 0 else "Sub %d" % term_idx
+	$PaneVBox/Header/HBox/CloseButton.visible = (term_idx != 0)
+	_apply_header_color(term_idx == 0)
 
 	var term = $PaneVBox/SubViewportContainer/SubViewport/TerminalContainer/Terminal
 	var tiles = $PaneVBox/SubViewportContainer/SubViewport/TerminalContainer/TileLayer
 	game.register_terminal(term_idx, term, tiles)
+
+func _apply_header_color(is_main: bool) -> void:
+	var style := StyleBoxFlat.new()
+	style.content_margin_left = 2.0
+	style.content_margin_top = 0.0
+	style.content_margin_right = 2.0
+	style.content_margin_bottom = 0.0
+	# Main: 下部バーと同色、Sub: やや薄い同系色
+	style.bg_color = Color(0.16, 0.07, 0.07, 0.95) if is_main else Color(0.22, 0.10, 0.10, 0.80)
+	$PaneVBox/Header.add_theme_stylebox_override("panel", style)
 
 ## このペインのターミナルにフォントを直接適用してグリッドを再フィットする
 func apply_pane_font(font: Font, size: int) -> void:
