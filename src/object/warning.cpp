@@ -23,29 +23,24 @@
 #include <vector>
 
 /*!
- * @brief 警告を放つアイテムを選択する /
- * Choose one of items that have warning flag
- * Calculate spell damages
- * @return 警告を行う
+ * @brief 警告を放つアイテムを選択する
+ * @return 装備品へのポインタ。警告を放つアイテムがない場合はnullptr
  */
-ItemEntity *choose_warning_item(PlayerType *player_ptr)
+std::shared_ptr<ItemEntity> choose_warning_item(PlayerType *player_ptr)
 {
-    /* Paranoia -- Player has no warning ability */
     if (!player_ptr->warning) {
         return nullptr;
     }
 
-    /* Search Inventory */
     std::vector<int> candidates;
     for (int i = INVEN_MAIN_HAND; i < INVEN_TOTAL; i++) {
-        const auto *o_ptr = player_ptr->inventory[i].get();
-        if (o_ptr->get_flags().has(TR_WARNING)) {
+        const auto &item = player_ptr->inventory[i];
+        if (item->get_flags().has(TR_WARNING)) {
             candidates.push_back(i);
         }
     }
 
-    /* Choice one of them */
-    return candidates.empty() ? nullptr : player_ptr->inventory[rand_choice(candidates)].get();
+    return candidates.empty() ? nullptr : player_ptr->inventory[rand_choice(candidates)];
 }
 
 /*!
@@ -506,10 +501,10 @@ bool process_warning(PlayerType *player_ptr, const Pos2D &pos)
         old_damage = dam_max * 3 / 2;
 
         if (dam_max > player_ptr->chp / 2) {
-            auto *o_ptr = choose_warning_item(player_ptr);
+            const auto &item = choose_warning_item(player_ptr);
             std::string item_name;
-            if (o_ptr != nullptr) {
-                item_name = describe_flavor(player_ptr, *o_ptr, (OD_OMIT_PREFIX | OD_NAME_ONLY));
+            if (item) {
+                item_name = describe_flavor(player_ptr, *item, (OD_OMIT_PREFIX | OD_NAME_ONLY));
             } else {
                 item_name = _("体", "body");
             }
@@ -529,10 +524,10 @@ bool process_warning(PlayerType *player_ptr, const Pos2D &pos)
         return true;
     }
 
-    auto *o_ptr = choose_warning_item(player_ptr);
+    const auto &item = choose_warning_item(player_ptr);
     std::string item_name;
-    if (o_ptr != nullptr) {
-        item_name = describe_flavor(player_ptr, *o_ptr, (OD_OMIT_PREFIX | OD_NAME_ONLY));
+    if (item) {
+        item_name = describe_flavor(player_ptr, *item, (OD_OMIT_PREFIX | OD_NAME_ONLY));
     } else {
         item_name = _("体", "body");
     }
