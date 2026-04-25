@@ -571,5 +571,5 @@ ItemEntity *choose_object(PlayerType *player_ptr, short *initial_i_idx, concptr 
         return nullptr;
     }
 
-    return ref_item(player_ptr, *i_idx);
+    return ref_item(player_ptr, *i_idx).get(); //!< @todo ダングリングポインタになる可能性があるので戻り値自体をstd::shared_ptr<ItemEntity>にする.
 }
