@@ -36,9 +36,9 @@ char index_to_label(int i)
  * @param o_ptr 名称を取得する元のオブジェクト構造体参照ポインタ
  * @return 対応する装備部位ID
  */
-short wield_slot(PlayerType *player_ptr, const ItemEntity *o_ptr)
+short wield_slot(PlayerType *player_ptr, const ItemEntity &item)
 {
-    switch (o_ptr->bi_key.tval()) {
+    switch (item.bi_key.tval()) {
     case ItemKindType::DIGGING:
     case ItemKindType::HAFTED:
     case ItemKindType::POLEARM:
