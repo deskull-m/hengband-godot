@@ -325,23 +325,20 @@ static int blow_damcalc(const MonsterEntity &monster, PlayerType *player_ptr, co
 }
 
 /*!
- * @brief プレイヤーが特定地点へ移動した場合に警告を発する処理 /
- * Examine the grid (xx,yy) and warn the player if there are any danger
- * @param xx 危険性を調査するマスのX座標
- * @param yy 危険性を調査するマスのY座標
+ * @brief プレイヤーが特定地点へ移動した場合に警告を発する処理
+ * @param pos 危険性を調査する座標
  * @return 警告を無視して進むことを選択するかか問題が無ければTRUE、警告に従ったならFALSEを返す。
  */
-bool process_warning(PlayerType *player_ptr, POSITION xx, POSITION yy)
+bool process_warning(PlayerType *player_ptr, const Pos2D &pos)
 {
-    const Pos2D pos(yy, xx);
     constexpr auto warning_aware_range = 12;
     int dam_max = 0;
     static int old_damage = 0;
 
     auto &floor = *player_ptr->current_floor_ptr;
     const auto &dungeon = floor.get_dungeon_definition();
-    for (auto mx = xx - warning_aware_range; mx < xx + warning_aware_range + 1; mx++) {
-        for (auto my = yy - warning_aware_range; my < yy + warning_aware_range + 1; my++) {
+    for (auto mx = pos.x - warning_aware_range; mx < pos.x + warning_aware_range + 1; mx++) {
+        for (auto my = pos.y - warning_aware_range; my < pos.y + warning_aware_range + 1; my++) {
             const Pos2D pos_neighbor(my, mx);
             int dam_max0 = 0;
             if (!floor.contains(pos_neighbor, FloorBoundary::OUTER_WALL_EXCLUSIVE) || (Grid::calc_distance(pos_neighbor, pos) > warning_aware_range)) {
@@ -478,7 +475,7 @@ bool process_warning(PlayerType *player_ptr, POSITION xx, POSITION yy)
                 continue;
             }
 
-            if (!(mx <= xx + 1 && mx >= xx - 1 && my <= yy + 1 && my >= yy - 1)) {
+            if (!(mx <= pos.x + 1 && mx >= pos.x - 1 && my <= pos.y + 1 && my >= pos.y - 1)) {
                 dam_max += dam_max0;
                 continue;
             }
