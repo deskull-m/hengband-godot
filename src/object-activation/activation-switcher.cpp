@@ -123,15 +123,15 @@ bool switch_activation(PlayerType *player_ptr, ItemEntity **o_ptr_ptr, const Ran
     case RandomArtActType::BLADETURNER:
         return activate_bladeturner(player_ptr);
     case RandomArtActType::BR_FIRE:
-        return activate_breath_fire(player_ptr, o_ptr);
+        return activate_breath_fire(player_ptr, *o_ptr);
     case RandomArtActType::BR_COLD:
-        return activate_breath_cold(player_ptr, o_ptr);
+        return activate_breath_cold(player_ptr, *o_ptr);
     case RandomArtActType::BR_DRAGON:
-        return activate_dragon_breath(player_ptr, o_ptr);
+        return activate_dragon_breath(player_ptr, *o_ptr);
     case RandomArtActType::TREE_CREATION:
-        return activate_tree_creation(player_ptr, o_ptr, name);
+        return activate_tree_creation(player_ptr, *o_ptr, name);
     case RandomArtActType::ANIM_DEAD:
-        return activate_animate_dead(player_ptr, o_ptr);
+        return activate_animate_dead(player_ptr, *o_ptr);
     case RandomArtActType::CONFUSE:
         return activate_confusion(player_ptr);
     case RandomArtActType::SLEEP:
@@ -151,7 +151,7 @@ bool switch_activation(PlayerType *player_ptr, ItemEntity **o_ptr_ptr, const Ran
     case RandomArtActType::SCARE_AREA:
         return activate_scare(player_ptr);
     case RandomArtActType::AGGRAVATE:
-        return activate_aggravation(player_ptr, o_ptr, name);
+        return activate_aggravation(player_ptr, *o_ptr, name);
     case RandomArtActType::CHARM_ANIMAL:
         return activate_charm_animal(player_ptr);
     case RandomArtActType::CHARM_UNDEAD:
@@ -375,11 +375,11 @@ bool switch_activation(PlayerType *player_ptr, ItemEntity **o_ptr_ptr, const Ran
         mitokohmon(player_ptr);
         return true;
     case RandomArtActType::MURAMASA:
-        return activate_muramasa(player_ptr, o_ptr);
+        return activate_muramasa(player_ptr, *o_ptr);
     case RandomArtActType::BLOODY_MOON:
-        return activate_bloody_moon(player_ptr, o_ptr);
+        return activate_bloody_moon(player_ptr, *o_ptr);
     case RandomArtActType::CRIMSON:
-        return activate_crimson(player_ptr, o_ptr);
+        return activate_crimson(player_ptr, *o_ptr);
     case RandomArtActType::HERO_BLESS:
         (void)set_hero(player_ptr, randint1(25) + 25, false);
         (void)set_blessed(player_ptr, randint1(25) + 25, true);
