@@ -134,8 +134,13 @@ static bool activate_artifact(PlayerType *player_ptr, ItemEntity *o_ptr)
     }
 
     const auto item_name = describe_flavor(player_ptr, *o_ptr, OD_NAME_ONLY | OD_OMIT_PREFIX | OD_BASE_NAME);
-    if (!switch_activation(player_ptr, &o_ptr, it_activation->index, item_name)) {
+    const auto &[has_activated, item] = switch_activation(player_ptr, *o_ptr, it_activation->index, item_name);
+    if (!has_activated) {
         return false;
+    }
+
+    if (item) {
+        o_ptr = item.get();
     }
 
     if (it_activation->constant) {
