@@ -114,7 +114,7 @@ void do_cmd_drop(PlayerType *player_ptr)
 
     constexpr auto q = _("どのアイテムを落としますか? ", "Drop which item? ");
     constexpr auto s = _("落とせるアイテムを持っていない。", "You have nothing to drop.");
-    const auto &[item, i_idx] = choose_object(player_ptr, q, s, (USE_EQUIP | USE_INVEN | IGNORE_BOTHHAND_SLOT));
+    const auto &[item, i_idx] = choose_item(player_ptr, q, s, (USE_EQUIP | USE_INVEN | IGNORE_BOTHHAND_SLOT));
     if (!item) {
         return;
     }
@@ -148,7 +148,7 @@ void do_cmd_observe(PlayerType *player_ptr)
 {
     constexpr auto q = _("どのアイテムを調べますか? ", "Examine which item? ");
     constexpr auto s = _("調べられるアイテムがない。", "You have nothing to examine.");
-    const auto &[item, i_idx] = choose_object(player_ptr, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR | IGNORE_BOTHHAND_SLOT));
+    const auto &[item, i_idx] = choose_item(player_ptr, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR | IGNORE_BOTHHAND_SLOT));
     if (!item) {
         return;
     }
@@ -173,7 +173,7 @@ void do_cmd_uninscribe(PlayerType *player_ptr)
 {
     constexpr auto q = _("どのアイテムの銘を消しますか? ", "Un-inscribe which item? ");
     constexpr auto s = _("銘を消せるアイテムがない。", "You have nothing to un-inscribe.");
-    const auto &[item, i_idx] = choose_object(player_ptr, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR | IGNORE_BOTHHAND_SLOT));
+    const auto &[item, i_idx] = choose_item(player_ptr, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR | IGNORE_BOTHHAND_SLOT));
     if (!item) {
         return;
     }
@@ -208,7 +208,7 @@ void do_cmd_inscribe(PlayerType *player_ptr)
 {
     constexpr auto q = _("どのアイテムに銘を刻みますか? ", "Inscribe which item? ");
     constexpr auto s = _("銘を刻めるアイテムがない。", "You have nothing to inscribe.");
-    const auto &[item, i_idx] = choose_object(player_ptr, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR | IGNORE_BOTHHAND_SLOT));
+    const auto &[item, i_idx] = choose_item(player_ptr, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR | IGNORE_BOTHHAND_SLOT));
     if (!item) {
         return;
     }
@@ -254,7 +254,7 @@ void do_cmd_use(PlayerType *player_ptr)
     constexpr auto q = _("どれを使いますか？", "Use which item? ");
     constexpr auto s = _("使えるものがありません。", "You have nothing to use.");
     const auto options = USE_INVEN | USE_EQUIP | USE_FLOOR | IGNORE_BOTHHAND_SLOT;
-    const auto &[item, i_idx] = choose_object(player_ptr, q, s, options, FuncItemTester(item_tester_hook_use, player_ptr));
+    const auto &[item, i_idx] = choose_item(player_ptr, q, s, options, FuncItemTester(item_tester_hook_use, player_ptr));
     if (!item) {
         return;
     }
@@ -309,7 +309,7 @@ void do_cmd_activate(PlayerType *player_ptr)
     PlayerClass(player_ptr).break_samurai_stance({ SamuraiStanceType::MUSOU, SamuraiStanceType::KOUKIJIN });
     constexpr auto q = _("どのアイテムを始動させますか? ", "Activate which item? ");
     constexpr auto s = _("始動できるアイテムを装備していない。", "You have nothing to activate.");
-    const auto &[item, i_idx] = choose_object(player_ptr, q, s, (USE_EQUIP | IGNORE_BOTHHAND_SLOT), FuncItemTester(&ItemEntity::is_activatable));
+    const auto &[item, i_idx] = choose_item(player_ptr, q, s, (USE_EQUIP | IGNORE_BOTHHAND_SLOT), FuncItemTester(&ItemEntity::is_activatable));
     if (!item) {
         return;
     }

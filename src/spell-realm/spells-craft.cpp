@@ -293,7 +293,7 @@ bool pulish_shield(PlayerType *player_ptr)
     constexpr auto q = _("どの盾を磨きますか？", "Polish which shield? ");
     constexpr auto s = _("磨く盾がありません。", "You have no shield to polish.");
     const auto options = USE_EQUIP | USE_INVEN | USE_FLOOR | IGNORE_BOTHHAND_SLOT;
-    const auto &[item, i_idx] = choose_object(player_ptr, q, s, options, TvalItemTester(ItemKindType::SHIELD));
+    const auto &[item, i_idx] = choose_item(player_ptr, q, s, options, TvalItemTester(ItemKindType::SHIELD));
     if (!item) {
         return false;
     }

@@ -84,7 +84,7 @@ static tl::optional<SelectionResult> select_destroying_item(PlayerType *player_p
 {
     constexpr auto q = _("どのアイテムを壊しますか? ", "Destroy which item? ");
     constexpr auto s = _("壊せるアイテムを持っていない。", "You have nothing to destroy.");
-    const auto &[item, i_idx] = choose_object(player_ptr, q, s, USE_INVEN | USE_FLOOR);
+    const auto &[item, i_idx] = choose_item(player_ptr, q, s, USE_INVEN | USE_FLOOR);
     if (!item) {
         return tl::nullopt;
     }

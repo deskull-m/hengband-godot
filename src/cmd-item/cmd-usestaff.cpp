@@ -320,7 +320,7 @@ void do_cmd_use_staff(PlayerType *player_ptr)
     PlayerClass(player_ptr).break_samurai_stance({ SamuraiStanceType::MUSOU, SamuraiStanceType::KOUKIJIN });
     constexpr auto q = _("どの杖を使いますか? ", "Use which staff? ");
     constexpr auto s = _("使える杖がない。", "You have no staff to use.");
-    const auto &[item, i_idx] = choose_object(player_ptr, q, s, (USE_INVEN | USE_FLOOR), TvalItemTester(ItemKindType::STAFF));
+    const auto &[item, i_idx] = choose_item(player_ptr, q, s, (USE_INVEN | USE_FLOOR), TvalItemTester(ItemKindType::STAFF));
     if (!item) {
         return;
     }

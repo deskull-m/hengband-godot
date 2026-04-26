@@ -33,7 +33,7 @@ void building_recharge(PlayerType *player_ptr)
     prt(_("  再充填の費用はアイテムの種類によります。", "  The prices of recharge depend on the type."), 6, 0);
     constexpr auto q = _("どのアイテムに魔力を充填しますか? ", "Recharge which item? ");
     constexpr auto s = _("魔力を充填すべきアイテムがない。", "You have nothing to recharge.");
-    const auto &[item, i_idx] = choose_object(player_ptr, q, s, (USE_INVEN | USE_FLOOR), FuncItemTester(&ItemEntity::can_recharge));
+    const auto &[item, i_idx] = choose_item(player_ptr, q, s, (USE_INVEN | USE_FLOOR), FuncItemTester(&ItemEntity::can_recharge));
     if (!item) {
         return;
     }

@@ -29,4 +29,4 @@ short drop_near(PlayerType *player_ptr, ItemEntity &drop_item, const Pos2D &pos,
 void drop_ammo_near(PlayerType *player_ptr, ItemEntity &drop_item, const Pos2D &pos, int destruction_chance);
 void floor_item_charges(const FloorType &floor, INVENTORY_IDX i_idx);
 void floor_item_describe(PlayerType *player_ptr, INVENTORY_IDX i_idx);
-std::pair<std::shared_ptr<ItemEntity>, short> choose_object(PlayerType *player_ptr, std::string_view q, std::string_view s, BIT_FLAGS option, const ItemTester &item_tester = AllMatchItemTester());
+std::pair<std::shared_ptr<ItemEntity>, short> choose_item(PlayerType *player_ptr, std::string_view q, std::string_view s, BIT_FLAGS option, const ItemTester &item_tester = AllMatchItemTester());

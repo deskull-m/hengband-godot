@@ -143,7 +143,7 @@ static void py_pickup_multiple_items(PlayerType *player_ptr, bool pickup)
     for (auto pick_count = 0; pick_count < count_of_pickable_items; ++pick_count) {
         constexpr auto q = _("どれを拾いますか？", "Get which item? ");
         constexpr auto s = _("もうザックには床にあるどのアイテムも入らない。", "You no longer have any room for the objects on the floor.");
-        const auto &[item, i_idx] = choose_object(player_ptr, q, s, USE_FLOOR, tester);
+        const auto &[item, i_idx] = choose_item(player_ptr, q, s, USE_FLOOR, tester);
         if (!item) {
             break;
         }

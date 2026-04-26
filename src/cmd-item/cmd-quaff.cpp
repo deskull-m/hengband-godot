@@ -39,7 +39,7 @@ void do_cmd_quaff_potion(PlayerType *player_ptr)
 
     constexpr auto q = _("どの薬を飲みますか? ", "Quaff which potion? ");
     constexpr auto s = _("飲める薬がない。", "You have no potions to quaff.");
-    const auto &[item, i_idx] = choose_object(player_ptr, q, s, (USE_INVEN | USE_FLOOR), FuncItemTester(item_tester_hook_quaff, player_ptr));
+    const auto &[item, i_idx] = choose_item(player_ptr, q, s, (USE_INVEN | USE_FLOOR), FuncItemTester(item_tester_hook_quaff, player_ptr));
     if (!item) {
         return;
     }

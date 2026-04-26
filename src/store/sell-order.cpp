@@ -85,7 +85,7 @@ void store_sell(PlayerType *player_ptr, StoreSaleType store_num)
     }
 
     const auto options = USE_EQUIP | USE_INVEN | USE_FLOOR | IGNORE_BOTHHAND_SLOT;
-    const auto &[item, i_idx] = choose_object(player_ptr, q, s_none, options, FuncItemTester(store_will_buy, player_ptr, store_num));
+    const auto &[item, i_idx] = choose_item(player_ptr, q, s_none, options, FuncItemTester(store_will_buy, player_ptr, store_num));
     if (!item) {
         return;
     }

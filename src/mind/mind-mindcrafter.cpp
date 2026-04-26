@@ -55,7 +55,7 @@ bool psychometry(PlayerType *player_ptr)
 {
     constexpr auto q = _("どのアイテムを調べますか？", "Meditate on which item? ");
     constexpr auto s = _("調べるアイテムがありません。", "You have nothing appropriate.");
-    const auto &[item, i_idx] = choose_object(player_ptr, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR | IGNORE_BOTHHAND_SLOT));
+    const auto &[item, i_idx] = choose_item(player_ptr, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR | IGNORE_BOTHHAND_SLOT));
     if (!item) {
         return false;
     }

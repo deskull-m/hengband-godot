@@ -128,7 +128,7 @@ bool ident_spell(PlayerType *player_ptr, bool only_equip)
     }
 
     constexpr auto s = _("鑑定するべきアイテムがない。", "You have nothing to identify.");
-    const auto &[item, i_idx] = choose_object(player_ptr, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR | IGNORE_BOTHHAND_SLOT), *item_tester);
+    const auto &[item, i_idx] = choose_item(player_ptr, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR | IGNORE_BOTHHAND_SLOT), *item_tester);
     if (!item) {
         return false;
     }
@@ -174,7 +174,7 @@ bool identify_fully(PlayerType *player_ptr, bool only_equip)
     }
 
     constexpr auto s = _("*鑑定*するべきアイテムがない。", "You have nothing to *identify*.");
-    const auto &[item, i_idx] = choose_object(player_ptr, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR | IGNORE_BOTHHAND_SLOT), *item_tester);
+    const auto &[item, i_idx] = choose_item(player_ptr, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR | IGNORE_BOTHHAND_SLOT), *item_tester);
     if (!item) {
         return false;
     }

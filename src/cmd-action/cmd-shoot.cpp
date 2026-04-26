@@ -56,7 +56,7 @@ void do_cmd_fire(PlayerType *player_ptr, SPELL_IDX snipe_type)
     PlayerClass(player_ptr).break_samurai_stance({ SamuraiStanceType::MUSOU });
     constexpr auto q = _("どれを撃ちますか? ", "Fire which item? ");
     constexpr auto s = _("発射されるアイテムがありません。", "You have nothing to fire.");
-    const auto &[item, i_idx] = choose_object(player_ptr, q, s, USE_INVEN | USE_FLOOR, TvalItemTester(player_ptr->tval_ammo));
+    const auto &[item, i_idx] = choose_item(player_ptr, q, s, USE_INVEN | USE_FLOOR, TvalItemTester(player_ptr->tval_ammo));
     if (!item) {
         flush();
         return;

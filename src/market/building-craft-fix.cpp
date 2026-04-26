@@ -92,7 +92,7 @@ static std::pair<short, std::shared_ptr<ItemEntity>> select_repairing_broken_wea
     prt(_("材料に使用した武器はなくなります！", "The material weapon will disappear after repairing!!"), row + 1, 2);
     constexpr auto q = _("どの折れた武器を修復しますか？", "Repair which broken weapon? ");
     constexpr auto s = _("修復できる折れた武器がありません。", "You have no broken weapon to repair.");
-    const auto &[item, i_idx] = choose_object(player_ptr, q, s, (USE_INVEN | USE_EQUIP), FuncItemTester(&ItemEntity::is_broken_weapon));
+    const auto &[item, i_idx] = choose_item(player_ptr, q, s, (USE_INVEN | USE_EQUIP), FuncItemTester(&ItemEntity::is_broken_weapon));
     if (!item) {
         return { i_idx, nullptr };
     }
@@ -145,7 +145,7 @@ static PRICE repair_broken_weapon_aux(PlayerType *player_ptr, PRICE bcost)
     display_reparing_weapon(player_ptr, *item_broken, row);
     constexpr auto q = _("材料となる武器は？", "Which weapon for material? ");
     constexpr auto s = _("材料となる武器がありません。", "You have no material for the repair.");
-    const auto &[item_material, material_idx] = choose_object(player_ptr, q, s, (USE_INVEN | USE_EQUIP), FuncItemTester(&ItemEntity::is_orthodox_melee_weapons));
+    const auto &[item_material, material_idx] = choose_item(player_ptr, q, s, (USE_INVEN | USE_EQUIP), FuncItemTester(&ItemEntity::is_orthodox_melee_weapons));
     if (!item_material) {
         return 0;
     }

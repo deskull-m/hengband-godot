@@ -211,7 +211,7 @@ bool cast_summon_greater_demon(PlayerType *player_ptr)
 {
     constexpr auto q = _("どの死体を捧げますか? ", "Sacrifice which corpse? ");
     constexpr auto s = _("捧げられる死体を持っていない。", "You have nothing to sacrifice.");
-    const auto &[item, i_idx] = choose_object(player_ptr, q, s, (USE_INVEN | USE_FLOOR), FuncItemTester(&ItemEntity::is_offerable));
+    const auto &[item, i_idx] = choose_item(player_ptr, q, s, (USE_INVEN | USE_FLOOR), FuncItemTester(&ItemEntity::is_offerable));
     if (!item) {
         return false;
     }
