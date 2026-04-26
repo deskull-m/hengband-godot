@@ -21,7 +21,7 @@ bool activate_muramasa(PlayerType *player_ptr, ItemEntity *o_ptr)
     do_inc_stat(player_ptr, A_STR);
     if (one_in_(2)) {
         msg_print(_("村正は壊れた！", "The Muramasa is destroyed!"));
-        curse_weapon_object(player_ptr, true, o_ptr);
+        curse_weapon_object(player_ptr, true, *o_ptr);
     }
 
     return true;
