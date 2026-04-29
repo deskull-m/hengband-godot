@@ -1,6 +1,8 @@
 #include "info-reader/dungeon-reader.h"
+#include "external-lib/include-json.h"
 #include "info-reader/dungeon-info-tokens-table.h"
 #include "info-reader/info-reader-util.h"
+#include "info-reader/json-reader-util.h"
 #include "info-reader/parse-error-types.h"
 #include "info-reader/race-info-tokens-table.h"
 #include "io/tokenizer.h"
@@ -14,6 +16,7 @@
 #include "util/enum-converter.h"
 #include "util/string-processor.h"
 #include "view/display-messages.h"
+#include <memory>
 #include <span>
 
 /*!
@@ -105,6 +108,234 @@ static bool grab_one_spell_monster_flag(DungeonDefinition &dungeon, std::string_
 
     msg_format(_("未知のモンスター・フラグ '%s'。", "Unknown monster flag '%s'."), what.data());
     return false;
+}
+
+static tl::optional<ProbabilityTable<short>> parse_terrain_probability_json(const nlohmann::json &tiles_obj)
+{
+    if (tiles_obj.is_null() || !tiles_obj.is_array()) {
+        return tl::nullopt;
+    }
+
+    const auto &terrains = TerrainList::get_instance();
+    ProbabilityTable<short> prob_table;
+    for (const auto &tile_obj : tiles_obj) {
+        if (!tile_obj.is_object() || !tile_obj["type"].is_string() || !tile_obj["rate"].is_number_integer()) {
+            return tl::nullopt;
+        }
+
+        try {
+            const auto terrain_id = terrains.get_terrain_id(tile_obj["type"].get<std::string>());
+            const auto prob = tile_obj["rate"].get<short>();
+            prob_table.entry_item(terrain_id, prob);
+        } catch (const std::exception &) {
+            return tl::nullopt;
+        }
+    }
+
+    return prob_table;
+}
+
+static errr set_dungeon_description_json(const nlohmann::json &description_obj, DungeonDefinition &dungeon)
+{
+    return info_set_string(description_obj, dungeon.text, false);
+}
+
+static errr set_dungeon_generation_json(const nlohmann::json &generation_obj, DungeonDefinition &dungeon)
+{
+    if (generation_obj.is_null() || !generation_obj.is_object()) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    }
+
+    if (auto err = info_set_integer(generation_obj["minDepth"], dungeon.mindepth, true)) {
+        return err;
+    }
+    if (auto err = info_set_integer(generation_obj["maxDepth"], dungeon.maxdepth, true)) {
+        return err;
+    }
+    if (auto err = info_set_integer(generation_obj["minPlayerLevel"], dungeon.min_plev, true)) {
+        return err;
+    }
+    int mode = 0;
+    if (auto err = info_set_integer(generation_obj["flagsMode"], mode, true, Range(0, 4))) {
+        return err;
+    }
+    dungeon.mode = static_cast<DungeonMode>(mode);
+    if (auto err = info_set_integer(generation_obj["minAlloc"], dungeon.min_m_alloc_level, true)) {
+        return err;
+    }
+    if (auto err = info_set_integer(generation_obj["maxAllocChance"], dungeon.max_m_alloc_chance, true)) {
+        return err;
+    }
+    if (auto err = info_set_integer(generation_obj["objGood"], dungeon.obj_good, true)) {
+        return err;
+    }
+    if (auto err = info_set_integer(generation_obj["objGreat"], dungeon.obj_great, true)) {
+        return err;
+    }
+
+    try {
+        dungeon.pit = static_cast<BIT_FLAGS16>(std::stoul(generation_obj["pit"].get<std::string>(), nullptr, 16));
+        dungeon.nest = static_cast<BIT_FLAGS16>(std::stoul(generation_obj["nest"].get<std::string>(), nullptr, 16));
+    } catch (const std::exception &) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    }
+
+    return PARSE_ERROR_NONE;
+}
+
+static errr set_dungeon_floor_json(const nlohmann::json &floor_obj, DungeonDefinition &dungeon)
+{
+    if (floor_obj.is_null() || !floor_obj.is_object()) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    }
+
+    auto prob_table = parse_terrain_probability_json(floor_obj["tiles"]);
+    if (!prob_table) {
+        return PARSE_ERROR_UNDEFINED_TERRAIN_TAG;
+    }
+    dungeon.prob_table_floor = std::move(*prob_table);
+
+    return info_set_integer(floor_obj["tunnelRate"], dungeon.tunnel_percent, true);
+}
+
+static errr set_dungeon_wall_json(const nlohmann::json &wall_obj, DungeonDefinition &dungeon)
+{
+    if (wall_obj.is_null() || !wall_obj.is_object()) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    }
+
+    auto prob_table = parse_terrain_probability_json(wall_obj["tiles"]);
+    if (!prob_table) {
+        return PARSE_ERROR_UNDEFINED_TERRAIN_TAG;
+    }
+    dungeon.prob_table_wall = std::move(*prob_table);
+
+    const auto &terrains = TerrainList::get_instance();
+    try {
+        dungeon.outer_wall = terrains.get_terrain_id(wall_obj["outer"].get<std::string>());
+        dungeon.inner_wall = terrains.get_terrain_id(wall_obj["inner"].get<std::string>());
+        dungeon.stream1 = terrains.get_terrain_id(wall_obj["stream1"].get<std::string>());
+        dungeon.stream2 = terrains.get_terrain_id(wall_obj["stream2"].get<std::string>());
+    } catch (const std::exception &) {
+        return PARSE_ERROR_UNDEFINED_TERRAIN_TAG;
+    }
+
+    return PARSE_ERROR_NONE;
+}
+
+static errr set_dungeon_flags_json(const nlohmann::json &flags_obj, DungeonDefinition &dungeon)
+{
+    if (flags_obj.is_null()) {
+        return PARSE_ERROR_NONE;
+    }
+    if (!flags_obj.is_array()) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    }
+
+    for (const auto &f_obj : flags_obj) {
+        if (!f_obj.is_string()) {
+            return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+        }
+
+        const auto f = f_obj.get<std::string>();
+        if (f.empty()) {
+            continue;
+        }
+
+        const auto &f_tokens = str_split(f, '_');
+        if (f_tokens.size() == 3) {
+            if (f_tokens[0] == "FINAL" && f_tokens[1] == "ARTIFACT") {
+                info_set_value(dungeon.final_artifact, f_tokens[2]);
+                continue;
+            }
+            if (f_tokens[0] == "FINAL" && f_tokens[1] == "OBJECT") {
+                info_set_value(dungeon.final_object, f_tokens[2]);
+                continue;
+            }
+            if (f_tokens[0] == "FINAL" && f_tokens[1] == "GUARDIAN") {
+                info_set_value(dungeon.final_guardian, f_tokens[2]);
+                continue;
+            }
+            if (f_tokens[0] == "MONSTER" && f_tokens[1] == "DIV") {
+                info_set_value(dungeon.special_div, f_tokens[2]);
+                continue;
+            }
+        }
+
+        if (!grab_one_dungeon_flag(dungeon, f)) {
+            return PARSE_ERROR_INVALID_FLAG;
+        }
+    }
+
+    return PARSE_ERROR_NONE;
+}
+
+static errr set_dungeon_monster_flags_json(const nlohmann::json &flags_obj, DungeonDefinition &dungeon)
+{
+    if (flags_obj.is_null()) {
+        return PARSE_ERROR_NONE;
+    }
+    if (!flags_obj.is_array()) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    }
+
+    for (const auto &f_obj : flags_obj) {
+        if (!f_obj.is_string()) {
+            return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+        }
+
+        const auto f = f_obj.get<std::string>();
+        if (f.empty()) {
+            continue;
+        }
+
+        const auto &m_tokens = str_split(f, '_');
+        if (m_tokens.size() >= 3 && m_tokens[0] == "R" && m_tokens[1] == "CHAR") {
+            dungeon.r_chars.insert(dungeon.r_chars.end(), m_tokens[2].begin(), m_tokens[2].end());
+            continue;
+        }
+
+        if (!grab_one_basic_monster_flag(dungeon, f)) {
+            return PARSE_ERROR_INVALID_FLAG;
+        }
+    }
+
+    return PARSE_ERROR_NONE;
+}
+
+static errr set_dungeon_monster_spells_json(const nlohmann::json &spells_obj, DungeonDefinition &dungeon)
+{
+    if (spells_obj.is_null()) {
+        return PARSE_ERROR_NONE;
+    }
+    if (!spells_obj.is_array()) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    }
+
+    for (const auto &s_obj : spells_obj) {
+        if (!s_obj.is_string()) {
+            return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+        }
+
+        const auto s = s_obj.get<std::string>();
+        if (s.empty()) {
+            continue;
+        }
+
+        const auto &s_tokens = str_split(s, '_');
+        if (s_tokens.size() == 3 && s_tokens[1] == "IN") {
+            if (s_tokens[0] != "1") {
+                return PARSE_ERROR_GENERIC;
+            }
+            continue;
+        }
+
+        if (!grab_one_spell_monster_flag(dungeon, s)) {
+            return PARSE_ERROR_INVALID_FLAG;
+        }
+    }
+
+    return PARSE_ERROR_NONE;
 }
 
 static tl::optional<ProbabilityTable<short>> parse_terrain_probability(std::span<const std::string> tokens)
@@ -387,4 +618,65 @@ errr parse_dungeons_info(std::string_view buf, angband_header *)
     }
 
     return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+}
+
+errr parse_dungeons_json_info(nlohmann::json &element, angband_header *)
+{
+    if (element.is_null() || !element.is_object()) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    }
+
+    int id = 0;
+    if (auto err = info_set_integer(element["id"], id, true, Range(0, 9999))) {
+        return err;
+    }
+    if (id < error_idx) {
+        return PARSE_ERROR_NON_SEQUENTIAL_RECORDS;
+    }
+    error_idx = id;
+
+    DungeonDefinition dungeon;
+    if (auto err = info_set_string(element["name"], dungeon.name, true)) {
+        return err;
+    }
+    if (auto err = set_dungeon_description_json(element["description"], dungeon)) {
+        return err;
+    }
+
+    const auto &position_obj = element["position"];
+    if (position_obj.is_null() || !position_obj.is_object()) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    }
+    int wild_y = 0;
+    int wild_x = 0;
+    if (auto err = info_set_integer(position_obj["min"], wild_y, true)) {
+        return err;
+    }
+    if (auto err = info_set_integer(position_obj["max"], wild_x, true)) {
+        return err;
+    }
+    dungeon.initialize_position({ wild_y, wild_x });
+
+    if (auto err = set_dungeon_generation_json(element["generation"], dungeon)) {
+        return err;
+    }
+    if (auto err = set_dungeon_floor_json(element["floor"], dungeon)) {
+        return err;
+    }
+    if (auto err = set_dungeon_wall_json(element["wall"], dungeon)) {
+        return err;
+    }
+    if (auto err = set_dungeon_flags_json(element["flags"], dungeon)) {
+        return err;
+    }
+    if (auto err = set_dungeon_monster_flags_json(element["monsterFlags"], dungeon)) {
+        return err;
+    }
+    if (auto err = set_dungeon_monster_spells_json(element["monsterSpells"], dungeon)) {
+        return err;
+    }
+
+    auto &dungeons = DungeonList::get_instance();
+    dungeons.emplace(i2enum<DungeonId>(id), std::move(dungeon));
+    return PARSE_ERROR_NONE;
 }
