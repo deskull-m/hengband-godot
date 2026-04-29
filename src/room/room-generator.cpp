@@ -189,8 +189,7 @@ bool generate_rooms(PlayerType *player_ptr, DungeonData *dd_ptr)
     bool remain;
     while (true) {
         remain = false;
-        for (auto i = 0; i < ROOM_TYPE_MAX; i++) {
-            auto room_type = room_build_order[i];
+        for (const auto room_type : room_build_order) {
             if (!room_num[room_type]) {
                 continue;
             }

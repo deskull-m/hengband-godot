@@ -39,7 +39,7 @@ room_info_type room_info_normal[ROOM_TYPE_MAX] = {
 };
 
 /*! 部屋の生成処理順 / Build rooms in descending order of difficulty. */
-RoomType room_build_order[ROOM_TYPE_MAX] = {
+const std::array<RoomType, ROOM_TYPE_MAX> room_build_order = {
     RoomType::GREATER_VAULT,
     RoomType::ARCADE,
     RoomType::RANDOM_VAULT,
