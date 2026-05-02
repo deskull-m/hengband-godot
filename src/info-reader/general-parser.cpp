@@ -103,7 +103,7 @@ parse_error_type parse_line_feature(const FloorType &floor, char *buf)
     }
 
     char *zz[9];
-    int num = tokenize(buf + 2, 9, zz, 0);
+    int num = tokenize(buf + 2, 9, zz);
     if (num <= 1) {
         return PARSE_ERROR_GENERIC;
     }
@@ -251,7 +251,7 @@ parse_error_type parse_line_building(char *buf)
 
     switch (s[0]) {
     case 'N': {
-        if (tokenize(s + 2, 3, zz, 0) == 3) {
+        if (tokenize(s + 2, 3, zz) == 3) {
             strcpy(buildings[index].name, zz[0]);
             strcpy(buildings[index].owner_name, zz[1]);
             strcpy(buildings[index].owner_race, zz[2]);
@@ -261,7 +261,7 @@ parse_error_type parse_line_building(char *buf)
         return PARSE_ERROR_TOO_FEW_ARGUMENTS;
     }
     case 'A': {
-        if (tokenize(s + 2, 8, zz, 0) >= 7) {
+        if (tokenize(s + 2, 8, zz) >= 7) {
             int action_index = atoi(zz[0]);
             strcpy(buildings[index].act_names[action_index], zz[1]);
             buildings[index].member_costs[action_index] = (PRICE)atoi(zz[2]);
@@ -276,7 +276,7 @@ parse_error_type parse_line_building(char *buf)
     }
     case 'C': {
         auto pct_max = PLAYER_CLASS_TYPE_MAX;
-        auto n = tokenize(s + 2, pct_max, zz, 0);
+        auto n = tokenize(s + 2, pct_max, zz);
         for (auto i = 0; i < pct_max; i++) {
             buildings[index].member_class[i] = (i < n) ? atoi(zz[i]) : 1;
         }
@@ -284,7 +284,7 @@ parse_error_type parse_line_building(char *buf)
         break;
     }
     case 'R': {
-        auto n = tokenize(s + 2, MAX_RACES, zz, 0);
+        auto n = tokenize(s + 2, MAX_RACES, zz);
         for (int i = 0; i < MAX_RACES; i++) {
             buildings[index].member_race[i] = (i < n) ? atoi(zz[i]) : 1;
         }
@@ -293,7 +293,7 @@ parse_error_type parse_line_building(char *buf)
     }
     case 'M': {
         int n;
-        n = tokenize(s + 2, MAX_MAGIC, zz, 0);
+        n = tokenize(s + 2, MAX_MAGIC, zz);
         for (int i = 0; i < MAX_MAGIC; i++) {
             buildings[index].member_realm[i + 1] = ((i < n) ? static_cast<int16_t>(atoi(zz[i])) : 1);
         }
