@@ -2,7 +2,6 @@
 #include "info-reader/info-reader-util.h"
 #include "info-reader/json-reader-util.h"
 #include "info-reader/parse-error-types.h"
-#include "main/angband-headers.h"
 #include "player-ability/player-ability-types.h"
 #include "player-info/class-info.h"
 #include "system/spell-info-list.h"
@@ -230,7 +229,7 @@ static errr set_realm_data(const nlohmann::json &class_data, player_magic &magic
  * @param head ヘッダ構造体
  * @return エラーコード
  */
-errr parse_class_magics_info(nlohmann::json &class_data, angband_header *)
+int parse_class_magics_info(nlohmann::json &class_data, DefinitionHashDataType)
 {
     int class_id;
     if (auto err = set_class_id(class_data, class_id)) {

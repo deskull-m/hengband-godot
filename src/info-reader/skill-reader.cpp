@@ -1,7 +1,6 @@
 #include "info-reader/skill-reader.h"
 #include "info-reader/info-reader-util.h"
 #include "info-reader/parse-error-types.h"
-#include "main/angband-headers.h"
 #include "object/tval-types.h"
 #include "player/player-skill.h"
 #include "util/enum-converter.h"
@@ -13,7 +12,7 @@
  * @param head ヘッダ構造体
  * @return エラーコード
  */
-errr parse_class_skills_info(std::string_view buf, angband_header *)
+int parse_class_skills_info(std::string_view buf, DefinitionHashDataType)
 {
     static skill_table *s_ptr = nullptr;
     const auto &tokens = str_split(buf, ':', false, 5);

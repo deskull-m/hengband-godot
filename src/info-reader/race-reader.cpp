@@ -5,7 +5,6 @@
 #include "info-reader/parse-error-types.h"
 #include "info-reader/race-info-tokens-table.h"
 #include "locale/japanese.h"
-#include "main/angband-headers.h"
 #include "player-ability/player-ability-types.h"
 #include "system/monrace/monrace-definition.h"
 #include "system/monrace/monrace-list.h"
@@ -505,7 +504,7 @@ static errr set_mon_message(const nlohmann::json &message_data, MonraceDefinitio
  * @param head ヘッダ構造体
  * @return エラーコード
  */
-errr parse_monraces_info(nlohmann::json &mon_data, angband_header *)
+int parse_monraces_info(nlohmann::json &mon_data, DefinitionHashDataType)
 {
     if (!mon_data["id"].is_number_integer()) {
         return PARSE_ERROR_TOO_FEW_ARGUMENTS;

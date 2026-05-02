@@ -6,7 +6,6 @@
 #include "info-reader/json-reader-util.h"
 #include "info-reader/parse-error-types.h"
 #include "locale/japanese.h"
-#include "main/angband-headers.h"
 #include "object-enchant/tr-types.h"
 #include "system/artifact/artifact-definition.h"
 #include "system/artifact/artifact-list.h"
@@ -113,7 +112,7 @@ static errr set_art_flags(const nlohmann::json &flag_data, ArtifactDefinition &a
  * @param head ヘッダ構造体
  * @return エラーコード
  */
-errr parse_artifacts_info(nlohmann::json &art_data, angband_header *)
+int parse_artifacts_info(nlohmann::json &art_data, DefinitionHashDataType)
 {
     if (!art_data["id"].is_number_integer()) {
         return PARSE_ERROR_TOO_FEW_ARGUMENTS;

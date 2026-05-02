@@ -28,11 +28,10 @@ struct dungeon_grid {
 
 extern dungeon_grid letter[255];
 
-struct angband_header;
+enum class DefinitionHashDataType;
 class FloorType;
 
-using Parser = std::function<errr(std::string_view, angband_header *)>;
-using JSONParser = std::function<errr(nlohmann::json &, angband_header *)>;
-std::tuple<errr, int, std::string> init_info_txt(FILE *fp, angband_header *head, Parser parse_info_txt_line);
+using Parser = std::function<int(std::string_view, DefinitionHashDataType)>;
+std::tuple<int, int, std::string> init_info_txt(FILE *fp, DefinitionHashDataType dhdt, Parser parse_info_txt_line);
 parse_error_type parse_line_feature(const FloorType &floor, std::string_view buf);
 parse_error_type parse_line_building(std::string_view buf);

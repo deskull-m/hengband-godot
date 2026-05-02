@@ -1,11 +1,11 @@
 #include "info-reader/general-parser.h"
 #include "artifact/fixed-art-types.h"
 #include "dungeon/quest.h"
+#include "info-reader/definition-hash-data.h"
 #include "info-reader/info-reader-util.h"
 #include "info-reader/parse-error-types.h"
 #include "info-reader/random-grid-effect-types.h"
 #include "io/tokenizer.h"
-#include "main/angband-headers.h"
 #include "object-enchant/trg-types.h"
 #include "player-info/class-types.h"
 #include "player-info/race-types.h"
@@ -43,7 +43,7 @@ void dungeon_grid::set_trap_id(TerrainTag tag)
  * @param parse_info_txt_line パース関数
  * @return エラーコード, エラー行番号, エラーが起きた行の内容
  */
-std::tuple<errr, int, std::string> init_info_txt(FILE *fp, angband_header *head, Parser parse_info_txt_line)
+std::tuple<int, int, std::string> init_info_txt(FILE *fp, DefinitionHashDataType dhdt, Parser parse_info_txt_line)
 {
     error_idx = -1;
     auto error_line = 0;
@@ -76,12 +76,12 @@ std::tuple<errr, int, std::string> init_info_txt(FILE *fp, angband_header *head,
             sha256.update(line);
         }
 
-        if (auto err = parse_info_txt_line(line, head); err != 0) {
+        if (auto err = parse_info_txt_line(line, dhdt); err != 0) {
             return { err, error_line, std::string(line) };
         }
     }
 
-    head->digest = sha256.digest();
+    DefinitionHashData::get_instance().set_digest(dhdt, sha256.digest());
     return { PARSE_ERROR_NONE, error_line, "" };
 }
 
