@@ -238,9 +238,9 @@
         "LAKE_TREE",
         "DESTROY",
         "BIG",
-        "MONSTER_DIV_32",
+        "MONSTER_DIV_10",
       ],
-      "monsterFlags": ["ORC", "R_CHAR_koO", "ANIMAL"],
+      "monsterFlags": ["ORC", "TROLL", "R_CHAR_oOT"],
     },
     {
       "id": 4,
