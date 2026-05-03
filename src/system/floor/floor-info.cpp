@@ -2,6 +2,7 @@
 #include "dungeon/quest.h"
 #include "floor/geometry.h"
 #include "game-option/birth-options.h"
+#include "game-option/game-play-options.h"
 #include "locale/language-switcher.h"
 #include "monster/monster-timed-effects.h"
 #include "object-enchant/item-apply-magic.h"
@@ -29,7 +30,26 @@
 #include "util/enum-range.h"
 #include "util/point-2d.h"
 #include "world/world.h"
+#include <array>
 #include <range/v3/algorithm.hpp>
+#include <utility>
+
+namespace {
+//!< @brief 最小面積ダンジョン(迷宮)の大きさを「1ブロック×1ブロック」と定義した時の、1フロアのブロック数
+constexpr std::array<std::pair<int, int>, 9> dungeon_blocks{
+    {
+        { 1, 1 },
+        { 1, 2 },
+        { 1, 3 },
+        { 2, 1 },
+        { 2, 2 },
+        { 2, 3 },
+        { 3, 1 },
+        { 3, 2 },
+        { 3, 3 },
+    }
+};
+}
 
 FloorType::FloorType()
     : grid_array(MAX_HGT, std::vector<Grid>(MAX_WID))
@@ -963,6 +983,38 @@ void FloorType::place_trap_at(const Pos2D &pos)
 
     grid.mimic = grid.feat;
     grid.set_terrain_id(this->select_random_trap());
+}
+
+void FloorType::decide_floor_size()
+{
+    const auto &dungeon = this->get_dungeon_definition();
+    constexpr auto chance_small_floor = 3;
+    auto is_small_level = always_small_levels || ironman_small_levels;
+    is_small_level |= one_in_(chance_small_floor) && small_levels;
+    is_small_level |= dungeon.flags.has(DungeonFeatureType::BEGINNER);
+    is_small_level |= dungeon.flags.has(DungeonFeatureType::SMALLEST);
+    if (is_small_level && dungeon.flags.has_not(DungeonFeatureType::LARGEST)) {
+        std::pair<int, int> dungeon_block;
+        if (dungeon.flags.has(DungeonFeatureType::SMALLEST)) {
+            dungeon_block = dungeon_blocks.at(0);
+        } else if (dungeon.flags.has(DungeonFeatureType::BEGINNER)) {
+            while (true) {
+                dungeon_block = dungeon_blocks.at(randint0(dungeon_blocks.size() - 1));
+                const auto area = dungeon_block.first * dungeon_block.second;
+                if ((2 <= area) && (area <= 4)) {
+                    break;
+                }
+            }
+        } else {
+            dungeon_block = dungeon_blocks.at(randint0(dungeon_blocks.size() - 1));
+        }
+
+        this->height = dungeon_block.first * SCREEN_HGT;
+        this->width = dungeon_block.second * SCREEN_WID;
+    } else {
+        this->height = MAX_HGT;
+        this->width = MAX_WID;
+    }
 }
 
 /*!

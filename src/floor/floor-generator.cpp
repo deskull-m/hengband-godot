@@ -10,16 +10,12 @@
  */
 
 #include "floor/floor-generator.h"
-#include "dungeon/dungeon-flag-types.h"
 #include "dungeon/quest.h"
 #include "floor/cave-generator.h"
 #include "floor/floor-events.h"
 #include "floor/floor-save.h" //!< @todo precalc_cur_num_of_pet() が依存している、違和感.
 #include "floor/floor-util.h"
 #include "floor/wild.h"
-#include "game-option/birth-options.h"
-#include "game-option/cheat-types.h"
-#include "game-option/game-play-options.h"
 #include "game-option/play-record-options.h"
 #include "grid/grid.h"
 #include "info-reader/fixed-map-parser.h"
@@ -28,15 +24,9 @@
 #include "monster-floor/monster-generator.h"
 #include "monster-floor/monster-remover.h"
 #include "monster-floor/place-monster-types.h"
-#include "monster/monster-flag-types.h"
-#include "monster/monster-status-setter.h"
-#include "monster/monster-status.h"
 #include "monster/monster-update.h"
 #include "monster/monster-util.h"
-#include "system/angband-system.h"
 #include "system/building-type-definition.h"
-#include "system/dungeon/dungeon-definition.h"
-#include "system/dungeon/dungeon-list.h"
 #include "system/enums/terrain/terrain-tag.h"
 #include "system/floor/floor-info.h"
 #include "system/grid-type-definition.h"
@@ -50,28 +40,10 @@
 #include "util/bit-flags-calculator.h"
 #include "view/display-messages.h"
 #include "window/main-window-util.h"
-#include "wizard/wizard-messages.h"
 #include "world/world.h"
 #include <algorithm>
 #include <array>
 #include <stack>
-
-namespace {
-//!< @brief 最小面積ダンジョン(迷宮)の大きさを「1ブロック×1ブロック」と定義した時の、1フロアのブロック数
-std::array<std::pair<int, int>, 9> dungeon_blocks{
-    {
-        { 1, 1 },
-        { 1, 2 },
-        { 1, 3 },
-        { 2, 1 },
-        { 2, 2 },
-        { 2, 3 },
-        { 3, 1 },
-        { 3, 2 },
-        { 3, 3 },
-    }
-};
-}
 
 /*!
  * @brief 闘技場用のアリーナ地形を作成する / Builds the on_defeat_arena_monster after it is entered -KMW-
@@ -313,54 +285,6 @@ static void generate_fixed_floor(PlayerType *player_ptr)
 }
 
 /*!
- * @brief ダンジョン時のランダムフロア生成 / Make a real level
- * @param player_ptr プレイヤーへの参照ポインタ
- * @param concptr
- * @return フロアの生成に成功したらTRUE
- */
-static tl::optional<std::string> level_gen(PlayerType *player_ptr)
-{
-    auto &floor = *player_ptr->current_floor_ptr;
-    const auto &dungeon = floor.get_dungeon_definition();
-    constexpr auto chance_small_floor = 3;
-    auto is_small_level = always_small_levels || ironman_small_levels;
-    is_small_level |= one_in_(chance_small_floor) && small_levels;
-    is_small_level |= dungeon.flags.has(DungeonFeatureType::BEGINNER);
-    is_small_level |= dungeon.flags.has(DungeonFeatureType::SMALLEST);
-    if (is_small_level && dungeon.flags.has_not(DungeonFeatureType::LARGEST)) {
-        std::pair<int, int> dungeon_block;
-        if (dungeon.flags.has(DungeonFeatureType::SMALLEST)) {
-            dungeon_block = dungeon_blocks.at(0);
-        } else if (dungeon.flags.has(DungeonFeatureType::BEGINNER)) {
-            while (true) {
-                dungeon_block = dungeon_blocks.at(randint0(dungeon_blocks.size() - 1));
-                const auto area = dungeon_block.first * dungeon_block.second;
-                if ((2 <= area) && (area <= 4)) {
-                    break;
-                }
-            }
-        } else {
-            dungeon_block = dungeon_blocks.at(randint0(dungeon_blocks.size() - 1));
-        }
-
-        floor.height = dungeon_block.first * SCREEN_HGT;
-        floor.width = dungeon_block.second * SCREEN_WID;
-        panel_row_min = floor.height;
-        panel_col_min = floor.width;
-
-        msg_format_wizard(
-            player_ptr, CHEAT_DUNGEON, _("小さなフロア: X:%d, Y:%d", "A 'small' dungeon level: X:%d, Y:%d."), floor.width, floor.height);
-    } else {
-        floor.height = MAX_HGT;
-        floor.width = MAX_WID;
-        panel_row_min = floor.height;
-        panel_col_min = floor.width;
-    }
-
-    return cave_gen(player_ptr);
-}
-
-/*!
  * @brief フロアに存在する全マスの記憶状態を初期化する / Wipe all unnecessary flags after grid_array generation
  */
 void wipe_generate_random_floor_flags(FloorType &floor)
@@ -531,7 +455,10 @@ void generate_floor(PlayerType *player_ptr)
                 wilderness_gen(player_ptr);
             }
         } else {
-            why = level_gen(player_ptr);
+            floor.decide_floor_size();
+            panel_row_min = floor.height;
+            panel_col_min = floor.width;
+            why = cave_gen(player_ptr);
         }
 
         if (floor.o_list.size() >= MAX_FLOOR_ITEMS) {

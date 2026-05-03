@@ -157,6 +157,8 @@ public:
     void set_terrain_id_at(const Pos2D &pos, short terrain_id, TerrainKind tk = TerrainKind::NORMAL);
     void place_trap_at(const Pos2D &pos);
 
+    void decide_floor_size();
+
 private:
     bool entering_dungeon = false;
     bool leaving_dungeon = false;
