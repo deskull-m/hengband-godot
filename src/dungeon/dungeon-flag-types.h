@@ -3,8 +3,10 @@
 enum class DungeonFeatureType {
     WINNER,
     MAZE,
-    SMALLEST,
     BEGINNER,
+    SMALLEST,
+    SMALL,
+    LARGE,
     LARGEST,
     NO_DOORS,
     WATER_RIVER,

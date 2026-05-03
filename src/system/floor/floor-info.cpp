@@ -33,7 +33,6 @@
 #include "world/world.h"
 #include <array>
 #include <range/v3/algorithm.hpp>
-#include <utility>
 
 namespace {
 //!< @brief 最小面積ダンジョン(迷宮)の大きさを「1ブロック×1ブロック」と定義した時の、1フロアのブロック数
@@ -986,55 +985,63 @@ void FloorType::place_trap_at(const Pos2D &pos)
     grid.set_terrain_id(this->select_random_trap());
 }
 
+/*!
+ * @brief フロアサイズを生成する
+ *
+ * 鉄人フラグ「常に非常に小さいフロアを生成」は、DungeonFeatureTypeを全て無視して小さなフロアだけを生成する.
+ * 初心者フラグのついているダンジョンは、2～4ブロックのフロアを生成する.
+ * SMALLフラグがついているダンジョンは、最大サイズ以外のフロアを選択する. LARGEフラグがついているダンジョンは、最小サイズ以外のフロアを選択する.
+ * SMALLESTとLARGESTの両方がついているダンジョンは、1/2の確率でSMALLEST、1/2の確率でLARGESTとみなす.
+ * SMALLとLARGEの両方がついているダンジョンは、1/2の確率でSMALL、1/2の確率でLARGEとみなす.
+ * 「非常に小さいフロアの生成を可能にする」は、名前に反して「最大サイズ以外のダンジョンも生成対象とする」であり、falseならば常に大きなフロアが生成される.
+ * 「常に非常に小さいフロアを生成する 」も、名前に反して「最大サイズのダンジョンを生成対象外とする」であり、trueにしたところで中サイズのフロアも生成される.
+ */
 void FloorType::decide_floor_size()
 {
-    const auto &dungeon = this->get_dungeon_definition();
-    constexpr auto chance_small_floor = 3;
-    auto is_small_level = always_small_levels || ironman_small_levels;
-    is_small_level |= one_in_(chance_small_floor) && small_levels;
-    is_small_level |= dungeon.flags.has(DungeonFeatureType::BEGINNER);
-    is_small_level |= dungeon.flags.has(DungeonFeatureType::SMALLEST);
-    if (!is_small_level || dungeon.flags.has(DungeonFeatureType::LARGEST)) {
-        this->height = MAX_HGT;
-        this->width = MAX_WID;
-        return;
-    }
-
     std::pair<int, int> dungeon_block;
     const auto finalizer = util::make_finalizer([&]() {
         this->height = dungeon_block.first * SCREEN_HGT;
         this->width = dungeon_block.second * SCREEN_WID;
     });
-    if (dungeon.flags.has(DungeonFeatureType::SMALLEST)) {
-        dungeon_block = dungeon_blocks.at(0);
+
+    if (ironman_small_levels) {
+        dungeon_block = *dungeon_blocks.cbegin();
         return;
     }
 
+    const auto &dungeon = this->get_dungeon_definition();
     if (dungeon.flags.has(DungeonFeatureType::BEGINNER)) {
-        while (true) {
-            dungeon_block = dungeon_blocks.at(randint0(dungeon_blocks.size() - 1));
-            const auto area = dungeon_block.first * dungeon_block.second;
-            if ((2 <= area) && (area <= 4)) {
-                break;
-            }
-        }
-
+        dungeon_block = this->select_floor_size_beginner();
         return;
     }
 
-    const auto is_small = dungeon.flags.has(DungeonFeatureType::SMALL);
-    const auto is_large = dungeon.flags.has(DungeonFeatureType::LARGE);
-    if (is_small && is_large) {
-        if (one_in_(2)) {
-            // small生成
-            return;
-        }
-
-        // larage生成
+    const auto both_smallest_largest = dungeon.flags.has_all_of({ DungeonFeatureType::SMALLEST, DungeonFeatureType::LARGEST });
+    if (both_smallest_largest) {
+        dungeon_block = one_in_(2) ? *dungeon_blocks.cbegin() : *dungeon_blocks.crbegin();
         return;
     }
 
-    dungeon_block = dungeon_blocks.at(randint0(dungeon_blocks.size() - 1));
+    const auto both_small_large = dungeon.flags.has_all_of({ DungeonFeatureType::SMALL, DungeonFeatureType::LARGE });
+    if (both_small_large) {
+        dungeon_block = this->select_floor_size();
+        return;
+    }
+
+    constexpr auto chance_small_floor = 3;
+    auto is_largest = !always_small_levels && !(small_levels && one_in_(chance_small_floor));
+    is_largest &= dungeon.flags.has_not(DungeonFeatureType::BEGINNER);
+    is_largest &= dungeon.flags.has_not(DungeonFeatureType::SMALLEST);
+    if (dungeon.flags.has(DungeonFeatureType::LARGEST) || is_largest) {
+        dungeon_block = *dungeon_blocks.crbegin();
+        return;
+    }
+
+    if (dungeon.flags.has(DungeonFeatureType::SMALLEST)) {
+        dungeon_block = *dungeon_blocks.cbegin();
+        return;
+    }
+
+    dungeon_block = this->select_floor_size();
 }
 
 /*!
@@ -1058,16 +1065,121 @@ int FloorType::decide_selection_count()
     return count;
 }
 
+/*!
+ * @brief 初心者フラグのついているダンジョンのフロアサイズを選択する
+ * @return 選択されたフロアサイズ (縦のブロック数, 横のブロック数)
+ * @details 2ブロック：16%、3ブロック：48%、4ブロック：36% の割合で選択される.
+ */
+std::pair<int, int> FloorType::select_floor_size_beginner()
+{
+    const auto size = dungeon_blocks.size() - 1; //!< 最大サイズのフロアは生成しない.
+    const auto get_valid_size = []() {
+        while (true) {
+            const auto selection = dungeon_blocks.at(randint0(size));
+            if (const auto area = calc_blocks(selection); (area >= 2) && (area <= 4)) {
+                return std::make_pair(selection, area);
+            }
+        }
+    };
+
+    const auto [selection1, area1] = get_valid_size();
+    const auto [selection2, area2] = get_valid_size();
+    return area1 >= area2 ? selection1 : selection2;
+}
+
+/*!
+ * @brief 最大サイズ以外のフロアサイズをランダムに選択する (小さいフロアの出現率高め).
+ * @return 選択されたフロアサイズ (縦のブロック数, 横のブロック数)
+ * @details 乱数の評価順を固定する.
+ */
+std::pair<int, int> FloorType::select_floor_size_small()
+{
+    constexpr auto max_blocks_num = dungeon_blocks.size() - 1;
+    const auto selection1 = dungeon_blocks.at(randint0(max_blocks_num));
+    const auto selection2 = dungeon_blocks.at(randint0(max_blocks_num));
+    if (calc_blocks(selection1) <= calc_blocks(selection2)) {
+        return selection1;
+    }
+
+    return selection2;
+}
+
+/*!
+ * @brief 最小サイズ以外のフロアサイズをランダムに選択する (大きいフロアの出現率高め).
+ * @return 選択されたフロアサイズ (縦のブロック数, 横のブロック数)
+ * @details 乱数の評価順を固定する.
+ */
+std::pair<int, int> FloorType::select_floor_size_large()
+{
+    constexpr auto max_blocks_num = dungeon_blocks.size() - 1;
+    const auto selection1 = dungeon_blocks.at(randint1(max_blocks_num));
+    const auto selection2 = dungeon_blocks.at(randint1(max_blocks_num));
+    if (calc_blocks(selection1) >= calc_blocks(selection2)) {
+        return selection1;
+    }
+
+    return selection2;
+}
+
+std::pair<int, int> FloorType::pick_block_size(size_t size)
+{
+    const auto min_size = small_levels ? 0 : 1;
+    while (true) {
+        const auto block_num = randnum0<size_t>(size);
+        const auto selection = dungeon_blocks.at(block_num);
+        if (calc_blocks(selection) > min_size) {
+            return selection;
+        }
+    }
+}
+
+int FloorType::calc_blocks(const std::pair<int, int> &block)
+{
+    return block.first * block.second;
+}
+
 void FloorType::set_note_and_redraw_at(const Pos2D &pos)
 {
     this->get_grid(pos).info |= CAVE_NOTE;
     this->set_redraw_at(pos);
 }
 
-void set_floor_size_small()
+std::pair<int, int> FloorType::select_floor_size()
 {
-}
+    const auto &dungeon = this->get_dungeon_definition();
+    const auto is_small = dungeon.flags.has(DungeonFeatureType::SMALL);
+    const auto is_large = dungeon.flags.has(DungeonFeatureType::LARGE);
+    if (is_small && is_large) {
+        if (this->dun_level >= (dungeon.mindepth + dungeon.maxdepth) / 2) {
+            return this->select_floor_size_large();
+        }
 
-void set_floor_size_large()
-{
+        return one_in_(2) ? this->select_floor_size_small() : this->select_floor_size_large();
+    }
+
+    if (is_small) {
+        return this->select_floor_size_small();
+    }
+
+    if (is_large) {
+        return this->select_floor_size_large();
+    }
+
+    // 大きすぎるフロアも小さすぎるフロアも生成しにくくする.
+    auto size = dungeon_blocks.size();
+    if (always_small_levels) {
+        size--;
+    }
+
+    const auto selection = this->pick_block_size(size);
+    constexpr auto begin = dungeon_blocks.cbegin();
+    const auto min_area = small_levels ? calc_blocks(*begin) : calc_blocks(*(begin + 1));
+    constexpr auto rbegin = dungeon_blocks.crbegin();
+    const auto max_area = always_small_levels ? calc_blocks(*(rbegin + 1)) : calc_blocks(*rbegin);
+    const auto area = calc_blocks(selection);
+    if (area == min_area || area == max_area) {
+        return this->pick_block_size(size);
+    }
+
+    return selection;
 }
