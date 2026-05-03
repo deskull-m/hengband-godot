@@ -56,6 +56,23 @@
 #include <array>
 #include <stack>
 
+namespace {
+//!< @brief 最小面積ダンジョン(迷宮)の大きさを「1ブロック×1ブロック」と定義した時の、1フロアのブロック数
+std::array<std::pair<int, int>, 9> dungeon_blocks{
+    {
+        { 1, 1 },
+        { 1, 2 },
+        { 1, 3 },
+        { 2, 1 },
+        { 2, 2 },
+        { 2, 3 },
+        { 3, 1 },
+        { 3, 2 },
+        { 3, 3 },
+    }
+};
+}
+
 /*!
  * @brief 闘技場用のアリーナ地形を作成する / Builds the on_defeat_arena_monster after it is entered -KMW-
  * @param player_ptr プレイヤーへの参照ポインタ
@@ -311,29 +328,23 @@ static tl::optional<std::string> level_gen(PlayerType *player_ptr)
     is_small_level |= dungeon.flags.has(DungeonFeatureType::BEGINNER);
     is_small_level |= dungeon.flags.has(DungeonFeatureType::SMALLEST);
     if (is_small_level && dungeon.flags.has_not(DungeonFeatureType::BIG)) {
-        int level_height;
-        int level_width;
+        std::pair<int, int> dungeon_block;
         if (dungeon.flags.has(DungeonFeatureType::SMALLEST)) {
-            level_height = 1;
-            level_width = 1;
+            dungeon_block = dungeon_blocks.at(0);
         } else if (dungeon.flags.has(DungeonFeatureType::BEGINNER)) {
-            level_height = 2;
-            level_width = 2;
-        } else {
-            level_height = randint1(MAX_HGT / SCREEN_HGT);
-            level_width = randint1(MAX_WID / SCREEN_WID);
-            bool is_first_level_area = true;
-            bool is_max_area = (level_height == MAX_HGT / SCREEN_HGT) && (level_width == MAX_WID / SCREEN_WID);
-            while (is_first_level_area || is_max_area) {
-                level_height = randint1(MAX_HGT / SCREEN_HGT);
-                level_width = randint1(MAX_WID / SCREEN_WID);
-                is_first_level_area = false;
-                is_max_area = (level_height == MAX_HGT / SCREEN_HGT) && (level_width == MAX_WID / SCREEN_WID);
+            while (true) {
+                dungeon_block = dungeon_blocks.at(randint0(dungeon_blocks.size() - 1));
+                const auto area = dungeon_block.first * dungeon_block.second;
+                if ((2 <= area) && (area <= 4)) {
+                    break;
+                }
             }
+        } else {
+            dungeon_block = dungeon_blocks.at(randint0(dungeon_blocks.size() - 1));
         }
 
-        floor.height = level_height * SCREEN_HGT;
-        floor.width = level_width * SCREEN_WID;
+        floor.height = dungeon_block.first * SCREEN_HGT;
+        floor.width = dungeon_block.second * SCREEN_WID;
         panel_row_min = floor.height;
         panel_col_min = floor.width;
 
