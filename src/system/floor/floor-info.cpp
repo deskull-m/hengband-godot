@@ -28,6 +28,7 @@
 #include "system/terrain/terrain-list.h"
 #include "util/bit-flags-calculator.h"
 #include "util/enum-range.h"
+#include "util/finalizer.h"
 #include "util/point-2d.h"
 #include "world/world.h"
 #include <array>
@@ -1000,9 +1001,16 @@ void FloorType::decide_floor_size()
     }
 
     std::pair<int, int> dungeon_block;
+    const auto finalizer = util::make_finalizer([&]() {
+        this->height = dungeon_block.first * SCREEN_HGT;
+        this->width = dungeon_block.second * SCREEN_WID;
+    });
     if (dungeon.flags.has(DungeonFeatureType::SMALLEST)) {
         dungeon_block = dungeon_blocks.at(0);
-    } else if (dungeon.flags.has(DungeonFeatureType::BEGINNER)) {
+        return;
+    }
+
+    if (dungeon.flags.has(DungeonFeatureType::BEGINNER)) {
         while (true) {
             dungeon_block = dungeon_blocks.at(randint0(dungeon_blocks.size() - 1));
             const auto area = dungeon_block.first * dungeon_block.second;
@@ -1010,12 +1018,23 @@ void FloorType::decide_floor_size()
                 break;
             }
         }
-    } else {
-        dungeon_block = dungeon_blocks.at(randint0(dungeon_blocks.size() - 1));
+
+        return;
     }
 
-    this->height = dungeon_block.first * SCREEN_HGT;
-    this->width = dungeon_block.second * SCREEN_WID;
+    const auto is_small = dungeon.flags.has(DungeonFeatureType::SMALL);
+    const auto is_large = dungeon.flags.has(DungeonFeatureType::LARGE);
+    if (is_small && is_large) {
+        if (one_in_(2)) {
+            // small生成
+            return;
+        }
+
+        // larage生成
+        return;
+    }
+
+    dungeon_block = dungeon_blocks.at(randint0(dungeon_blocks.size() - 1));
 }
 
 /*!
@@ -1043,4 +1062,12 @@ void FloorType::set_note_and_redraw_at(const Pos2D &pos)
 {
     this->get_grid(pos).info |= CAVE_NOTE;
     this->set_redraw_at(pos);
+}
+
+void set_floor_size_small()
+{
+}
+
+void set_floor_size_large()
+{
 }

@@ -182,4 +182,6 @@ private:
     static int decide_selection_count();
 
     void set_note_and_redraw_at(const Pos2D &pos);
+    void set_floor_size_small();
+    void set_floor_size_large();
 };
