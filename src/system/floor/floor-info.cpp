@@ -993,28 +993,29 @@ void FloorType::decide_floor_size()
     is_small_level |= one_in_(chance_small_floor) && small_levels;
     is_small_level |= dungeon.flags.has(DungeonFeatureType::BEGINNER);
     is_small_level |= dungeon.flags.has(DungeonFeatureType::SMALLEST);
-    if (is_small_level && dungeon.flags.has_not(DungeonFeatureType::LARGEST)) {
-        std::pair<int, int> dungeon_block;
-        if (dungeon.flags.has(DungeonFeatureType::SMALLEST)) {
-            dungeon_block = dungeon_blocks.at(0);
-        } else if (dungeon.flags.has(DungeonFeatureType::BEGINNER)) {
-            while (true) {
-                dungeon_block = dungeon_blocks.at(randint0(dungeon_blocks.size() - 1));
-                const auto area = dungeon_block.first * dungeon_block.second;
-                if ((2 <= area) && (area <= 4)) {
-                    break;
-                }
-            }
-        } else {
-            dungeon_block = dungeon_blocks.at(randint0(dungeon_blocks.size() - 1));
-        }
-
-        this->height = dungeon_block.first * SCREEN_HGT;
-        this->width = dungeon_block.second * SCREEN_WID;
-    } else {
+    if (!is_small_level || dungeon.flags.has(DungeonFeatureType::LARGEST)) {
         this->height = MAX_HGT;
         this->width = MAX_WID;
+        return;
     }
+
+    std::pair<int, int> dungeon_block;
+    if (dungeon.flags.has(DungeonFeatureType::SMALLEST)) {
+        dungeon_block = dungeon_blocks.at(0);
+    } else if (dungeon.flags.has(DungeonFeatureType::BEGINNER)) {
+        while (true) {
+            dungeon_block = dungeon_blocks.at(randint0(dungeon_blocks.size() - 1));
+            const auto area = dungeon_block.first * dungeon_block.second;
+            if ((2 <= area) && (area <= 4)) {
+                break;
+            }
+        }
+    } else {
+        dungeon_block = dungeon_blocks.at(randint0(dungeon_blocks.size() - 1));
+    }
+
+    this->height = dungeon_block.first * SCREEN_HGT;
+    this->width = dungeon_block.second * SCREEN_WID;
 }
 
 /*!
