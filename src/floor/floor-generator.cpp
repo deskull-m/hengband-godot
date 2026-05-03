@@ -327,7 +327,7 @@ static tl::optional<std::string> level_gen(PlayerType *player_ptr)
     is_small_level |= one_in_(chance_small_floor) && small_levels;
     is_small_level |= dungeon.flags.has(DungeonFeatureType::BEGINNER);
     is_small_level |= dungeon.flags.has(DungeonFeatureType::SMALLEST);
-    if (is_small_level && dungeon.flags.has_not(DungeonFeatureType::BIG)) {
+    if (is_small_level && dungeon.flags.has_not(DungeonFeatureType::LARGEST)) {
         std::pair<int, int> dungeon_block;
         if (dungeon.flags.has(DungeonFeatureType::SMALLEST)) {
             dungeon_block = dungeon_blocks.at(0);
