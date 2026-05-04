@@ -187,5 +187,7 @@ private:
     static int calc_blocks(const std::pair<int, int> &block);
 
     void set_note_and_redraw_at(const Pos2D &pos);
-    std::pair<int, int> select_floor_size();
+    tl::optional<std::pair<int, int>> try_select_largest_floor() const;
+    tl::optional<std::pair<int, int>> try_select_smallest_floor() const;
+    std::pair<int, int> select_floor_size() const;
 };
