@@ -1114,6 +1114,49 @@ std::pair<int, int> FloorType::select_floor_size_large()
     }
 }
 
+/*!
+ * @brief フロアサイズをランダムに選択する.
+ *
+ * 大きすぎるフロアも小さすぎるフロアも生成しにくくしている.
+ */
+std::pair<int, int> FloorType::select_floor_size_normal()
+{
+    const auto min_area = allow_smallest_floor ? MIN_AREA_BLOCKS : MIN_AREA_BLOCKS * 2;
+    if (always_small_floor) {
+        const auto size = dungeon_blocks.size() - 1; // 効率上げのため、最大サイズのフロアを最初から除外する.
+        auto is_retried_always_small = true;
+        while (true) {
+            const auto selection = pick_block_size(size);
+            const auto area = calc_blocks(selection);
+            if (area > MEDIUM_AREA_BLOCKS) {
+                continue;
+            }
+
+            if (is_retried_always_small && ((area == min_area) || (area == MEDIUM_AREA_BLOCKS))) {
+                is_retried_always_small = false;
+                continue;
+            }
+
+            if (area <= MEDIUM_AREA_BLOCKS) {
+                return selection;
+            }
+        }
+    }
+
+    const auto size = dungeon_blocks.size();
+    auto is_retried = true;
+    while (true) {
+        const auto selection = pick_block_size(size);
+        const auto area = calc_blocks(selection);
+        if (is_retried && ((area == min_area) || (area == MAX_AREA_BLOCKS))) {
+            is_retried = false;
+            continue;
+        }
+
+        return selection;
+    }
+}
+
 std::pair<int, int> FloorType::pick_block_size(size_t size)
 {
     const auto min_size = allow_smallest_floor ? MIN_AREA_BLOCKS : MIN_AREA_BLOCKS * 2;
@@ -1214,35 +1257,5 @@ std::pair<int, int> FloorType::select_floor_size() const
         return select_floor_size_large();
     }
 
-    // 大きすぎるフロアも小さすぎるフロアも生成しにくくする.
-    const auto min_area = allow_smallest_floor ? MIN_AREA_BLOCKS : MIN_AREA_BLOCKS * 2;
-    auto is_retried_always_small = true;
-    if (always_small_floor) {
-        const auto size = dungeon_blocks.size() - 1; // 効率上げのため、最大サイズのフロアを最初から除外する.
-        while (true) {
-            const auto selection = pick_block_size(size);
-            const auto area = calc_blocks(selection);
-            if (is_retried_always_small && ((area == min_area) || (area == MEDIUM_AREA_BLOCKS))) {
-                is_retried_always_small = false;
-                continue;
-            }
-
-            if (area <= MEDIUM_AREA_BLOCKS) {
-                return selection;
-            }
-        }
-    }
-
-    const auto size = dungeon_blocks.size();
-    auto is_retried = true;
-    while (true) {
-        const auto selection = pick_block_size(size);
-        const auto area = calc_blocks(selection);
-        if (is_retried && ((area == min_area) || (area == MAX_AREA_BLOCKS))) {
-            is_retried = false;
-            continue;
-        }
-
-        return selection;
-    }
+    return select_floor_size_normal();
 }

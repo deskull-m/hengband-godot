@@ -183,6 +183,7 @@ private:
     static std::pair<int, int> select_floor_size_beginner();
     static std::pair<int, int> select_floor_size_small();
     static std::pair<int, int> select_floor_size_large();
+    static std::pair<int, int> select_floor_size_normal();
     static std::pair<int, int> pick_block_size(size_t size);
     static int calc_blocks(const std::pair<int, int> &block);
 
