@@ -1099,6 +1099,33 @@ std::pair<int, int> FloorType::select_floor_size_small()
     }
 }
 
+tl::optional<std::pair<int, int>> FloorType::select_floor_size_small_option()
+{
+    if (!always_small_floor) {
+        return tl::nullopt;
+    }
+
+    const auto min_area = allow_smallest_floor ? MIN_AREA_BLOCKS : MIN_AREA_BLOCKS * 2;
+    const auto size = dungeon_blocks.size() - 1; // 効率上げのため、最大サイズのフロアを最初から除外する.
+    auto is_retried_always_small = true;
+    while (true) {
+        const auto selection = pick_block_size(size);
+        const auto area = calc_blocks(selection);
+        if (area > MEDIUM_AREA_BLOCKS) {
+            continue;
+        }
+
+        if (is_retried_always_small && ((area == min_area) || (area == MEDIUM_AREA_BLOCKS))) {
+            is_retried_always_small = false;
+            continue;
+        }
+
+        if (area <= MEDIUM_AREA_BLOCKS) {
+            return selection;
+        }
+    }
+}
+
 /*!
  * @brief 最小サイズ以外のフロアサイズをランダムに選択する (4ブロック以上).
  * @return 選択されたフロアサイズ (縦のブロック数, 横のブロック数)
@@ -1122,27 +1149,6 @@ std::pair<int, int> FloorType::select_floor_size_large()
 std::pair<int, int> FloorType::select_floor_size_normal()
 {
     const auto min_area = allow_smallest_floor ? MIN_AREA_BLOCKS : MIN_AREA_BLOCKS * 2;
-    if (always_small_floor) {
-        const auto size = dungeon_blocks.size() - 1; // 効率上げのため、最大サイズのフロアを最初から除外する.
-        auto is_retried_always_small = true;
-        while (true) {
-            const auto selection = pick_block_size(size);
-            const auto area = calc_blocks(selection);
-            if (area > MEDIUM_AREA_BLOCKS) {
-                continue;
-            }
-
-            if (is_retried_always_small && ((area == min_area) || (area == MEDIUM_AREA_BLOCKS))) {
-                is_retried_always_small = false;
-                continue;
-            }
-
-            if (area <= MEDIUM_AREA_BLOCKS) {
-                return selection;
-            }
-        }
-    }
-
     const auto size = dungeon_blocks.size();
     auto is_retried = true;
     while (true) {
@@ -1255,6 +1261,10 @@ std::pair<int, int> FloorType::select_floor_size() const
 
     if (is_large) {
         return select_floor_size_large();
+    }
+
+    if (const auto selection = select_floor_size_small_option(); selection) {
+        return *selection;
     }
 
     return select_floor_size_normal();
