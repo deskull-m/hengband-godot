@@ -1005,7 +1005,7 @@ void FloorType::decide_floor_size()
         this->width = dungeon_block.second * SCREEN_WID;
     });
 
-    if (ironman_small_levels) {
+    if (ironman_smallest_floor) {
         dungeon_block = *dungeon_blocks.cbegin();
         return;
     }
@@ -1116,7 +1116,7 @@ std::pair<int, int> FloorType::select_floor_size_large()
 
 std::pair<int, int> FloorType::pick_block_size(size_t size)
 {
-    const auto min_size = small_levels ? MIN_AREA_BLOCKS : MIN_AREA_BLOCKS * 2;
+    const auto min_size = allow_smallest_floor ? MIN_AREA_BLOCKS : MIN_AREA_BLOCKS * 2;
     while (true) {
         const auto block_num = randnum0<size_t>(size);
         const auto selection = dungeon_blocks.at(block_num);
@@ -1151,7 +1151,7 @@ tl::optional<std::pair<int, int>> FloorType::try_select_largest_floor() const
     }
 
     constexpr auto chance_small_floor = 3;
-    auto is_largest = !always_small_levels;
+    auto is_largest = !always_small_floor;
     is_largest &= dungeon.flags.has_none_of({ DungeonFeatureType::SMALLEST, DungeonFeatureType::SMALL });
     is_largest &= one_in_(chance_small_floor);
     if (is_largest) {
@@ -1175,7 +1175,7 @@ tl::optional<std::pair<int, int>> FloorType::try_select_smallest_floor() const
     }
 
     constexpr auto chance_large_floor = 3;
-    auto is_smallest = small_levels;
+    auto is_smallest = allow_smallest_floor;
     is_smallest &= dungeon.flags.has_none_of({ DungeonFeatureType::LARGEST, DungeonFeatureType::LARGE });
     is_smallest &= one_in_(chance_large_floor);
     if (is_smallest) {
@@ -1215,9 +1215,9 @@ std::pair<int, int> FloorType::select_floor_size() const
     }
 
     // 大きすぎるフロアも小さすぎるフロアも生成しにくくする.
-    const auto min_area = small_levels ? MIN_AREA_BLOCKS : MIN_AREA_BLOCKS * 2;
+    const auto min_area = allow_smallest_floor ? MIN_AREA_BLOCKS : MIN_AREA_BLOCKS * 2;
     auto is_retried_always_small = true;
-    if (always_small_levels) {
+    if (always_small_floor) {
         const auto size = dungeon_blocks.size() - 1; // 効率上げのため、最大サイズのフロアを最初から除外する.
         while (true) {
             const auto selection = pick_block_size(size);
