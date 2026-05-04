@@ -866,6 +866,7 @@
       "flags": [
         "MONSTER_DIV_16",
         "ARENA",
+        "LARGE",
         "WATER_RIVER",
         "LAKE_WATER",
         "FINAL_GUARDIAN_857",
@@ -1244,6 +1245,7 @@
         "LAVA_RIVER",
         "ARENA",
         "DESTROY",
+        "SMALL",
         "GLASS_ROOM",
         "LAKE_WATER",
         "LAKE_LAVA",
