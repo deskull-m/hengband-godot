@@ -291,6 +291,7 @@
       },
       "flags": [
         "MAZE",
+        "NO_VAULT",
         "SMALLEST",
         "FORGET",
         "MONSTER_DIV_64",
@@ -998,6 +999,7 @@
         "CAVE",
         "CAVERN",
         "SMALLEST",
+        "NO_VAULT",
         "LAVA_RIVER",
         "DESTROY",
         "LAKE_ACID",
