@@ -194,11 +194,10 @@ static errr set_baseitem_flags(const nlohmann::json &flag_data, BaseitemDefiniti
 
 /*!
  * @brief ベースアイテム情報(JSON Object)のパース関数
- * @param art_data ベースアイテムデータの格納されたJSON Object
- * @param head ヘッダ構造体
+ * @param item_data ベースアイテムデータの格納されたJSON Object
  * @return エラーコード
  */
-int parse_baseitems_info(nlohmann::json &item_data, DefinitionHashDataType)
+int parse_baseitems_info(nlohmann::json &item_data)
 {
     if (!item_data["id"].is_number_integer()) {
         return PARSE_ERROR_TOO_FEW_ARGUMENTS;

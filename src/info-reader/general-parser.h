@@ -31,7 +31,7 @@ extern dungeon_grid letter[255];
 enum class DefinitionHashDataType;
 class FloorType;
 
-using Parser = std::function<int(std::string_view, DefinitionHashDataType)>;
+using Parser = std::function<int(std::string_view)>;
 std::tuple<int, int, std::string> init_info_txt(FILE *fp, DefinitionHashDataType dhdt, Parser parse_info_txt_line);
 parse_error_type parse_line_feature(const FloorType &floor, std::string_view buf);
 parse_error_type parse_line_building(std::string_view buf);

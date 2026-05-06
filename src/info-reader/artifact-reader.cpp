@@ -109,10 +109,9 @@ static errr set_art_flags(const nlohmann::json &flag_data, ArtifactDefinition &a
 /*!
  * @brief 固定アーティファクト情報(JSON Object)のパース関数
  * @param art_data 固定アーティファクトデータの格納されたJSON Object
- * @param head ヘッダ構造体
  * @return エラーコード
  */
-int parse_artifacts_info(nlohmann::json &art_data, DefinitionHashDataType)
+int parse_artifacts_info(nlohmann::json &art_data)
 {
     if (!art_data["id"].is_number_integer()) {
         return PARSE_ERROR_TOO_FEW_ARGUMENTS;

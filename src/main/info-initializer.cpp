@@ -118,9 +118,8 @@ void init_info(std::string_view filename, DefinitionHashDataType dhdt, InfoType 
  * Note that we let each entry have a unique "name" and "text" string,
  * even if the string happens to be empty (everyone has a unique '\0').
  */
-using JSONParser = std::function<int(nlohmann::json &, DefinitionHashDataType)>;
 template <typename InfoType>
-void init_json(std::string_view filename, std::string_view keyname, DefinitionHashDataType dhdt, InfoType &info, JSONParser parser, std::function<void()> retouch = nullptr)
+void init_json(std::string_view filename, std::string_view keyname, DefinitionHashDataType dhdt, InfoType &info, std::function<int(nlohmann::json &)> json_parser, std::function<void()> retouch = nullptr)
 {
     const auto path = path_build(ANGBAND_DIR_EDIT, filename);
     std::ifstream ifs(path);
@@ -136,7 +135,7 @@ void init_json(std::string_view filename, std::string_view keyname, DefinitionHa
     error_idx = -1;
 
     for (auto &element : json_object[keyname]) {
-        const auto error_code = parser(element, dhdt);
+        const auto error_code = json_parser(element);
         if (error_code != PARSE_ERROR_NONE) {
             msg_erase();
             quit_fmt(_("'%s'ファイルにエラー", "Error in '%s' file."), filename.data());
@@ -251,7 +250,7 @@ void init_spell_info()
 {
     auto &spell_info_list = SpellInfoList::get_instance();
     spell_info_list.initialize();
-    auto parser = [&spell_info_list](nlohmann::json &spell_data, DefinitionHashDataType) {
+    auto parser = [&spell_info_list](nlohmann::json &spell_data) {
         return spell_info_list.parse(spell_data);
     };
     init_json("SpellDefinitions.jsonc", "realms", DefinitionHashDataType::SPELLS, spell_info_list, parser);

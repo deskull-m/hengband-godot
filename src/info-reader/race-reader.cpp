@@ -499,12 +499,11 @@ static errr set_mon_message(const nlohmann::json &message_data, MonraceDefinitio
 }
 
 /*!
- * @brief モンスター種族情報(JSON Object)のパース関数
+ * @brief モンスター種族情報(MonraceDefinitions)のパース関数
  * @param mon_data モンスターデータの格納されたJSON Object
- * @param head ヘッダ構造体
  * @return エラーコード
  */
-int parse_monraces_info(nlohmann::json &mon_data, DefinitionHashDataType)
+int parse_monraces_info(nlohmann::json &mon_data)
 {
     if (!mon_data["id"].is_number_integer()) {
         return PARSE_ERROR_TOO_FEW_ARGUMENTS;

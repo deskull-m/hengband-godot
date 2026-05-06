@@ -166,7 +166,7 @@ static errr set_mon_message(const nlohmann::json &group_data)
  * @param head ヘッダ構造体
  * @return エラーコード
  */
-int parse_monster_messages_info(nlohmann::json &message_data, DefinitionHashDataType)
+int parse_monster_messages_info(nlohmann::json &message_data)
 {
     errr err;
     err = set_mon_message(message_data);

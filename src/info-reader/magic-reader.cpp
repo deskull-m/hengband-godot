@@ -225,11 +225,10 @@ static errr set_realm_data(const nlohmann::json &class_data, player_magic &magic
 
 /*!
  * @brief 職業魔法情報(ClassMagicDefinitions)のパース関数
- * @param buf テキスト列
- * @param head ヘッダ構造体
+ * @param class_data 職業別魔法情報の格納されたJSON Object
  * @return エラーコード
  */
-int parse_class_magics_info(nlohmann::json &class_data, DefinitionHashDataType)
+int parse_class_magics_info(nlohmann::json &class_data)
 {
     int class_id;
     if (auto err = set_class_id(class_data, class_id)) {

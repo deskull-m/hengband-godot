@@ -9,10 +9,9 @@
 /*!
  * @brief 職業技能定義(ClassSkillDefinitions)のパース関数
  * @param buf テキスト列
- * @param head ヘッダ構造体
  * @return エラーコード
  */
-int parse_class_skills_info(std::string_view buf, DefinitionHashDataType)
+int parse_class_skills_info(std::string_view buf)
 {
     static skill_table *s_ptr = nullptr;
     const auto &tokens = str_split(buf, ':', false, 5);

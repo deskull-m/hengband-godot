@@ -56,10 +56,9 @@ static bool grab_ego_generate_flags(ego_generate_type &xtra, std::string_view wh
 /*!
  * @brief アイテムエゴ情報(EgoDefinitions)のパース関数
  * @param buf テキスト列
- * @param head ヘッダ構造体
  * @return エラーコード
  */
-int parse_egos_info(std::string_view buf, DefinitionHashDataType)
+int parse_egos_info(std::string_view buf)
 {
     static EgoItemDefinition *e_ptr = nullptr;
     const auto &tokens = str_split(buf, ':', false, 10);

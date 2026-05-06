@@ -10,7 +10,7 @@
  * @param head ヘッダ構造体
  * @return エラーコード
  */
-int parse_vaults_info(std::string_view buf, DefinitionHashDataType)
+int parse_vaults_info(std::string_view buf)
 {
     static vault_type *v_ptr = nullptr;
     const auto &tokens = str_split(buf, ':', false, 5);

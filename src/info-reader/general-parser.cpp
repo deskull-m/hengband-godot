@@ -36,10 +36,9 @@ void dungeon_grid::set_trap_id(TerrainTag tag)
 }
 
 /*!
- * @brief パース関数に基づいてデータファイルからデータを読み取る /
- * Initialize an "*_info" array, by parsing an ascii "template" file
+ * @brief パース関数に基づいてデータファイルからデータを読み取る
  * @param fp 読み取りに使うファイルポインタ
- * @param head ヘッダ構造体
+ * @param dhdt ヘッダ種別
  * @param parse_info_txt_line パース関数
  * @return エラーコード, エラー行番号, エラーが起きた行の内容
  */
@@ -76,7 +75,7 @@ std::tuple<int, int, std::string> init_info_txt(FILE *fp, DefinitionHashDataType
             sha256.update(line);
         }
 
-        if (auto err = parse_info_txt_line(line, dhdt); err != 0) {
+        if (auto err = parse_info_txt_line(line); err != 0) {
             return { err, error_line, std::string(line) };
         }
     }
