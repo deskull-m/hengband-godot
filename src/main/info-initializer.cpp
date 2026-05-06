@@ -79,13 +79,12 @@ template <typename InfoType>
 void init_info(std::string_view filename, DefinitionHashDataType dhdt, InfoType &info, Parser parser, std::function<void()> retouch = nullptr)
 {
     const auto path = path_build(ANGBAND_DIR_EDIT, filename);
-    auto *fp = angband_fopen(path, FileOpenMode::READ);
-    if (!fp) {
+    auto ifs = std::ifstream(path);
+    if (!ifs) {
         quit(fmt::format(_("'{}'ファイルをオープンできません。", "Cannot open '{}' file."), filename));
     }
 
-    const auto &[error_code, error_line, line] = init_info_txt(fp, dhdt, parser);
-    angband_fclose(fp);
+    const auto &[error_code, error_line, line] = init_info_txt(ifs, dhdt, parser);
     if (error_code != PARSE_ERROR_NONE) {
         const auto oops = (((error_code > 0) && (error_code < PARSE_ERROR_MAX)) ? err_str[error_code] : _("未知の", "unknown"));
 #ifdef JP

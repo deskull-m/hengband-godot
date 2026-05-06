@@ -3,6 +3,7 @@
 #include "external-lib/include-json.h"
 #include "object-enchant/object-ego.h"
 #include "system/angband.h"
+#include <fstream>
 #include <functional>
 #include <string>
 #include <string_view>
@@ -32,6 +33,6 @@ enum class DefinitionHashDataType;
 class FloorType;
 
 using Parser = std::function<int(std::string_view)>;
-std::tuple<int, int, std::string> init_info_txt(FILE *fp, DefinitionHashDataType dhdt, Parser parse_info_txt_line);
+std::tuple<int, int, std::string> init_info_txt(std::ifstream &ifs, DefinitionHashDataType dhdt, Parser parse_info_txt_line);
 parse_error_type parse_line_feature(const FloorType &floor, std::string_view buf);
 parse_error_type parse_line_building(std::string_view buf);
