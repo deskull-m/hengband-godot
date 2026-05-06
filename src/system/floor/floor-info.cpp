@@ -992,7 +992,8 @@ void FloorType::place_trap_at(const Pos2D &pos)
 /*!
  * @brief フロアサイズを生成する
  *
- * 鉄人フラグ「常に非常に小さいフロアを生成」は、DungeonFeatureTypeを全て無視して小さなフロアだけを生成する.
+ * 鉄人フラグ「常に非常に小さいフロアを生成」は、DungeonFeatureTypeを全て無視して1x1ブロックのフロアだけを生成する.
+ * 但し、鉄人フラグ「常に普通でない部屋を生成」も同時にONならば、NO_VAULTフラグのないダンジョンでは2×1ブロックのフロアだけを生成する.
  * 初心者フラグのついているダンジョンは、2～4ブロックのフロアを生成する.
  * SMALLESTとLARGESTの両方がついているダンジョンは、1/2の確率でSMALLEST、1/2の確率でLARGESTとみなす.
  * SMALLとLARGEの両方がついているダンジョンは、1/2の確率でSMALL、1/2の確率でLARGEとみなす.
@@ -1005,12 +1006,16 @@ void FloorType::decide_floor_size()
         this->width = dungeon_block.second * SCREEN_WID;
     });
 
+    const auto &dungeon = this->get_dungeon_definition();
     if (ironman_smallest_floor) {
         dungeon_block = *dungeon_blocks.cbegin();
+        if (ironman_rooms && dungeon.flags.has_not(DungeonFeatureType::NO_VAULT)) {
+            dungeon_block = { 2, 1 };
+        }
+
         return;
     }
 
-    const auto &dungeon = this->get_dungeon_definition();
     if (dungeon.flags.has(DungeonFeatureType::BEGINNER)) {
         dungeon_block = this->select_floor_size_beginner();
         return;
