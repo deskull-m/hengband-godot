@@ -124,7 +124,7 @@ void init_json(std::string_view filename, std::string_view keyname, DefinitionHa
     std::ifstream ifs(path);
 
     if (!ifs) {
-        quit_fmt(_("'%s'ファイルをオープンできません。", "Cannot open '%s' file."), filename.data());
+        quit(fmt::format(_("'{}'ファイルをオープンできません。", "Cannot open '{}' file."), filename));
     }
 
     std::istreambuf_iterator<char> ifs_iter(ifs);
@@ -137,7 +137,7 @@ void init_json(std::string_view filename, std::string_view keyname, DefinitionHa
         const auto error_code = json_parser(element);
         if (error_code != PARSE_ERROR_NONE) {
             msg_erase();
-            quit_fmt(_("'%s'ファイルにエラー", "Error in '%s' file."), filename.data());
+            quit(fmt::format(_("'{}'ファイルにエラー", "Error in '{}' file."), filename));
         }
     }
 
