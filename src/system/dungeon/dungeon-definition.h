@@ -25,6 +25,7 @@
 #include <vector>
 
 enum class DungeonMode {
+    NONE = 0,
     AND = 1,
     NAND = 2,
     OR = 3,

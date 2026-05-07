@@ -36,6 +36,24 @@ static bool grab_one_dungeon_flag(DungeonDefinition &dungeon, std::string_view w
 }
 
 /*!
+ * @brief テキストトークンを走査してモンスター生成条件フラグの結合モードを得る
+ * @param dungeon ダンジョンへの参照
+ * @param what 参照元の文字列
+ * @return 見つけたらtrue
+ */
+static bool grab_one_dungeon_mode(DungeonDefinition &dungeon, std::string_view what)
+{
+    const auto it = dungeon_modes.find(what);
+    if (it != dungeon_modes.end()) {
+        dungeon.mode = it->second;
+        return true;
+    }
+
+    msg_format(_("未知のダンジョン・モンスター生成モード '%s'。", "Unknown dungeon monster generation mode '%s'."), what.data());
+    return false;
+}
+
+/*!
  * @brief テキストトークンを走査してフラグを一つ得る(モンスターのダンジョン出現条件用1)
  * @param dungeon ダンジョンへの参照
  * @param what 参照元の文字列
@@ -339,11 +357,13 @@ static errr set_dungeon_monsters(const nlohmann::json &monsters_obj, DungeonDefi
         return err;
     }
 
-    int mode = 0;
-    if (auto err = info_set_integer(monsters_obj["flagsMode"], mode, true, Range(0, 4))) {
-        return err;
+    if (!monsters_obj["flagsMode"].is_string()) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
     }
-    dungeon.mode = static_cast<DungeonMode>(mode);
+    const auto mode = monsters_obj["flagsMode"].get<std::string>();
+    if (!grab_one_dungeon_mode(dungeon, mode)) {
+        return PARSE_ERROR_INVALID_FLAG;
+    }
 
     if (auto it = monsters_obj.find("flags"); it != monsters_obj.end()) {
         if (auto err = set_dungeon_monster_flags(*it, dungeon)) {
@@ -389,10 +409,10 @@ errr parse_dungeons_info(nlohmann::json &element, angband_header *)
     }
     int wild_y = 0;
     int wild_x = 0;
-    if (auto err = info_set_integer(position_obj["min"], wild_y, true)) {
+    if (auto err = info_set_integer(position_obj["wild_y"], wild_y, true)) {
         return err;
     }
-    if (auto err = info_set_integer(position_obj["max"], wild_x, true)) {
+    if (auto err = info_set_integer(position_obj["wild_x"], wild_x, true)) {
         return err;
     }
     dungeon.initialize_position({ wild_y, wild_x });

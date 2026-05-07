@@ -34,13 +34,13 @@
     "position": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["min", "max"],
+      "required": ["wild_y", "wild_x"],
       "properties": {
-        "min": {
+        "wild_y": {
           "type": "integer",
           "minimum": 0
         },
-        "max": {
+        "wild_x": {
           "type": "integer",
           "minimum": 0
         }
@@ -98,8 +98,8 @@
           "maximum": 100
         },
         "flagsMode": {
-          "type": "integer",
-          "enum": [0, 1, 2, 3, 4]
+          "type": "string",
+          "enum": ["NONE", "AND", "NAND", "OR", "NOR"]
         },
         "flags": {
           "type": "array",
