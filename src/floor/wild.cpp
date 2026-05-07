@@ -35,6 +35,7 @@
 #include "system/floor/floor-info.h"
 #include "system/floor/town-info.h"
 #include "system/floor/town-list.h"
+#include "system/floor/town-records.h"
 #include "system/floor/wilderness-grid.h"
 #include "system/grid-type-definition.h"
 #include "system/monster-entity.h"
@@ -287,7 +288,7 @@ static void generate_area(PlayerType *player_ptr, const Pos2D &pos, bool is_bord
 
         parse_fixed_map(player_ptr, TOWN_DEFINITION_LIST, 0, 0, MAX_HGT, MAX_WID);
         if (!is_corner && !is_border) {
-            player_ptr->visit |= (1UL << (player_ptr->town_num - 1));
+            TownRecords::get_instance().set_visited(i2enum<TownId>(player_ptr->town_num - 1));
         }
     } else {
         generate_wilderness_area(floor, wg, is_corner);
