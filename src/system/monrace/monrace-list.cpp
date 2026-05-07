@@ -126,6 +126,16 @@ const MonraceDefinition &MonraceList::get_monrace(MonraceId monrace_id) const
     return *this->monraces.at(monrace_id);
 }
 
+std::shared_ptr<MonraceDefinition> MonraceList::get_monrace_shared(MonraceId monrace_id)
+{
+    return this->monraces.at(monrace_id);
+}
+
+std::shared_ptr<const MonraceDefinition> MonraceList::get_monrace_shared(MonraceId monrace_id) const
+{
+    return this->monraces.at(monrace_id);
+}
+
 const std::vector<MonraceId> &MonraceList::get_valid_monrace_ids() const
 {
     static std::vector<MonraceId> valid_monraces;

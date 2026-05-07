@@ -35,6 +35,8 @@ public:
     MonraceDefinition &emplace(MonraceId monrace_id);
     MonraceDefinition &get_monrace(MonraceId monrace_id);
     const MonraceDefinition &get_monrace(MonraceId monrace_id) const;
+    std::shared_ptr<MonraceDefinition> get_monrace_shared(MonraceId monrace_id);
+    std::shared_ptr<const MonraceDefinition> get_monrace_shared(MonraceId monrace_id) const;
     const std::vector<MonraceId> &get_valid_monrace_ids() const;
     std::vector<MonraceId> search(std::function<bool(const MonraceDefinition &)> filter, bool is_known_only = false) const;
     std::vector<MonraceId> search_by_name(std::string_view name, bool is_known_only = false) const;

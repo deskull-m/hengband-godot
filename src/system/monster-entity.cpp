@@ -159,6 +159,11 @@ bool MonsterEntity::is_valid() const
     return MonraceList::is_valid(this->r_idx);
 }
 
+MonraceId MonsterEntity::get_monrace_id() const
+{
+    return this->r_idx;
+}
+
 MonraceId MonsterEntity::get_real_monrace_id() const
 {
     const auto &monrace = this->get_monrace();
@@ -186,6 +191,16 @@ MonraceDefinition &MonsterEntity::get_appearance_monrace() const
 MonraceDefinition &MonsterEntity::get_monrace() const
 {
     return MonraceList::get_instance().get_monrace(this->r_idx);
+}
+
+std::shared_ptr<MonraceDefinition> MonsterEntity::get_monrace_shared()
+{
+    return MonraceList::get_instance().get_monrace_shared(this->r_idx);
+}
+
+std::shared_ptr<const MonraceDefinition> MonsterEntity::get_monrace_shared() const
+{
+    return MonraceList::get_instance().get_monrace_shared(this->r_idx);
 }
 
 short MonsterEntity::get_remaining_sleep() const
