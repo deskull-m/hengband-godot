@@ -112,6 +112,14 @@
           "items": {
             "$ref": "#/$defs/monsterSpell"
           }
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1
+          }
         }
       }
     },
@@ -313,13 +321,6 @@
         "INVISIBLE",
         "NONLIVING",
         "ORC",
-        "R_CHAR_$",
-        "R_CHAR_OYH",
-        "R_CHAR_SJZ#",
-        "R_CHAR_dD",
-        "R_CHAR_oOT",
-        "R_CHAR_phHg",
-        "R_CHAR_y",
         "SELF_DARK_1",
         "SELF_DARK_2",
         "SELF_LITE_1",

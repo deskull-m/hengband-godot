@@ -150,7 +150,7 @@
         "maxAllocChance": 240,
         "normalMonsterRate": 25,
         "flagsMode": "OR",
-        "flags": ["R_CHAR_y"],
+        "symbols": ["y"],
       },
       "floor": {
         "tiles": [
@@ -203,7 +203,8 @@
         "maxAllocChance": 200,
         "normalMonsterRate": 15,
         "flagsMode": "OR",
-        "flags": ["ORC", "TROLL", "R_CHAR_oOT"],
+        "flags": ["ORC", "TROLL"],
+        "symbols": ["o", "O", "T"],
       },
       "floor": {
         "tiles": [
@@ -325,7 +326,8 @@
         "maxAllocChance": 140,
         "normalMonsterRate": 15,
         "flagsMode": "OR",
-        "flags": ["DRAGON", "R_CHAR_dD"],
+        "flags": ["DRAGON"],
+        "symbols": ["d", "D"],
       },
       "floor": {
         "tiles": [
@@ -466,7 +468,8 @@
         "maxAllocChance": 160,
         "normalMonsterRate": 23,
         "flagsMode": "OR",
-        "flags": ["ANIMAL", "R_CHAR_SJZ#", "WILD_WOOD"],
+        "flags": ["ANIMAL", "WILD_WOOD"],
+        "symbols": ["S", "J", "Z", "#"],
       },
       "floor": {
         "tiles": [
@@ -783,7 +786,8 @@
         "maxAllocChance": 160,
         "normalMonsterRate": 25,
         "flagsMode": "OR",
-        "flags": ["DEMON", "R_CHAR_phHg"],
+        "flags": ["DEMON"],
+        "symbols": ["p", "h", "H", "g"],
       },
       "floor": {
         "tiles": [
@@ -908,7 +912,8 @@
         "maxAllocChance": 160,
         "normalMonsterRate": 25,
         "flagsMode": "OR",
-        "flags": ["TROLL", "GIANT", "CAN_FLY", "ANIMAL", "WILD_MOUNTAIN", "R_CHAR_OYH"],
+        "flags": ["TROLL", "GIANT", "CAN_FLY", "ANIMAL", "WILD_MOUNTAIN"],
+        "symbols": ["O", "Y", "H"],
       },
       "floor": {
         "tiles": [
@@ -969,7 +974,7 @@
         "maxAllocChance": 80,
         "normalMonsterRate": 1,
         "flagsMode": "OR",
-        "flags": ["R_CHAR_$"],
+        "symbols": ["$"],
       },
       "floor": {
         "tiles": [

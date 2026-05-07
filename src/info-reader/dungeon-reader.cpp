@@ -292,15 +292,37 @@ static errr set_dungeon_monster_flags(const nlohmann::json &flags_obj, DungeonDe
             continue;
         }
 
-        const auto &m_tokens = str_split(f, '_');
-        if (m_tokens.size() >= 3 && m_tokens[0] == "R" && m_tokens[1] == "CHAR") {
-            dungeon.r_chars.insert(dungeon.r_chars.end(), m_tokens[2].begin(), m_tokens[2].end());
-            continue;
-        }
-
         if (!grab_one_basic_monster_flag(dungeon, f)) {
             return PARSE_ERROR_INVALID_FLAG;
         }
+    }
+
+    return PARSE_ERROR_NONE;
+}
+
+static errr set_dungeon_monster_symbols(const nlohmann::json &symbols_obj, DungeonDefinition &dungeon)
+{
+    if (symbols_obj.is_null()) {
+        return PARSE_ERROR_NONE;
+    }
+    if (!symbols_obj.is_array()) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    }
+
+    for (const auto &symbol_obj : symbols_obj) {
+        if (!symbol_obj.is_string()) {
+            return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+        }
+
+        const auto symbol = symbol_obj.get<std::string>();
+        if (symbol.empty()) {
+            continue;
+        }
+        if (symbol.size() != 1) {
+            return PARSE_ERROR_INVALID_FLAG;
+        }
+
+        dungeon.r_chars.push_back(symbol[0]);
     }
 
     return PARSE_ERROR_NONE;
@@ -367,6 +389,12 @@ static errr set_dungeon_monsters(const nlohmann::json &monsters_obj, DungeonDefi
 
     if (auto it = monsters_obj.find("flags"); it != monsters_obj.end()) {
         if (auto err = set_dungeon_monster_flags(*it, dungeon)) {
+            return err;
+        }
+    }
+
+    if (auto it = monsters_obj.find("symbols"); it != monsters_obj.end()) {
+        if (auto err = set_dungeon_monster_symbols(*it, dungeon)) {
             return err;
         }
     }
