@@ -64,9 +64,9 @@ static auto get_mon_evol_roots()
     std::set<MonraceId> evol_children;
     const auto &monraces = MonraceList::get_instance();
     for (const auto &[monrace_id, monrace] : monraces) {
-        if (monrace.get_next().is_valid()) {
+        if (monrace->get_next().is_valid()) {
             evol_parents.emplace(monrace_id);
-            evol_children.emplace(monrace.next_r_idx);
+            evol_children.emplace(monrace->next_r_idx);
         }
     }
 
