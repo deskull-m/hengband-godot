@@ -82,15 +82,16 @@
     "monsters": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["minAlloc", "maxAllocChance", "normalMonsterRate", "flagsMode"],
+      "required": ["minCount", "additionalSpawnProbability", "normalMonsterRate", "flagsMode"],
       "properties": {
-        "minAlloc": {
+        "minCount": {
           "type": "integer",
           "minimum": 0
         },
-        "maxAllocChance": {
+        "additionalSpawnProbability": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 1,
+          "maximum": 1000000
         },
         "normalMonsterRate": {
           "type": "integer",

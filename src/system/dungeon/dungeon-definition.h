@@ -59,8 +59,8 @@ public:
     BIT_FLAGS16 nest{};
     DungeonMode mode{}; /* Mode of combinaison of the monster flags */
 
-    int min_m_alloc_level{}; /* Minimal number of monsters per level */
-    int max_m_alloc_chance{}; /* There is a 1/max_m_alloc_chance chance per round of creating a new monster */
+    int min_monster_count_on_floor{}; /* Minimal number of monsters per floor */
+    int additional_monster_spawn_chance{}; /* There is a 1/extra_monster_spawn_chance chance per round of creating a new monster */
 
     EnumClassFlagGroup<DungeonFeatureType> flags{}; /* Dungeon Flags */
 

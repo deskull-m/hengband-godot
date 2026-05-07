@@ -114,7 +114,7 @@ static bool restrict_monster_to_dungeon(const DungeonDefinition &dungeon, int fl
 
     switch (dungeon.mode) {
     case DungeonMode::NONE:
-        return false;
+        return true;
     case DungeonMode::AND:
     case DungeonMode::NAND: {
         std::vector<bool> is_possible = {

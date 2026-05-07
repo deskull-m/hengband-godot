@@ -369,12 +369,15 @@ static errr set_dungeon_monsters(const nlohmann::json &monsters_obj, DungeonDefi
         return PARSE_ERROR_TOO_FEW_ARGUMENTS;
     }
 
-    if (auto err = info_set_integer(monsters_obj["minAlloc"], dungeon.min_m_alloc_level, true)) {
+    if (auto err = info_set_integer(monsters_obj["minCount"], dungeon.min_monster_count_on_floor, true)) {
         return err;
     }
-    if (auto err = info_set_integer(monsters_obj["maxAllocChance"], dungeon.max_m_alloc_chance, true)) {
+    auto additionalSpawnProbability = 1;
+    constexpr auto conversion_rate = 1000000;
+    if (auto err = info_set_integer(monsters_obj["additionalSpawnProbability"], additionalSpawnProbability, true, Range(1, conversion_rate))) {
         return err;
     }
+    dungeon.additional_monster_spawn_chance = conversion_rate / additionalSpawnProbability;
     if (auto err = info_set_integer(monsters_obj["normalMonsterRate"], dungeon.normal_monster_rate, true, Range(0, 100))) {
         return err;
     }
