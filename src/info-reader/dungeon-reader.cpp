@@ -155,17 +155,6 @@ static errr set_dungeon_generation(const nlohmann::json &generation_obj, Dungeon
     if (auto err = info_set_integer(generation_obj["minPlayerLevel"], dungeon.min_plev, true)) {
         return err;
     }
-    int mode = 0;
-    if (auto err = info_set_integer(generation_obj["flagsMode"], mode, true, Range(0, 4))) {
-        return err;
-    }
-    dungeon.mode = static_cast<DungeonMode>(mode);
-    if (auto err = info_set_integer(generation_obj["minAlloc"], dungeon.min_m_alloc_level, true)) {
-        return err;
-    }
-    if (auto err = info_set_integer(generation_obj["maxAllocChance"], dungeon.max_m_alloc_chance, true)) {
-        return err;
-    }
     if (auto err = info_set_integer(generation_obj["objGood"], dungeon.obj_good, true)) {
         return err;
     }
@@ -256,10 +245,6 @@ static errr set_dungeon_flags(const nlohmann::json &flags_obj, DungeonDefinition
                 info_set_value(dungeon.final_guardian, f_tokens[2]);
                 continue;
             }
-            if (f_tokens[0] == "MONSTER" && f_tokens[1] == "DIV") {
-                info_set_value(dungeon.special_div, f_tokens[2]);
-                continue;
-            }
         }
 
         if (!grab_one_dungeon_flag(dungeon, f)) {
@@ -338,6 +323,43 @@ static errr set_dungeon_monster_spells(const nlohmann::json &spells_obj, Dungeon
     return PARSE_ERROR_NONE;
 }
 
+static errr set_dungeon_monsters(const nlohmann::json &monsters_obj, DungeonDefinition &dungeon)
+{
+    if (monsters_obj.is_null() || !monsters_obj.is_object()) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    }
+
+    if (auto err = info_set_integer(monsters_obj.value("minAlloc", nlohmann::json()), dungeon.min_m_alloc_level, true)) {
+        return err;
+    }
+    if (auto err = info_set_integer(monsters_obj.value("maxAllocChance", nlohmann::json()), dungeon.max_m_alloc_chance, true)) {
+        return err;
+    }
+    if (auto err = info_set_integer(monsters_obj.value("normalMonsterRate", nlohmann::json()), dungeon.normal_monster_rate, true, Range(0, 100))) {
+        return err;
+    }
+
+    int mode = 0;
+    if (auto err = info_set_integer(monsters_obj.value("flagsMode", nlohmann::json()), mode, true, Range(0, 4))) {
+        return err;
+    }
+    dungeon.mode = static_cast<DungeonMode>(mode);
+
+    if (auto it = monsters_obj.find("flags"); it != monsters_obj.end()) {
+        if (auto err = set_dungeon_monster_flags(*it, dungeon)) {
+            return err;
+        }
+    }
+
+    if (auto it = monsters_obj.find("spells"); it != monsters_obj.end()) {
+        if (auto err = set_dungeon_monster_spells(*it, dungeon)) {
+            return err;
+        }
+    }
+
+    return PARSE_ERROR_NONE;
+}
+
 errr parse_dungeons_info(nlohmann::json &element, angband_header *)
 {
     if (element.is_null() || !element.is_object()) {
@@ -387,10 +409,7 @@ errr parse_dungeons_info(nlohmann::json &element, angband_header *)
     if (auto err = set_dungeon_flags(element["flags"], dungeon)) {
         return err;
     }
-    if (auto err = set_dungeon_monster_flags(element["monsterFlags"], dungeon)) {
-        return err;
-    }
-    if (auto err = set_dungeon_monster_spells(element["monsterSpells"], dungeon)) {
+    if (auto err = set_dungeon_monsters(element["monsters"], dungeon)) {
         return err;
     }
 
