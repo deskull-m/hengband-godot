@@ -635,7 +635,7 @@
         "stream1": "NONE",
         "stream2": "NONE",
       },
-      "flags": [],
+      "flags": ["CAVERN", "LAKE_LAVA", "LAVA_RIVER", "WINNER", "LARGEST"],
     },
     {
       "id": 10,
@@ -688,7 +688,7 @@
         "stream1": "NONE",
         "stream2": "NONE",
       },
-      "flags": [],
+      "flags": ["WATER_RIVER", "WINNER", "LARGEST", "GLASS_ROOM"],
     },
     {
       "id": 11,
@@ -1336,7 +1336,7 @@
         "stream1": "NONE",
         "stream2": "NONE",
       },
-      "flags": [],
+      "flags": ["ARENA", "NO_CAVE", "CURTAIN", "GLASS_DOOR", "GLASS_ROOM"],
     },
   ],
 }

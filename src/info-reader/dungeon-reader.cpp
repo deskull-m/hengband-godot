@@ -329,18 +329,18 @@ static errr set_dungeon_monsters(const nlohmann::json &monsters_obj, DungeonDefi
         return PARSE_ERROR_TOO_FEW_ARGUMENTS;
     }
 
-    if (auto err = info_set_integer(monsters_obj.value("minAlloc", nlohmann::json()), dungeon.min_m_alloc_level, true)) {
+    if (auto err = info_set_integer(monsters_obj["minAlloc"], dungeon.min_m_alloc_level, true)) {
         return err;
     }
-    if (auto err = info_set_integer(monsters_obj.value("maxAllocChance", nlohmann::json()), dungeon.max_m_alloc_chance, true)) {
+    if (auto err = info_set_integer(monsters_obj["maxAllocChance"], dungeon.max_m_alloc_chance, true)) {
         return err;
     }
-    if (auto err = info_set_integer(monsters_obj.value("normalMonsterRate", nlohmann::json()), dungeon.normal_monster_rate, true, Range(0, 100))) {
+    if (auto err = info_set_integer(monsters_obj["normalMonsterRate"], dungeon.normal_monster_rate, true, Range(0, 100))) {
         return err;
     }
 
     int mode = 0;
-    if (auto err = info_set_integer(monsters_obj.value("flagsMode", nlohmann::json()), mode, true, Range(0, 4))) {
+    if (auto err = info_set_integer(monsters_obj["flagsMode"], mode, true, Range(0, 4))) {
         return err;
     }
     dungeon.mode = static_cast<DungeonMode>(mode);
