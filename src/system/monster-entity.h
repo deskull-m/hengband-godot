@@ -82,6 +82,8 @@ public:
     MonraceId get_real_monrace_id() const;
     MonraceDefinition &get_real_monrace() const;
     MonraceDefinition &get_apparent_monrace() const;
+    std::shared_ptr<MonraceDefinition> get_apparent_monrace_shared();
+    std::shared_ptr<const MonraceDefinition> get_apparent_monrace_shared() const;
     MonraceDefinition &get_monrace() const;
     std::shared_ptr<MonraceDefinition> get_monrace_shared();
     std::shared_ptr<const MonraceDefinition> get_monrace_shared() const;

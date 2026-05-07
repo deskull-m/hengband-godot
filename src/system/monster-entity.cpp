@@ -188,6 +188,16 @@ MonraceDefinition &MonsterEntity::get_apparent_monrace() const
     return MonraceList::get_instance().get_monrace(this->ap_r_idx);
 }
 
+std::shared_ptr<MonraceDefinition> MonsterEntity::get_apparent_monrace_shared()
+{
+    return MonraceList::get_instance().get_monrace_shared(this->ap_r_idx);
+}
+
+std::shared_ptr<const MonraceDefinition> MonsterEntity::get_apparent_monrace_shared() const
+{
+    return MonraceList::get_instance().get_monrace_shared(this->ap_r_idx);
+}
+
 MonraceDefinition &MonsterEntity::get_monrace() const
 {
     return MonraceList::get_instance().get_monrace(this->r_idx);
