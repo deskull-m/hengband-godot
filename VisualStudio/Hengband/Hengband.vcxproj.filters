@@ -2565,6 +2565,9 @@
     <ClCompile Include="..\..\src\io\macro-configurations-store.cpp">
       <Filter>io</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\player-info\bluemage-data.cpp">
+      <Filter>player-info</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\combat\shoot.h">
@@ -5055,7 +5058,7 @@
     <ClInclude Include="..\..\src\timed-effect\player-cut.h">
       <Filter>timed-effect</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\player-info\bluemage-data-type.h">
+    <ClInclude Include="..\..\src\player-info\bluemage-data.h">
       <Filter>player-info</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\player-info\class-specific-data.h">

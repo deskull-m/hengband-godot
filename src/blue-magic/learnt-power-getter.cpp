@@ -14,11 +14,10 @@
 #include "io/input-key-acceptor.h"
 #include "io/input-key-requester.h"
 #include "main/sound-of-music.h"
-#include "mind/mind-blue-mage.h"
 #include "monster-race/race-ability-flags.h"
 #include "mspell/monster-power-table.h"
 #include "player-base/player-class.h"
-#include "player-info/bluemage-data-type.h"
+#include "player-info/bluemage-data.h"
 #include "player/player-status-table.h"
 #include "realm/realm-types.h"
 #include "spell/spell-info.h"
@@ -159,7 +158,7 @@ static tl::optional<BlueMagicType> select_blue_magic_kind_by_symbol()
  * @return 指定したタイプの青魔法のリストを(覚えていないものも含め)返す
  * 但し、そのタイプの魔法を1つも覚えていない場合は tl::nullopt を返す
  */
-static tl::optional<std::vector<MonsterAbilityType>> sweep_learnt_spells(const bluemage_data_type &bluemage_data, BlueMagicType type)
+static tl::optional<std::vector<MonsterAbilityType>> sweep_learnt_spells(const BluemageData &bluemage_data, BlueMagicType type)
 {
     EnumClassFlagGroup<MonsterAbilityType> ability_flags;
     set_rf_masks(ability_flags, type);
@@ -184,7 +183,7 @@ static tl::optional<std::vector<MonsterAbilityType>> sweep_learnt_spells(const b
  * @param blue_magics 青魔法のリスト(覚えていないものも含まれているが、カーソル移動時に選択をスキップする)
  * @return 選択確定キーが入力された場合は true、そうでなければ false
  */
-static bool switch_blue_magic_choice(const char key, int &menu_line, const bluemage_data_type &bluemage_data, const std::vector<MonsterAbilityType> blue_magics)
+static bool switch_blue_magic_choice(const char key, int &menu_line, const BluemageData &bluemage_data, const std::vector<MonsterAbilityType> blue_magics)
 {
     const auto &learnt_blue_magics = bluemage_data.learnt_blue_magics;
     const int blue_magics_count = blue_magics.size();
@@ -310,7 +309,7 @@ static void close_blue_magic_name(char *buf, size_t buf_size, int index, int men
  * @param bluemage_data 青魔道士の固有データへの参照
  * @param blue_magics 青魔法のリスト(覚えていないものも含まれているが、覚えていないものは表示をスキップする)
  */
-static void describe_blue_magic_name(PlayerType *player_ptr, int menu_line, const bluemage_data_type &bluemage_data, const std::vector<MonsterAbilityType> &blue_magics)
+static void describe_blue_magic_name(PlayerType *player_ptr, int menu_line, const BluemageData &bluemage_data, const std::vector<MonsterAbilityType> &blue_magics)
 {
     constexpr TERM_LEN y_base = 1;
     constexpr TERM_LEN x_base = 18;
@@ -330,7 +329,7 @@ static void describe_blue_magic_name(PlayerType *player_ptr, int menu_line, cons
         char header[80];
         close_blue_magic_name(header, sizeof(header), i, menu_line);
         const auto info = learnt_info(player_ptr, spell);
-        const auto psi_desc = format("%s %-26s %3d %3d%%%s", header, mp.name, need_mana, chance, info.data());
+        const auto psi_desc = fmt::format("{} {:<26} {:3} {:3}%{}", header, fmt::bytes(mp.name), need_mana, chance, info);
         prt(psi_desc, y_base + i + 1, x_base);
     }
 
@@ -345,7 +344,7 @@ static void describe_blue_magic_name(PlayerType *player_ptr, int menu_line, cons
  */
 static bool confirm_cast_blue_magic(MonsterAbilityType spell)
 {
-    const auto prompt = format(_("%sの魔法を唱えますか？", "Use %s? "), monster_powers.at(spell).name);
+    const auto prompt = fmt::format(_("{}の魔法を唱えますか？", "Use {}? "), monster_powers.at(spell).name);
     return input_check(prompt);
 }
 
@@ -356,7 +355,7 @@ static bool confirm_cast_blue_magic(MonsterAbilityType spell)
  * @param blue_magics 青魔法のリスト(覚えていないものも含まれているが、覚えていない物は候補に出ず選択できない)
  * @return 選択した青魔法。選択をキャンセルした場合は tl::nullopt
  */
-static tl::optional<MonsterAbilityType> select_learnt_spells_by_symbol(PlayerType *player_ptr, const bluemage_data_type &bluemage_data, std::vector<MonsterAbilityType> spells)
+static tl::optional<MonsterAbilityType> select_learnt_spells_by_symbol(PlayerType *player_ptr, const BluemageData &bluemage_data, std::vector<MonsterAbilityType> spells)
 {
     constexpr auto fmt = _("(%c-%c, '*'で一覧, ESC) どの%sを唱えますか？", "(%c-%c, *=List, ESC=exit) Use which %s? ");
     const auto prompt = format(fmt, I2A(0), I2A(spells.size() - 1), _("魔法", "magic"));
@@ -418,7 +417,7 @@ static tl::optional<MonsterAbilityType> select_learnt_spells_by_symbol(PlayerTyp
  * @param blue_magics 青魔法のリスト(覚えていないものも含まれているが、覚えていない物は候補に出ず選択できない)
  * @return 選択した青魔法。選択をキャンセルした場合は tl::nullopt
  */
-static tl::optional<MonsterAbilityType> select_learnt_spells_by_menu(PlayerType *player_ptr, const bluemage_data_type &bluemage_data, std::vector<MonsterAbilityType> spells)
+static tl::optional<MonsterAbilityType> select_learnt_spells_by_menu(PlayerType *player_ptr, const BluemageData &bluemage_data, std::vector<MonsterAbilityType> spells)
 {
     constexpr auto prompt = _("(ESC=中断) どの魔法を唱えますか？", "(ESC=exit) Use which magic? ");
 
@@ -479,7 +478,7 @@ static tl::optional<MonsterAbilityType> select_learnt_spells_by_menu(PlayerType 
  */
 tl::optional<MonsterAbilityType> get_learned_power(PlayerType *player_ptr)
 {
-    auto bluemage_data = PlayerClass(player_ptr).get_specific_data<bluemage_data_type>();
+    auto bluemage_data = PlayerClass(player_ptr).get_specific_data<BluemageData>();
     if (!bluemage_data) {
         return tl::nullopt;
     }
