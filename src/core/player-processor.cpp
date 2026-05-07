@@ -332,7 +332,7 @@ void process_player(PlayerType *player_ptr)
                     continue;
                 }
 
-                const auto &monrace = monster.get_appearance_monrace();
+                const auto &monrace = monster.get_apparent_monrace();
 
                 // モンスターのシンボル/カラーの更新
                 if (monster.ml && monrace.visual_flags.has_any_of({ MonsterVisualType::MULTI_COLOR, MonsterVisualType::SHAPECHANGER })) {

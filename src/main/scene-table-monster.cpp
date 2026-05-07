@@ -73,8 +73,8 @@ static bool is_high_rate(PlayerType *player_ptr, MONSTER_IDX m_idx1, MONSTER_IDX
     const auto &floor = *player_ptr->current_floor_ptr;
     const auto &monster1 = floor.m_list[m_idx1];
     const auto &monster2 = floor.m_list[m_idx2];
-    auto ap_r_ptr1 = &monster1.get_appearance_monrace();
-    auto ap_r_ptr2 = &monster2.get_appearance_monrace();
+    auto ap_r_ptr1 = &monster1.get_apparent_monrace();
+    auto ap_r_ptr2 = &monster2.get_apparent_monrace();
 
     /* Unique monsters first */
     if (ap_r_ptr1->kind_flags.has(MonsterKindType::UNIQUE) != ap_r_ptr2->kind_flags.has(MonsterKindType::UNIQUE)) {
@@ -125,7 +125,7 @@ static void update_target_monster(PlayerType *player_ptr, MONSTER_IDX m_idx)
 
         if (do_dwap) {
             const auto &monster = player_ptr->current_floor_ptr->m_list[m_idx];
-            auto *ap_r_ptr = &monster.get_appearance_monrace();
+            auto *ap_r_ptr = &monster.get_apparent_monrace();
             scene_target_monster.m_idx = m_idx;
             scene_target_monster.ap_r_ptr = ap_r_ptr;
             scene_target_monster.last_seen = get_game_turn();
@@ -230,7 +230,7 @@ void refresh_scene_monster(PlayerType *player_ptr, const std::vector<MONSTER_IDX
                 clear_scene_target_monster();
             } else {
                 const auto &monster = player_ptr->current_floor_ptr->m_list[scene_target_monster.m_idx];
-                auto *ap_r_ptr = &monster.get_appearance_monrace();
+                auto *ap_r_ptr = &monster.get_apparent_monrace();
                 if (ap_r_ptr != scene_target_monster.ap_r_ptr) {
                     // 死亡、チェンジモンスター、etc.
                     clear_scene_target_monster();
