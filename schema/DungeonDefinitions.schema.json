@@ -142,6 +142,28 @@
         }
       }
     },
+    "final_floor": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "guardian": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9999
+        },
+        "object": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9999
+        },
+        "artifact": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 999
+        }
+      }
+    },
     "wall": {
       "type": "object",
       "additionalProperties": false,
@@ -253,28 +275,6 @@
         "CURTAIN",
         "DARKNESS",
         "DESTROY",
-        "FINAL_ARTIFACT_107",
-        "FINAL_ARTIFACT_129",
-        "FINAL_ARTIFACT_89",
-        "FINAL_GUARDIAN_1034",
-        "FINAL_GUARDIAN_1041",
-        "FINAL_GUARDIAN_237",
-        "FINAL_GUARDIAN_373",
-        "FINAL_GUARDIAN_468",
-        "FINAL_GUARDIAN_481",
-        "FINAL_GUARDIAN_803",
-        "FINAL_GUARDIAN_804",
-        "FINAL_GUARDIAN_854",
-        "FINAL_GUARDIAN_857",
-        "FINAL_GUARDIAN_882",
-        "FINAL_GUARDIAN_972",
-        "FINAL_OBJECT_148",
-        "FINAL_OBJECT_239",
-        "FINAL_OBJECT_354",
-        "FINAL_OBJECT_426",
-        "FINAL_OBJECT_592",
-        "FINAL_OBJECT_617",
-        "FINAL_OBJECT_629",
         "FORGET",
         "GLASS_DOOR",
         "GLASS_ROOM",
@@ -374,6 +374,9 @@
         },
         "floor": {
           "$ref": "#/$defs/floor"
+        },
+        "final_floor": {
+          "$ref": "#/$defs/final_floor"
         },
         "wall": {
           "$ref": "#/$defs/wall"

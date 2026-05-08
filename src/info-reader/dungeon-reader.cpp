@@ -1,4 +1,5 @@
 #include "info-reader/dungeon-reader.h"
+#include "artifact/fixed-art-types.h"
 #include "external-lib/include-json.h"
 #include "info-reader/dungeon-info-tokens-table.h"
 #include "info-reader/info-reader-util.h"
@@ -7,15 +8,21 @@
 #include "info-reader/race-info-tokens-table.h"
 #include "io/tokenizer.h"
 #include "main/angband-headers.h"
+#include "system/artifact-type-definition.h"
+#include "system/baseitem/baseitem-definition.h"
+#include "system/baseitem/baseitem-list.h"
 #include "system/dungeon/dungeon-definition.h"
 #include "system/dungeon/dungeon-list.h"
 #include "system/enums/dungeon/dungeon-id.h"
+#include "system/enums/monrace/monrace-id.h"
 #include "system/monrace/monrace-definition.h"
+#include "system/monrace/monrace-list.h"
 #include "system/terrain/terrain-definition.h"
 #include "system/terrain/terrain-list.h"
 #include "util/enum-converter.h"
 #include "util/string-processor.h"
 #include "view/display-messages.h"
+#include <exception>
 #include <memory>
 #include <span>
 
@@ -249,24 +256,80 @@ static errr set_dungeon_flags(const nlohmann::json &flags_obj, DungeonDefinition
             continue;
         }
 
-        const auto &f_tokens = str_split(f, '_');
-        if (f_tokens.size() == 3) {
-            if (f_tokens[0] == "FINAL" && f_tokens[1] == "ARTIFACT") {
-                info_set_value(dungeon.final_artifact, f_tokens[2]);
-                continue;
-            }
-            if (f_tokens[0] == "FINAL" && f_tokens[1] == "OBJECT") {
-                info_set_value(dungeon.final_object, f_tokens[2]);
-                continue;
-            }
-            if (f_tokens[0] == "FINAL" && f_tokens[1] == "GUARDIAN") {
-                info_set_value(dungeon.final_guardian, f_tokens[2]);
-                continue;
-            }
-        }
-
         if (!grab_one_dungeon_flag(dungeon, f)) {
             return PARSE_ERROR_INVALID_FLAG;
+        }
+    }
+
+    return PARSE_ERROR_NONE;
+}
+
+template <typename Enum, typename Validator>
+static errr info_set_enum_from_integer_checked(const nlohmann::json &json, Enum &data, std::string_view label, Validator validator)
+{
+    int value{};
+    if (auto err = info_set_integer(json, value, true)) {
+        return err;
+    }
+
+    const auto enum_value = i2enum<Enum>(value);
+    if (!validator(enum_value)) {
+        msg_print(_("不正な{} ID '{}'。", "Invalid {} ID '{}'."), label, value);
+        return PARSE_ERROR_INVALID_VALUE;
+    }
+
+    data = enum_value;
+    return PARSE_ERROR_NONE;
+}
+
+static errr info_set_baseitem_id_checked(const nlohmann::json &json, DungeonDefinition &dungeon)
+{
+    int value{};
+    if (auto err = info_set_integer(json, value, true, Range(1, 9999))) {
+        return err;
+    }
+
+    const auto value_short = static_cast<short>(value);
+    try {
+        static_cast<void>(BaseitemList::get_instance().get_baseitem(value_short));
+    } catch (const std::exception &) {
+        msg_print(_("不正なfinal_floor.object ID '{}'。", "Invalid final_floor.object ID '{}'."), value);
+        return PARSE_ERROR_INVALID_VALUE;
+    }
+
+    dungeon.final_object = value_short;
+    return PARSE_ERROR_NONE;
+}
+
+static errr set_dungeon_final_floor(const nlohmann::json &final_floor_obj, DungeonDefinition &dungeon)
+{
+    if (final_floor_obj.is_null()) {
+        return PARSE_ERROR_NONE;
+    }
+
+    if (!final_floor_obj.is_object()) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    }
+
+    if (final_floor_obj.contains("guardian")) {
+        if (auto err = info_set_enum_from_integer_checked(final_floor_obj["guardian"], dungeon.final_guardian, "final_floor.guardian", [](MonraceId monrace_id) {
+                const auto &monraces = MonraceList::get_instance();
+                return MonraceList::is_valid(monrace_id) && monraces.contains(monrace_id);
+            })) {
+            return err;
+        }
+    }
+    if (final_floor_obj.contains("object")) {
+        if (auto err = info_set_baseitem_id_checked(final_floor_obj["object"], dungeon)) {
+            return err;
+        }
+    }
+    if (final_floor_obj.contains("artifact")) {
+        if (auto err = info_set_enum_from_integer_checked(final_floor_obj["artifact"], dungeon.final_artifact, "final_floor.artifact", [](FixedArtifactId artifact_id) {
+                const auto &artifacts = ArtifactList::get_instance();
+                return (artifact_id == FixedArtifactId::NONE) || artifacts.contains(artifact_id);
+            })) {
+            return err;
         }
     }
 
@@ -344,14 +407,6 @@ static errr set_dungeon_monster_spells(const nlohmann::json &spells_obj, Dungeon
 
         const auto s = s_obj.get<std::string>();
         if (s.empty()) {
-            continue;
-        }
-
-        const auto &s_tokens = str_split(s, '_');
-        if (s_tokens.size() == 3 && s_tokens[1] == "IN") {
-            if (s_tokens[0] != "1") {
-                return PARSE_ERROR_GENERIC;
-            }
             continue;
         }
 
@@ -455,6 +510,9 @@ errr parse_dungeons_info(nlohmann::json &element, angband_header *)
         return err;
     }
     if (auto err = set_dungeon_wall(element["wall"], dungeon)) {
+        return err;
+    }
+    if (auto err = set_dungeon_final_floor(element["final_floor"], dungeon)) {
         return err;
     }
     if (auto err = set_dungeon_flags(element["flags"], dungeon)) {
