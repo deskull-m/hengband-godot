@@ -38,7 +38,7 @@ static bool grab_one_dungeon_flag(DungeonDefinition &dungeon, std::string_view w
         return true;
     }
 
-    msg_format(_("未知のダンジョン・フラグ '%s'。", "Unknown dungeon type flag '%s'."), what.data());
+    msg_print(_("未知のダンジョン・フラグ '{}'。", "Unknown dungeon type flag '{}'."), what);
     return false;
 }
 
@@ -56,7 +56,7 @@ static bool grab_one_dungeon_mode(DungeonDefinition &dungeon, std::string_view w
         return true;
     }
 
-    msg_format(_("未知のダンジョン・モンスター生成モード '%s'。", "Unknown dungeon monster generation mode '%s'."), what.data());
+    msg_print(_("未知のダンジョン・モンスター生成モード '{}'。", "Unknown dungeon monster generation mode '{}'."), what);
     return false;
 }
 
@@ -115,7 +115,7 @@ static bool grab_one_basic_monster_flag(DungeonDefinition &dungeon, std::string_
         return true;
     }
 
-    msg_format(_("未知のモンスター・フラグ '%s'。", "Unknown monster flag '%s'."), what.data());
+    msg_print(_("未知のモンスター・フラグ '{}'。", "Unknown monster flag '{}'."), what);
     return false;
 }
 
@@ -131,7 +131,7 @@ static bool grab_one_spell_monster_flag(DungeonDefinition &dungeon, std::string_
         return true;
     }
 
-    msg_format(_("未知のモンスター・フラグ '%s'。", "Unknown monster flag '%s'."), what.data());
+    msg_print(_("未知のモンスター・フラグ '{}'。", "Unknown monster flag '{}'."), what);
     return false;
 }
 
