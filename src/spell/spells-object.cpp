@@ -32,6 +32,7 @@
 #include "sv-definition/sv-scroll-types.h"
 #include "sv-definition/sv-weapon-types.h"
 #include "system/artifact/artifact-definition.h"
+#include "system/artifact/artifact-list.h"
 #include "system/baseitem/baseitem-key.h"
 #include "system/floor/floor-info.h"
 #include "system/item-entity.h"

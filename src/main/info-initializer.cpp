@@ -30,6 +30,7 @@
 #include "room/rooms-vault.h"
 #include "system/angband-version.h"
 #include "system/artifact/artifact-definition.h"
+#include "system/artifact/artifact-list.h"
 #include "system/baseitem/baseitem-definition.h"
 #include "system/baseitem/baseitem-list.h"
 #include "system/dungeon/dungeon-definition.h"

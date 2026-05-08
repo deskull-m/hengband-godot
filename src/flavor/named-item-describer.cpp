@@ -19,6 +19,7 @@
 #ifdef JP
 #else
 #include "object/tval-types.h"
+#include "system/artifact/artifact-list.h"
 #include "system/monrace/monrace-definition.h"
 #endif
 #include <sstream>

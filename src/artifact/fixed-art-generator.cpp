@@ -20,6 +20,7 @@
 #include "player-base/player-class.h"
 #include "specific-object/bloody-moon.h"
 #include "system/artifact/artifact-definition.h"
+#include "system/artifact/artifact-list.h"
 #include "system/item-entity.h"
 
 /*!

@@ -7,6 +7,7 @@
 #include "monster/monster-timed-effects.h"
 #include "object-enchant/item-apply-magic.h"
 #include "system/artifact/artifact-definition.h"
+#include "system/artifact/artifact-list.h"
 #include "system/baseitem/baseitem-allocation.h"
 #include "system/baseitem/baseitem-definition.h"
 #include "system/dungeon/dungeon-definition.h"

@@ -5,6 +5,7 @@
 #include "player-base/player-race.h"
 #include "racial/racial-android.h"
 #include "system/artifact/artifact-definition.h"
+#include "system/artifact/artifact-list.h"
 #include "system/item-entity.h"
 #include "system/player-type-definition.h"
 #include "system/redrawing-flags-updater.h"

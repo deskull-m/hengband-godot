@@ -7,6 +7,7 @@
 #include "object-enchant/special-object-flags.h"
 #include "system/angband-exceptions.h"
 #include "system/artifact/artifact-definition.h"
+#include "system/artifact/artifact-list.h"
 #include "system/baseitem/baseitem-definition.h"
 #include "system/baseitem/baseitem-list.h"
 #include "system/dungeon/dungeon-definition.h"

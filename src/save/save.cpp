@@ -28,6 +28,7 @@
 #include "save/player-writer.h"
 #include "save/save-util.h"
 #include "system/artifact/artifact-definition.h"
+#include "system/artifact/artifact-list.h"
 #include "system/floor/floor-info.h"
 #include "system/floor/town-info.h"
 #include "system/floor/town-list.h"

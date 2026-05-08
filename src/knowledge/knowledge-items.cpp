@@ -19,6 +19,7 @@
 #include "perception/identification.h"
 #include "perception/object-perception.h"
 #include "system/artifact/artifact-definition.h"
+#include "system/artifact/artifact-list.h"
 #include "system/baseitem/baseitem-definition.h"
 #include "system/baseitem/baseitem-list.h"
 #include "system/floor/floor-info.h"

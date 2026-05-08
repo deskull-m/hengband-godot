@@ -9,6 +9,7 @@
 #include "main/angband-headers.h"
 #include "object-enchant/tr-types.h"
 #include "system/artifact/artifact-definition.h"
+#include "system/artifact/artifact-list.h"
 #include "util/bit-flags-calculator.h"
 #include "util/enum-converter.h"
 #include "util/string-processor.h"
