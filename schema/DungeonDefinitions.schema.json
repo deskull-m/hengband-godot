@@ -34,13 +34,13 @@
     "position": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["min", "max"],
+      "required": ["wild_y", "wild_x"],
       "properties": {
-        "min": {
+        "wild_y": {
           "type": "integer",
           "minimum": 0
         },
-        "max": {
+        "wild_x": {
           "type": "integer",
           "minimum": 0
         }
@@ -82,15 +82,16 @@
     "monsters": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["minAlloc", "maxAllocChance", "normalMonsterRate", "flagsMode"],
+      "required": ["minCount", "additionalSpawnProbability", "normalMonsterRate", "flagsMode"],
       "properties": {
-        "minAlloc": {
+        "minCount": {
           "type": "integer",
           "minimum": 0
         },
-        "maxAllocChance": {
+        "additionalSpawnProbability": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 1,
+          "maximum": 1000000
         },
         "normalMonsterRate": {
           "type": "integer",
@@ -98,8 +99,8 @@
           "maximum": 100
         },
         "flagsMode": {
-          "type": "integer",
-          "enum": [0, 1, 2, 3, 4]
+          "type": "string",
+          "enum": ["NONE", "AND", "NAND", "OR", "NOR"]
         },
         "flags": {
           "type": "array",
@@ -111,6 +112,14 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/monsterSpell"
+          }
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1
           }
         }
       }
@@ -313,13 +322,6 @@
         "INVISIBLE",
         "NONLIVING",
         "ORC",
-        "R_CHAR_$",
-        "R_CHAR_OYH",
-        "R_CHAR_SJZ#",
-        "R_CHAR_dD",
-        "R_CHAR_oOT",
-        "R_CHAR_phHg",
-        "R_CHAR_y",
         "SELF_DARK_1",
         "SELF_DARK_2",
         "SELF_LITE_1",

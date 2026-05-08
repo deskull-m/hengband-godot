@@ -36,6 +36,24 @@ static bool grab_one_dungeon_flag(DungeonDefinition &dungeon, std::string_view w
 }
 
 /*!
+ * @brief テキストトークンを走査してモンスター生成条件フラグの結合モードを得る
+ * @param dungeon ダンジョンへの参照
+ * @param what 参照元の文字列
+ * @return 見つけたらtrue
+ */
+static bool grab_one_dungeon_mode(DungeonDefinition &dungeon, std::string_view what)
+{
+    const auto it = dungeon_modes.find(what);
+    if (it != dungeon_modes.end()) {
+        dungeon.mode = it->second;
+        return true;
+    }
+
+    msg_format(_("未知のダンジョン・モンスター生成モード '%s'。", "Unknown dungeon monster generation mode '%s'."), what.data());
+    return false;
+}
+
+/*!
  * @brief テキストトークンを走査してフラグを一つ得る(モンスターのダンジョン出現条件用1)
  * @param dungeon ダンジョンへの参照
  * @param what 参照元の文字列
@@ -274,15 +292,37 @@ static errr set_dungeon_monster_flags(const nlohmann::json &flags_obj, DungeonDe
             continue;
         }
 
-        const auto &m_tokens = str_split(f, '_');
-        if (m_tokens.size() >= 3 && m_tokens[0] == "R" && m_tokens[1] == "CHAR") {
-            dungeon.r_chars.insert(dungeon.r_chars.end(), m_tokens[2].begin(), m_tokens[2].end());
-            continue;
-        }
-
         if (!grab_one_basic_monster_flag(dungeon, f)) {
             return PARSE_ERROR_INVALID_FLAG;
         }
+    }
+
+    return PARSE_ERROR_NONE;
+}
+
+static errr set_dungeon_monster_symbols(const nlohmann::json &symbols_obj, DungeonDefinition &dungeon)
+{
+    if (symbols_obj.is_null()) {
+        return PARSE_ERROR_NONE;
+    }
+    if (!symbols_obj.is_array()) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    }
+
+    for (const auto &symbol_obj : symbols_obj) {
+        if (!symbol_obj.is_string()) {
+            return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+        }
+
+        const auto symbol = symbol_obj.get<std::string>();
+        if (symbol.empty()) {
+            continue;
+        }
+        if (symbol.size() != 1) {
+            return PARSE_ERROR_INVALID_FLAG;
+        }
+
+        dungeon.r_chars.push_back(symbol[0]);
     }
 
     return PARSE_ERROR_NONE;
@@ -329,24 +369,35 @@ static errr set_dungeon_monsters(const nlohmann::json &monsters_obj, DungeonDefi
         return PARSE_ERROR_TOO_FEW_ARGUMENTS;
     }
 
-    if (auto err = info_set_integer(monsters_obj["minAlloc"], dungeon.min_m_alloc_level, true)) {
+    if (auto err = info_set_integer(monsters_obj["minCount"], dungeon.min_monster_count_on_floor, true)) {
         return err;
     }
-    if (auto err = info_set_integer(monsters_obj["maxAllocChance"], dungeon.max_m_alloc_chance, true)) {
+    auto additionalSpawnProbability = 1;
+    constexpr auto conversion_rate = 1000000;
+    if (auto err = info_set_integer(monsters_obj["additionalSpawnProbability"], additionalSpawnProbability, true, Range(1, conversion_rate))) {
         return err;
     }
+    dungeon.additional_monster_spawn_chance = conversion_rate / additionalSpawnProbability;
     if (auto err = info_set_integer(monsters_obj["normalMonsterRate"], dungeon.normal_monster_rate, true, Range(0, 100))) {
         return err;
     }
 
-    int mode = 0;
-    if (auto err = info_set_integer(monsters_obj["flagsMode"], mode, true, Range(0, 4))) {
-        return err;
+    if (!monsters_obj["flagsMode"].is_string()) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
     }
-    dungeon.mode = static_cast<DungeonMode>(mode);
+    const auto mode = monsters_obj["flagsMode"].get<std::string>();
+    if (!grab_one_dungeon_mode(dungeon, mode)) {
+        return PARSE_ERROR_INVALID_FLAG;
+    }
 
     if (auto it = monsters_obj.find("flags"); it != monsters_obj.end()) {
         if (auto err = set_dungeon_monster_flags(*it, dungeon)) {
+            return err;
+        }
+    }
+
+    if (auto it = monsters_obj.find("symbols"); it != monsters_obj.end()) {
+        if (auto err = set_dungeon_monster_symbols(*it, dungeon)) {
             return err;
         }
     }
@@ -389,10 +440,10 @@ errr parse_dungeons_info(nlohmann::json &element, angband_header *)
     }
     int wild_y = 0;
     int wild_x = 0;
-    if (auto err = info_set_integer(position_obj["min"], wild_y, true)) {
+    if (auto err = info_set_integer(position_obj["wild_y"], wild_y, true)) {
         return err;
     }
-    if (auto err = info_set_integer(position_obj["max"], wild_x, true)) {
+    if (auto err = info_set_integer(position_obj["wild_x"], wild_x, true)) {
         return err;
     }
     dungeon.initialize_position({ wild_y, wild_x });

@@ -12,8 +12,8 @@
         "en": "wilderness",
       },
       "position": {
-        "min": 0,
-        "max": 0,
+        "wild_y": 0,
+        "wild_x": 0,
       },
       "generation": {
         "minDepth": 0,
@@ -25,10 +25,10 @@
         "nest": "0x0000",
       },
       "monsters": {
-        "minAlloc": 14,
-        "maxAllocChance": 160,
+        "minCount": 14,
+        "additionalSpawnProbability": 6250,
         "normalMonsterRate": 100,
-        "flagsMode": 0,
+        "flagsMode": "NONE",
       },
       "floor": {
         "tiles": [
@@ -64,8 +64,8 @@
         "en": "the entrance to the Dungeon of Angband",
       },
       "position": {
-        "min": 40,
-        "max": 57,
+        "wild_y": 40,
+        "wild_x": 57,
       },
       "generation": {
         "minDepth": 1,
@@ -77,10 +77,10 @@
         "nest": "0xffff",
       },
       "monsters": {
-        "minAlloc": 14,
-        "maxAllocChance": 160,
+        "minCount": 14,
+        "additionalSpawnProbability": 6250,
         "normalMonsterRate": 100,
-        "flagsMode": 0,
+        "flagsMode": "NONE",
       },
       "floor": {
         "tiles": [
@@ -133,8 +133,8 @@
         "en": "the entrance to the cave leading to the Yeek's den",
       },
       "position": {
-        "min": 48,
-        "max": 5,
+        "wild_y": 48,
+        "wild_x": 5,
       },
       "generation": {
         "minDepth": 1,
@@ -146,11 +146,11 @@
         "nest": "0x0000",
       },
       "monsters": {
-        "minAlloc": 14,
-        "maxAllocChance": 240,
+        "minCount": 14,
+        "additionalSpawnProbability": 4150,
         "normalMonsterRate": 25,
-        "flagsMode": 3,
-        "flags": ["R_CHAR_y"],
+        "flagsMode": "OR",
+        "symbols": ["y"],
       },
       "floor": {
         "tiles": [
@@ -186,8 +186,8 @@
         "en": "a dark tunnel leading to an Orc Cave",
       },
       "position": {
-        "min": 45,
-        "max": 30,
+        "wild_y": 45,
+        "wild_x": 30,
       },
       "generation": {
         "minDepth": 10,
@@ -199,11 +199,12 @@
         "nest": "0x006d",
       },
       "monsters": {
-        "minAlloc": 18,
-        "maxAllocChance": 200,
+        "minCount": 18,
+        "additionalSpawnProbability": 5000,
         "normalMonsterRate": 15,
-        "flagsMode": 3,
-        "flags": ["ORC", "TROLL", "R_CHAR_oOT"],
+        "flagsMode": "OR",
+        "flags": ["ORC", "TROLL"],
+        "symbols": ["o", "O", "T"],
       },
       "floor": {
         "tiles": [
@@ -256,8 +257,8 @@
         "en": "the frightening entrance to the Labyrinth",
       },
       "position": {
-        "min": 57,
-        "max": 31,
+        "wild_y": 57,
+        "wild_x": 31,
       },
       "generation": {
         "minDepth": 10,
@@ -269,10 +270,10 @@
         "nest": "0x0000",
       },
       "monsters": {
-        "minAlloc": 80,
-        "maxAllocChance": 160,
+        "minCount": 80,
+        "additionalSpawnProbability": 6250,
         "normalMonsterRate": 100,
-        "flagsMode": 0,
+        "flagsMode": "NONE",
       },
       "floor": {
         "tiles": [
@@ -308,8 +309,8 @@
         "en": "a big tunnel leading to a Dragon's Lair",
       },
       "position": {
-        "min": 28,
-        "max": 74,
+        "wild_y": 28,
+        "wild_x": 74,
       },
       "generation": {
         "minDepth": 60,
@@ -321,11 +322,12 @@
         "nest": "0x00c1",
       },
       "monsters": {
-        "minAlloc": 20,
-        "maxAllocChance": 140,
+        "minCount": 20,
+        "additionalSpawnProbability": 7140,
         "normalMonsterRate": 15,
-        "flagsMode": 3,
-        "flags": ["DRAGON", "R_CHAR_dD"],
+        "flagsMode": "OR",
+        "flags": ["DRAGON"],
+        "symbols": ["d", "D"],
       },
       "floor": {
         "tiles": [
@@ -378,8 +380,8 @@
         "en": "a hole to the Graveyard underground",
       },
       "position": {
-        "min": 19,
-        "max": 85,
+        "wild_y": 19,
+        "wild_x": 85,
       },
       "generation": {
         "minDepth": 40,
@@ -391,10 +393,10 @@
         "nest": "0x027b",
       },
       "monsters": {
-        "minAlloc": 14,
-        "maxAllocChance": 160,
+        "minCount": 14,
+        "additionalSpawnProbability": 6250,
         "normalMonsterRate": 6,
-        "flagsMode": 3,
+        "flagsMode": "OR",
         "flags": ["UNDEAD", "NONLIVING"],
       },
       "floor": {
@@ -449,8 +451,8 @@
         "en": "a path leading to a Forest",
       },
       "position": {
-        "min": 53,
-        "max": 63,
+        "wild_y": 53,
+        "wild_x": 63,
       },
       "generation": {
         "minDepth": 15,
@@ -462,11 +464,12 @@
         "nest": "0x0052",
       },
       "monsters": {
-        "minAlloc": 14,
-        "maxAllocChance": 160,
+        "minCount": 14,
+        "additionalSpawnProbability": 6250,
         "normalMonsterRate": 23,
-        "flagsMode": 3,
-        "flags": ["ANIMAL", "R_CHAR_SJZ#", "WILD_WOOD"],
+        "flagsMode": "OR",
+        "flags": ["ANIMAL", "WILD_WOOD"],
+        "symbols": ["S", "J", "Z", "#"],
       },
       "floor": {
         "tiles": [
@@ -514,8 +517,8 @@
         "en": "a hole to the center of the Volcano",
       },
       "position": {
-        "min": 53,
-        "max": 13,
+        "wild_y": 53,
+        "wild_x": 13,
       },
       "generation": {
         "minDepth": 50,
@@ -527,10 +530,10 @@
         "nest": "0x02fd",
       },
       "monsters": {
-        "minAlloc": 14,
-        "maxAllocChance": 160,
+        "minCount": 14,
+        "additionalSpawnProbability": 6250,
         "normalMonsterRate": 0,
-        "flagsMode": 3,
+        "flagsMode": "OR",
         "flags": ["IM_FIRE", "CAN_FLY", "WILD_VOLCANO"],
       },
       "floor": {
@@ -587,8 +590,8 @@
         "en": "the stairway to Hell",
       },
       "position": {
-        "min": 62,
-        "max": 94,
+        "wild_y": 62,
+        "wild_x": 94,
       },
       "generation": {
         "minDepth": 666,
@@ -600,10 +603,10 @@
         "nest": "0x0280",
       },
       "monsters": {
-        "minAlloc": 14,
-        "maxAllocChance": 160,
+        "minCount": 14,
+        "additionalSpawnProbability": 6250,
         "normalMonsterRate": 0,
-        "flagsMode": 1,
+        "flagsMode": "AND",
         "flags": ["IM_FIRE", "EVIL"],
       },
       "floor": {
@@ -648,8 +651,8 @@
         "en": "the way to Heaven",
       },
       "position": {
-        "min": 2,
-        "max": 94,
+        "wild_y": 2,
+        "wild_x": 94,
       },
       "generation": {
         "minDepth": 555,
@@ -661,10 +664,10 @@
         "nest": "0x0104",
       },
       "monsters": {
-        "minAlloc": 18,
-        "maxAllocChance": 160,
+        "minCount": 18,
+        "additionalSpawnProbability": 6250,
         "normalMonsterRate": 0,
-        "flagsMode": 1,
+        "flagsMode": "AND",
         "flags": ["GOOD"],
       },
       "floor": {
@@ -701,8 +704,8 @@
         "en": "a submerged way to the lost land of Numenor",
       },
       "position": {
-        "min": 27,
-        "max": 30,
+        "wild_y": 27,
+        "wild_x": 30,
       },
       "generation": {
         "minDepth": 55,
@@ -714,10 +717,10 @@
         "nest": "0x0000",
       },
       "monsters": {
-        "minAlloc": 14,
-        "maxAllocChance": 160,
+        "minCount": 14,
+        "additionalSpawnProbability": 6250,
         "normalMonsterRate": 0,
-        "flagsMode": 3,
+        "flagsMode": "OR",
         "flags": ["CAN_SWIM", "CAN_FLY", "AQUATIC", "WILD_OCEAN"],
       },
       "floor": {
@@ -766,8 +769,8 @@
         "en": "the entrance to the Castle",
       },
       "position": {
-        "min": 34,
-        "max": 88,
+        "wild_y": 34,
+        "wild_x": 88,
       },
       "generation": {
         "minDepth": 20,
@@ -779,11 +782,12 @@
         "nest": "0x033f",
       },
       "monsters": {
-        "minAlloc": 14,
-        "maxAllocChance": 160,
+        "minCount": 14,
+        "additionalSpawnProbability": 6250,
         "normalMonsterRate": 25,
-        "flagsMode": 3,
-        "flags": ["DEMON", "R_CHAR_phHg"],
+        "flagsMode": "OR",
+        "flags": ["DEMON"],
+        "symbols": ["p", "h", "H", "g"],
       },
       "floor": {
         "tiles": [
@@ -819,8 +823,8 @@
         "en": "a way to R'lyeh",
       },
       "position": {
-        "min": 3,
-        "max": 40,
+        "wild_y": 3,
+        "wild_x": 40,
       },
       "generation": {
         "minDepth": 80,
@@ -832,10 +836,10 @@
         "nest": "0x023f",
       },
       "monsters": {
-        "minAlloc": 14,
-        "maxAllocChance": 160,
+        "minCount": 14,
+        "additionalSpawnProbability": 6250,
         "normalMonsterRate": 25,
-        "flagsMode": 3,
+        "flagsMode": "OR",
         "flags": ["DEMON", "ELDRITCH_HORROR"],
       },
       "floor": {
@@ -891,8 +895,8 @@
         "en": "a way leading to the mountain",
       },
       "position": {
-        "min": 46,
-        "max": 76,
+        "wild_y": 46,
+        "wild_x": 76,
       },
       "generation": {
         "minDepth": 25,
@@ -904,11 +908,12 @@
         "nest": "0x00df",
       },
       "monsters": {
-        "minAlloc": 14,
-        "maxAllocChance": 160,
+        "minCount": 14,
+        "additionalSpawnProbability": 6250,
         "normalMonsterRate": 25,
-        "flagsMode": 3,
-        "flags": ["TROLL", "GIANT", "CAN_FLY", "ANIMAL", "WILD_MOUNTAIN", "R_CHAR_OYH"],
+        "flagsMode": "OR",
+        "flags": ["TROLL", "GIANT", "CAN_FLY", "ANIMAL", "WILD_MOUNTAIN"],
+        "symbols": ["O", "Y", "H"],
       },
       "floor": {
         "tiles": [
@@ -952,8 +957,8 @@
         "en": "the entrance to the Mine",
       },
       "position": {
-        "min": 23,
-        "max": 49,
+        "wild_y": 23,
+        "wild_x": 49,
       },
       "generation": {
         "minDepth": 75,
@@ -965,11 +970,11 @@
         "nest": "0x0010",
       },
       "monsters": {
-        "minAlloc": 18,
-        "maxAllocChance": 80,
+        "minCount": 18,
+        "additionalSpawnProbability": 12500,
         "normalMonsterRate": 1,
-        "flagsMode": 3,
-        "flags": ["R_CHAR_$"],
+        "flagsMode": "OR",
+        "symbols": ["$"],
       },
       "floor": {
         "tiles": [
@@ -1022,8 +1027,8 @@
         "en": "the entrance to the cave filled with anti-magic cloud",
       },
       "position": {
-        "min": 6,
-        "max": 84,
+        "wild_y": 6,
+        "wild_x": 84,
       },
       "generation": {
         "minDepth": 40,
@@ -1035,10 +1040,10 @@
         "nest": "0x01ed",
       },
       "monsters": {
-        "minAlloc": 14,
-        "maxAllocChance": 160,
+        "minCount": 14,
+        "additionalSpawnProbability": 6250,
         "normalMonsterRate": 0,
-        "flagsMode": 0,
+        "flagsMode": "NONE",
       },
       "floor": {
         "tiles": [
@@ -1085,8 +1090,8 @@
         "en": "the entrance to the cave filled with restricting magical field",
       },
       "position": {
-        "min": 45,
-        "max": 47,
+        "wild_y": 45,
+        "wild_x": 47,
       },
       "generation": {
         "minDepth": 40,
@@ -1098,10 +1103,10 @@
         "nest": "0x01ed",
       },
       "monsters": {
-        "minAlloc": 14,
-        "maxAllocChance": 160,
+        "minCount": 14,
+        "additionalSpawnProbability": 6250,
         "normalMonsterRate": 0,
-        "flagsMode": 0,
+        "flagsMode": "NONE",
       },
       "floor": {
         "tiles": [
@@ -1149,8 +1154,8 @@
         "en": "the entrance to the chameleon's den",
       },
       "position": {
-        "min": 52,
-        "max": 94,
+        "wild_y": 52,
+        "wild_x": 94,
       },
       "generation": {
         "minDepth": 30,
@@ -1162,10 +1167,10 @@
         "nest": "0x0000",
       },
       "monsters": {
-        "minAlloc": 30,
-        "maxAllocChance": 160,
+        "minCount": 30,
+        "additionalSpawnProbability": 6250,
         "normalMonsterRate": 0,
-        "flagsMode": 3,
+        "flagsMode": "OR",
         "flags": ["CHAMELEON"],
       },
       "floor": {
@@ -1215,8 +1220,8 @@
         "en": "the dark entrance to the cave filled with magical darkness",
       },
       "position": {
-        "min": 12,
-        "max": 57,
+        "wild_y": 12,
+        "wild_x": 57,
       },
       "generation": {
         "minDepth": 55,
@@ -1228,10 +1233,10 @@
         "nest": "0xffff",
       },
       "monsters": {
-        "minAlloc": 14,
-        "maxAllocChance": 160,
+        "minCount": 14,
+        "additionalSpawnProbability": 6250,
         "normalMonsterRate": 100,
-        "flagsMode": 0,
+        "flagsMode": "NONE",
       },
       "floor": {
         "tiles": [
@@ -1285,8 +1290,8 @@
         "en": "the entrance to the glass castle",
       },
       "position": {
-        "min": 40,
-        "max": 37,
+        "wild_y": 40,
+        "wild_x": 37,
       },
       "generation": {
         "minDepth": 40,
@@ -1298,10 +1303,10 @@
         "nest": "0x033d",
       },
       "monsters": {
-        "minAlloc": 14,
-        "maxAllocChance": 160,
+        "minCount": 14,
+        "additionalSpawnProbability": 6250,
         "normalMonsterRate": 0,
-        "flagsMode": 3,
+        "flagsMode": "OR",
         "flags": [
           "INVISIBLE",
           "HAS_LITE_1",
