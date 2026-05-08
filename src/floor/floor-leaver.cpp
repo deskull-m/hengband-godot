@@ -15,7 +15,7 @@
 #include "pet/pet-util.h"
 #include "save/floor-writer.h"
 #include "spell-class/spells-mirror-master.h"
-#include "system/artifact-type-definition.h"
+#include "system/artifact/artifact-definition.h"
 #include "system/dungeon/dungeon-definition.h"
 #include "system/enums/dungeon/dungeon-id.h"
 #include "system/floor/floor-info.h"

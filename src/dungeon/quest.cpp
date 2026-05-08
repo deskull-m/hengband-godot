@@ -12,7 +12,7 @@
 #include "monster/monster-util.h"
 #include "player-status/player-energy.h"
 #include "player/player-status.h"
-#include "system/artifact-type-definition.h"
+#include "system/artifact/artifact-definition.h"
 #include "system/floor/floor-info.h" // @todo 相互参照、将来的に削除する.
 #include "system/grid-type-definition.h"
 #include "system/item-entity.h"

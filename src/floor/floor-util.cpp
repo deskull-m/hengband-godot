@@ -9,7 +9,7 @@
 #include "floor/floor-object.h"
 #include "floor/line-of-sight.h"
 #include "game-option/birth-options.h"
-#include "system/artifact-type-definition.h"
+#include "system/artifact/artifact-definition.h"
 #include "system/dungeon/dungeon-definition.h"
 #include "system/floor/floor-info.h"
 #include "system/floor/town-info.h"

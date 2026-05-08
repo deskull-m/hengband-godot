@@ -24,7 +24,7 @@
 #include "player/player-status-flags.h"
 #include "spell-kind/spells-teleport.h"
 #include "status/bad-status-setter.h"
-#include "system/artifact-type-definition.h"
+#include "system/artifact/artifact-definition.h"
 #include "system/dungeon/dungeon-definition.h"
 #include "system/enums/terrain/terrain-tag.h"
 #include "system/floor/floor-info.h"

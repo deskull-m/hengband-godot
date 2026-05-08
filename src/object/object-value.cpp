@@ -1,7 +1,7 @@
 #include "object/object-value.h"
 #include "object/object-value-calc.h"
 #include "object/tval-types.h"
-#include "system/artifact-type-definition.h"
+#include "system/artifact/artifact-definition.h"
 #include "system/baseitem/baseitem-definition.h"
 #include "system/item-entity.h"
 #include "system/monrace/monrace-definition.h"

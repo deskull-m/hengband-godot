@@ -19,7 +19,7 @@
 #include "object-enchant/special-object-flags.h"
 #include "player-base/player-class.h"
 #include "specific-object/bloody-moon.h"
-#include "system/artifact-type-definition.h"
+#include "system/artifact/artifact-definition.h"
 #include "system/item-entity.h"
 
 /*!

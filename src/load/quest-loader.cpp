@@ -7,7 +7,7 @@
 #include "load/savedata-old-flag-types.h"
 #include "object-enchant/trg-types.h"
 #include "system/angband-exceptions.h"
-#include "system/artifact-type-definition.h"
+#include "system/artifact/artifact-definition.h"
 #include "system/floor/floor-info.h"
 #include "system/floor/town-info.h"
 #include "system/floor/town-list.h"

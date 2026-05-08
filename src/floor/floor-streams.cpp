@@ -25,7 +25,7 @@
 #include "monster/monster-info.h"
 #include "room/lake-types.h"
 #include "spell-kind/spells-floor.h"
-#include "system/artifact-type-definition.h"
+#include "system/artifact/artifact-definition.h"
 #include "system/dungeon/dungeon-data-definition.h"
 #include "system/dungeon/dungeon-definition.h"
 #include "system/enums/terrain/terrain-tag.h"

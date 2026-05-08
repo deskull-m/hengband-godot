@@ -1256,7 +1256,7 @@ hengband_SOURCES = \
 	system/angband-exceptions.h \
 	system/angband-system.h system/angband-system.cpp \
 	system/angband-version.cpp system/angband-version.h \
-	system/artifact-type-definition.cpp system/artifact-type-definition.h \
+	system/artifact/artifact-type-definition.cpp system/artifact/artifact-type-definition.h \
 	system/building-type-definition.cpp system/building-type-definition.h \
 	system/grid-type-definition.cpp system/grid-type-definition.h \
 	system/h-basic.h system/h-config.h \

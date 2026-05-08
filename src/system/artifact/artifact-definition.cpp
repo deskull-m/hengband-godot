@@ -1,4 +1,4 @@
-#include "system/artifact-type-definition.h"
+#include "system/artifact/artifact-definition.h"
 #include "artifact/fixed-art-types.h"
 #include "object/tval-types.h"
 #include "system/baseitem/baseitem-definition.h"

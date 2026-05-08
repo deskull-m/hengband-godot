@@ -6,7 +6,7 @@
 #include "locale/language-switcher.h"
 #include "object-enchant/special-object-flags.h"
 #include "system/angband-exceptions.h"
-#include "system/artifact-type-definition.h"
+#include "system/artifact/artifact-definition.h"
 #include "system/baseitem/baseitem-definition.h"
 #include "system/baseitem/baseitem-list.h"
 #include "system/dungeon/dungeon-definition.h"

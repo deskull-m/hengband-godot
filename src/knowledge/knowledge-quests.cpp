@@ -14,7 +14,7 @@
 #include "io-dump/dump-util.h"
 #include "locale/english.h"
 #include "object-enchant/special-object-flags.h"
-#include "system/artifact-type-definition.h"
+#include "system/artifact/artifact-definition.h"
 #include "system/dungeon/dungeon-record.h"
 #include "system/enums/dungeon/dungeon-id.h"
 #include "system/floor/floor-info.h"

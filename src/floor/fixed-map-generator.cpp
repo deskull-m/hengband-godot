@@ -16,7 +16,7 @@
 #include "object-enchant/item-apply-magic.h"
 #include "object-enchant/item-magic-applier.h"
 #include "sv-definition/sv-scroll-types.h"
-#include "system/artifact-type-definition.h"
+#include "system/artifact/artifact-definition.h"
 #include "system/baseitem/baseitem-definition.h"
 #include "system/baseitem/baseitem-list.h"
 #include "system/dungeon/dungeon-definition.h"

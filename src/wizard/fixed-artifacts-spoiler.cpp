@@ -1,7 +1,7 @@
 #include "wizard/fixed-artifacts-spoiler.h"
 #include "io/files-util.h"
 #include "system/angband-system.h"
-#include "system/artifact-type-definition.h"
+#include "system/artifact/artifact-definition.h"
 #include "system/item-entity.h"
 #include "system/player-type-definition.h"
 #include "util/angband-files.h"

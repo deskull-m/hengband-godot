@@ -13,7 +13,7 @@
 #include "player-info/race-types.h"
 #include "player/digestion-processor.h"
 #include "player/player-spell-status.h"
-#include "system/artifact-type-definition.h"
+#include "system/artifact/artifact-definition.h"
 #include "system/baseitem/baseitem-definition.h"
 #include "system/baseitem/baseitem-list.h"
 #include "system/building-type-definition.h"

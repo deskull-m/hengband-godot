@@ -30,7 +30,7 @@
 #include "monster/monster-update.h"
 #include "player-base/player-class.h"
 #include "spell-kind/spells-floor.h"
-#include "system/artifact-type-definition.h"
+#include "system/artifact/artifact-definition.h"
 #include "system/dungeon/dungeon-definition.h"
 #include "system/enums/dungeon/dungeon-id.h"
 #include "system/enums/terrain/terrain-tag.h"
