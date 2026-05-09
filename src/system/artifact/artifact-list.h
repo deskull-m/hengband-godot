@@ -20,7 +20,6 @@ public:
     bool order(const FixedArtifactId id1, const FixedArtifactId id2) const;
     void emplace(const FixedArtifactId fa_id, ArtifactType &&artifact);
     void reset_generated_flags();
-    tl::optional<ItemEntity> try_make_instant_artifact(int making_level) const;
 
 private:
     ArtifactList() = default;

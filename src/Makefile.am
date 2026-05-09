@@ -1259,6 +1259,7 @@ hengband_SOURCES = \
 	system/artifact/artifact-definition.cpp system/artifact/artifact-definition.h \
 	system/artifact/artifact-list.cpp system/artifact/artifact-list.h \
 	system/artifact/artifact-record.cpp system/artifact/artifact-record.h \
+	system/artifact/artifact-service.cpp system/artifact/artifact-service.h \
 	system/building-type-definition.cpp system/building-type-definition.h \
 	system/grid-type-definition.cpp system/grid-type-definition.h \
 	system/h-basic.h system/h-config.h \

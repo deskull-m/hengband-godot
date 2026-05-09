@@ -7,7 +7,7 @@
 #include "monster/monster-timed-effects.h"
 #include "object-enchant/item-apply-magic.h"
 #include "system/artifact/artifact-definition.h"
-#include "system/artifact/artifact-list.h"
+#include "system/artifact/artifact-service.h"
 #include "system/baseitem/baseitem-allocation.h"
 #include "system/baseitem/baseitem-definition.h"
 #include "system/dungeon/dungeon-definition.h"
@@ -425,7 +425,7 @@ tl::optional<ItemEntity> FloorType::try_make_instant_artifact() const
         return tl::nullopt;
     }
 
-    return ArtifactList::get_instance().try_make_instant_artifact(this->object_level);
+    return ArtifactService::try_make_instant_artifact(this->object_level);
 }
 
 /*!

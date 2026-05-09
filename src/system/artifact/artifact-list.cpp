@@ -1,7 +1,6 @@
 #include "system/artifact/artifact-list.h"
 #include "artifact/fixed-art-types.h"
 #include "system/artifact/artifact-definition.h"
-#include "system/item-entity.h"
 
 ArtifactList ArtifactList::instance{};
 
@@ -63,18 +62,4 @@ void ArtifactList::reset_generated_flags()
     for (auto &[_, artifact] : this->artifacts) {
         artifact.is_generated = false;
     }
-}
-
-tl::optional<ItemEntity> ArtifactList::try_make_instant_artifact(int making_level) const
-{
-    for (const auto &[fa_id, artifact] : this->artifacts) {
-        const auto bi_key = artifact.try_make_instant_artifact(making_level);
-        if (bi_key) {
-            ItemEntity instant_artifact(*bi_key);
-            instant_artifact.fa_id = fa_id;
-            return instant_artifact;
-        }
-    }
-
-    return tl::nullopt;
 }

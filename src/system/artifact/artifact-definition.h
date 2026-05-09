@@ -4,18 +4,17 @@
 #include "object-enchant/trg-types.h"
 #include "system/angband.h"
 #include "system/baseitem/baseitem-key.h"
-#include "util/abstract-map-wrapper.h"
 #include "util/dice.h"
 #include "util/flag-group.h"
 #include <map>
 #include <string>
+#include <tl/optional.hpp>
 
 /*!
  * @class ArtifactType
  * @brief 固定アーティファクト情報の構造体 / Artifact structure.
  * @details is_generated とfloor_id フィールドのみセーブファイルへの保存対象
  */
-enum class FixedArtifactId : short;
 enum class RandomArtActType : short;
 class ArtifactType {
 public:
@@ -45,11 +44,4 @@ public:
     RandomArtActType act_idx{}; /*! 発動能力ID / Activative ability index */
 
     bool can_generate(const BaseitemKey &bi_key) const;
-    tl::optional<BaseitemKey> try_make_instant_artifact(int making_level) const;
-
-private:
-    bool can_make_instant_artifact() const;
-    bool evaluate_shallow_instant_artifact(int making_level) const;
-    bool evaluate_rarity() const;
-    bool evaluate_shallow_baseitem(int making_level) const;
 };
