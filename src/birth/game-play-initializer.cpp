@@ -72,13 +72,13 @@ void player_wipe_without_name(PlayerType *player_ptr)
     ArtifactList::get_instance().reset_generated_flags();
     BaseitemList::get_instance().reset_identification_flags();
     for (auto &[_, monrace] : MonraceList::get_instance()) {
-        if (!monrace.is_valid()) {
+        if (!monrace->is_valid()) {
             continue;
         }
-        monrace.reset_current_numbers();
-        monrace.reset_max_number();
-        monrace.r_pkills = 0;
-        monrace.r_akills = 0;
+        monrace->reset_current_numbers();
+        monrace->reset_max_number();
+        monrace->r_pkills = 0;
+        monrace->r_akills = 0;
     }
 
     player_ptr->food = PY_FOOD_FULL - 1;
