@@ -199,7 +199,7 @@ private:
     ItemEntity(const ItemEntity &) = default;
     ItemEntity &operator=(const ItemEntity &) = default;
 
-    EnumClassFlagGroup<IdentificationFlag> ident; /*!< Special flags  */
+    EnumClassFlagGroup<IdentificationFlag> identification_flags;
     int get_baseitem_price() const;
     int calc_figurine_value() const;
     int calc_capture_value() const;
