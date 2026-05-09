@@ -1,4 +1,6 @@
 #include "system/artifact/artifact-record.h"
+#include "artifact/fixed-art-types.h"
+#include "util/enum-converter.h"
 
 bool ArtifactRecord::get_generated() const
 {
@@ -30,33 +32,71 @@ void ArtifactRecord::set_known(bool new_state)
     this->is_known = new_state;
 }
 
+ArtifactRecords ArtifactRecords::instance{};
+
+ArtifactRecords &ArtifactRecords::get_instance()
+{
+    return instance;
+}
+
+void ArtifactRecords::initialize(size_t size)
+{
+    for (size_t i = 1; i <= size; i++) {
+        this->records.emplace(i2enum<FixedArtifactId>(i), ArtifactRecord());
+    }
+}
+
 bool ArtifactRecords::get_generated(FixedArtifactId fa_id) const
 {
+    if (fa_id == FixedArtifactId::NONE) {
+        return false;
+    }
+
     return this->records.at(fa_id).get_generated();
 }
 
 bool ArtifactRecords::get_identified(FixedArtifactId fa_id) const
 {
+    if (fa_id == FixedArtifactId::NONE) {
+        return false;
+    }
+
     return this->records.at(fa_id).get_identified();
 }
 
 bool ArtifactRecords::get_known(FixedArtifactId fa_id) const
 {
+    if (fa_id == FixedArtifactId::NONE) {
+        return false;
+    }
+
     return this->records.at(fa_id).get_known();
 }
 
 void ArtifactRecords::set_generated(FixedArtifactId fa_id, bool new_state)
 {
+    if (fa_id == FixedArtifactId::NONE) {
+        return;
+    }
+
     return this->records.at(fa_id).set_generated(new_state);
 }
 
 void ArtifactRecords::set_identified(FixedArtifactId fa_id, bool new_state)
 {
+    if (fa_id == FixedArtifactId::NONE) {
+        return;
+    }
+
     return this->records.at(fa_id).set_identified(new_state);
 }
 
 void ArtifactRecords::set_known(FixedArtifactId fa_id, bool new_state)
 {
+    if (fa_id == FixedArtifactId::NONE) {
+        return;
+    }
+
     return this->records.at(fa_id).set_known(new_state);
 }
 

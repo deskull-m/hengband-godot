@@ -20,6 +20,7 @@
 #include "perception/object-perception.h"
 #include "system/artifact/artifact-definition.h"
 #include "system/artifact/artifact-list.h"
+#include "system/artifact/artifact-record.h"
 #include "system/baseitem/baseitem-definition.h"
 #include "system/baseitem/baseitem-list.h"
 #include "system/floor/floor-info.h"
@@ -44,8 +45,8 @@ auto collect_known_fixed_artifacts(PlayerType *player_ptr)
     const auto &artifacts = ArtifactList::get_instance();
     const auto comparer = [&artifacts](auto id1, auto id2) { return artifacts.order(id1, id2); };
     std::set<FixedArtifactId, decltype(comparer)> fa_ids(comparer);
-    for (const auto &[fa_id, artifact] : artifacts) {
-        if (!artifact.is_generated) {
+    for (const auto &[fa_id, record] : ArtifactRecords::get_instance()) {
+        if (!record.get_generated()) {
             continue;
         }
 

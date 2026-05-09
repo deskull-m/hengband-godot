@@ -45,7 +45,7 @@
 #include "player/player-status-table.h"
 #include "sv-definition/sv-bow-types.h"
 #include "system/artifact/artifact-definition.h"
-#include "system/artifact/artifact-list.h"
+#include "system/artifact/artifact-record.h"
 #include "system/baseitem/baseitem-key.h"
 #include "system/enums/monrace/monrace-id.h"
 #include "system/enums/terrain/terrain-characteristics.h"
@@ -909,7 +909,7 @@ void exe_fire(PlayerType *player_ptr, INVENTORY_IDX i_idx, ItemEntity *j_ptr, SP
             if (item_idx == 0) {
                 msg_format(_("%sはどこかへ行った。", "The %s went somewhere."), item_name.data());
                 if (fire_item.is_fixed_artifact()) {
-                    ArtifactList::get_instance().get_artifact(j_ptr->fa_id).is_generated = false;
+                    ArtifactRecords::get_instance().set_generated(j_ptr->fa_id, false);
                 }
                 return;
             }

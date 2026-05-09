@@ -183,6 +183,7 @@ public:
     void set_position(const Pos2D &pos);
     bool try_become_artifact(int dungeon_level);
     void absorb(ItemEntity &other);
+    void set_fixed_artifact_generated(bool new_state) const;
 
 private:
     ItemEntity(const ItemEntity &) = default;

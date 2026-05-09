@@ -4,6 +4,7 @@
 #include "load/load-util.h"
 #include "system/artifact/artifact-definition.h"
 #include "system/artifact/artifact-list.h"
+#include "system/artifact/artifact-record.h"
 #include "system/baseitem/baseitem-definition.h"
 #include "system/baseitem/baseitem-list.h"
 #include "util/bit-flags-calculator.h"
@@ -32,11 +33,13 @@ void ItemLoaderBase::load_item()
  */
 void ItemLoaderBase::load_artifact()
 {
+    auto &artifacts = ArtifactList::get_instance();
+    auto &artifact_records = ArtifactRecords::get_instance();
     auto loading_max_a_idx = rd_u16b();
     for (auto i = 0U; i < loading_max_a_idx; i++) {
-        const auto a_idx = i2enum<FixedArtifactId>(i);
-        auto &artifact = ArtifactList::get_instance().get_artifact(a_idx);
-        artifact.is_generated = rd_bool();
+        const auto fa_id = i2enum<FixedArtifactId>(i);
+        artifact_records.set_generated(fa_id, rd_bool());
+        auto &artifact = artifacts.get_artifact(fa_id);
         if (h_older_than(1, 5, 0, 0)) {
             artifact.floor_id = 0;
             strip_bytes(3);

@@ -12,7 +12,6 @@
 #include "object-enchant/object-curse.h"
 #include "object-enchant/special-object-flags.h"
 #include "player/player-status-flags.h"
-#include "system/artifact/artifact-definition.h"
 #include "system/baseitem/baseitem-definition.h"
 #include "system/dungeon/dungeon-definition.h"
 #include "system/floor/floor-info.h"
@@ -191,7 +190,7 @@ bool ItemMagicApplier::set_fixed_artifact_generation_info()
     }
 
     apply_artifact(this->player_ptr, this->o_ptr);
-    this->o_ptr->get_fixed_artifact().is_generated = true;
+    this->o_ptr->set_fixed_artifact_generated(true);
     return true;
 }
 

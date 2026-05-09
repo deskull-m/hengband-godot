@@ -332,7 +332,7 @@ bool destroy_area(PlayerType *player_ptr, const POSITION y1, const POSITION x1, 
                 for (const auto this_o_idx : grid.o_idx_list) {
                     auto &item = *floor.o_list[this_o_idx];
                     if (item.is_fixed_artifact() && (!item.is_known() || in_generate)) {
-                        item.get_fixed_artifact().is_generated = false;
+                        item.set_fixed_artifact_generated(false);
 
                         if (in_generate && cheat_peek) {
                             const auto item_name = describe_flavor(player_ptr, item, (OD_NAME_ONLY | OD_STORE));

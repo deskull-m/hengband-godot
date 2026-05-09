@@ -26,6 +26,7 @@
 #include "sv-definition/sv-weapon-types.h"
 #include "system/artifact/artifact-definition.h"
 #include "system/artifact/artifact-list.h"
+#include "system/artifact/artifact-record.h"
 #include "system/baseitem/baseitem-definition.h"
 #include "system/baseitem/baseitem-list.h"
 #include "system/enums/monrace/monrace-id.h"
@@ -1367,8 +1368,9 @@ bool ItemEntity::try_become_artifact(int dungeon_level)
         return false;
     }
 
-    for (const auto &[a_idx, artifact] : ArtifactList::get_instance()) {
-        if (!artifact.can_generate(this->bi_key)) {
+    const auto &records = ArtifactRecords::get_instance();
+    for (const auto &[generating_fa_id, artifact] : ArtifactList::get_instance()) {
+        if (records.get_generated(generating_fa_id) || !artifact.can_generate(this->bi_key)) {
             continue;
         }
 
@@ -1380,7 +1382,7 @@ bool ItemEntity::try_become_artifact(int dungeon_level)
             continue;
         }
 
-        this->fa_id = a_idx;
+        this->fa_id = generating_fa_id;
         return true;
     }
 
@@ -1438,6 +1440,12 @@ void ItemEntity::absorb(ItemEntity &other)
         this->pval += other.pval * (other.number - diff) / other.number;
     }
 }
+
+void ItemEntity::set_fixed_artifact_generated(bool new_state) const
+{
+    ArtifactRecords::get_instance().set_generated(this->fa_id, new_state);
+}
+
 /*!
  * @brief エゴ光源のフラグを修正する
  *

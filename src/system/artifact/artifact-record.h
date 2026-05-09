@@ -20,9 +20,10 @@ private:
     bool is_known = false; //!< 今までに鑑定したり、噂を聞いたことがあるか (前世のセーブも含)
 };
 
-enum class FixedArtifactId;
+enum class FixedArtifactId : short;
 class ArtifactRecord;
 class ArtifactRecords : public util::AbstractMapWrapper<FixedArtifactId, ArtifactRecord> {
+public:
     ArtifactRecords(ArtifactRecords &&) = delete;
     ArtifactRecords(const ArtifactRecords &) = delete;
     ArtifactRecords &operator=(const ArtifactRecords &) = delete;
@@ -30,6 +31,8 @@ class ArtifactRecords : public util::AbstractMapWrapper<FixedArtifactId, Artifac
     ~ArtifactRecords() = default;
 
     static ArtifactRecords &get_instance();
+    void initialize(size_t size);
+
     bool get_generated(FixedArtifactId fa_id) const;
     bool get_identified(FixedArtifactId fa_id) const;
     bool get_known(FixedArtifactId fa_id) const;
@@ -40,7 +43,7 @@ class ArtifactRecords : public util::AbstractMapWrapper<FixedArtifactId, Artifac
     void reset_all_without_knowledge();
 
 private:
-    ArtifactRecords();
+    ArtifactRecords() = default;
     static ArtifactRecords instance;
     std::map<FixedArtifactId, ArtifactRecord> records;
 

@@ -56,10 +56,3 @@ void ArtifactList::emplace(const FixedArtifactId fa_id, ArtifactType &&artifact)
 {
     this->artifacts.emplace(fa_id, std::move(artifact));
 }
-
-void ArtifactList::reset_generated_flags()
-{
-    for (auto &[_, artifact] : this->artifacts) {
-        artifact.is_generated = false;
-    }
-}

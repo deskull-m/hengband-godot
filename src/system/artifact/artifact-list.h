@@ -19,7 +19,6 @@ public:
 
     bool order(const FixedArtifactId id1, const FixedArtifactId id2) const;
     void emplace(const FixedArtifactId fa_id, ArtifactType &&artifact);
-    void reset_generated_flags();
 
 private:
     ArtifactList() = default;

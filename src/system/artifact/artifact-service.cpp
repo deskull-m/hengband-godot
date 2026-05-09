@@ -2,6 +2,7 @@
 #include "artifact/fixed-art-types.h"
 #include "system/artifact/artifact-definition.h"
 #include "system/artifact/artifact-list.h"
+#include "system/artifact/artifact-record.h"
 #include "system/baseitem/baseitem-definition.h"
 #include "system/baseitem/baseitem-list.h"
 #include "system/item-entity.h"
@@ -9,7 +10,7 @@
 tl::optional<ItemEntity> ArtifactService::try_make_instant_artifact(int making_level)
 {
     for (const auto &[fa_id, artifact] : ArtifactList::get_instance()) {
-        const auto bi_key = try_make_instant_artifact(artifact, making_level);
+        const auto bi_key = try_make_instant_artifact(fa_id, artifact, making_level);
         if (bi_key) {
             ItemEntity instant_artifact(*bi_key);
             instant_artifact.fa_id = fa_id;
@@ -26,9 +27,9 @@ tl::optional<ItemEntity> ArtifactService::try_make_instant_artifact(int making_l
  * @param fa_id 固定アーティファクトID
  * @return 生成に成功したらそのアイテム、失敗したらnullopt
  */
-tl::optional<BaseitemKey> ArtifactService::try_make_instant_artifact(const ArtifactType &artifact, int making_level)
+tl::optional<BaseitemKey> ArtifactService::try_make_instant_artifact(FixedArtifactId fa_id, const ArtifactType &artifact, int making_level)
 {
-    if (!can_make_instant_artifact(artifact)) {
+    if (!can_make_instant_artifact(fa_id, artifact)) {
         return tl::nullopt;
     }
 
@@ -52,9 +53,9 @@ tl::optional<BaseitemKey> ArtifactService::try_make_instant_artifact(const Artif
  * @return 生成可否
  * @details 生成済、クエスト属性付き、非INSTA_ARTはfalse、普通のINSTA_ARTはtrue
  */
-bool ArtifactService::can_make_instant_artifact(const ArtifactType &artifact)
+bool ArtifactService::can_make_instant_artifact(FixedArtifactId fa_id, const ArtifactType &artifact)
 {
-    auto can_make = !artifact.is_generated;
+    auto can_make = ArtifactRecords::get_instance().get_generated(fa_id);
     can_make &= artifact.gen_flags.has_not(ItemGenerationTraitType::QUESTITEM);
     can_make &= artifact.gen_flags.has(ItemGenerationTraitType::INSTA_ART);
     return can_make;

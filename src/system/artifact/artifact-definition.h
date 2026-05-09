@@ -39,7 +39,6 @@ public:
     EnumClassFlagGroup<ItemGenerationTraitType> gen_flags; /*! アイテム生成フラグ / flags for generate */
     DEPTH level{}; /*! 基本生成階 / Artifact level */
     RARITY rarity{}; /*! レアリティ / Artifact rarity */
-    bool is_generated{}; /*! 生成済か否か (生成済でも、「保存モードON」かつ「帰還等で鑑定前に消滅」したら未生成状態に戻る) */
     FLOOR_IDX floor_id{}; /*! アイテムを落としたフロアのID / Leaved on this location last time */
     RandomArtActType act_idx{}; /*! 発動能力ID / Activative ability index */
 

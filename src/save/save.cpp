@@ -29,6 +29,7 @@
 #include "save/save-util.h"
 #include "system/artifact/artifact-definition.h"
 #include "system/artifact/artifact-list.h"
+#include "system/artifact/artifact-record.h"
 #include "system/floor/floor-info.h"
 #include "system/floor/town-info.h"
 #include "system/floor/town-list.h"
@@ -162,13 +163,14 @@ static bool wr_savefile_new(PlayerType *player_ptr)
     }
 
     const auto &artifacts = ArtifactList::get_instance();
+    const auto &artifact_records = ArtifactRecords::get_instance();
     auto max_a_num = enum2i(artifacts.rbegin()->first);
     tmp16u = max_a_num + 1;
     wr_u16b(tmp16u);
     for (auto i = 0U; i < tmp16u; i++) {
-        const auto a_idx = i2enum<FixedArtifactId>(i);
-        const auto &artifact = artifacts.get_artifact(a_idx);
-        wr_bool(artifact.is_generated);
+        const auto fa_id = i2enum<FixedArtifactId>(i);
+        const auto &artifact = artifacts.get_artifact(fa_id);
+        wr_bool(artifact_records.get_generated(fa_id));
         wr_s16b(artifact.floor_id);
     }
 

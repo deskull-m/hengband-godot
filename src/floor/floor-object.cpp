@@ -106,8 +106,7 @@ static void handle_item_disappearance(PlayerType *player_ptr, ItemEntity &disapp
     }
 
     if (disappearing_item.is_fixed_artifact() && !disappearing_item.is_known() && preserve_mode) {
-        auto &artifact = disappearing_item.get_fixed_artifact();
-        artifact.is_generated = false;
+        disappearing_item.set_fixed_artifact_generated(false);
     }
 }
 
