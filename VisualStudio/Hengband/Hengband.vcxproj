@@ -311,6 +311,7 @@
     <ClCompile Include="..\..\src\monster-floor\monster-movement-direction-list.cpp" />
     <ClCompile Include="..\..\src\player-info\bluemage-data.cpp" />
     <ClCompile Include="..\..\src\system\artifact\artifact-list.cpp" />
+    <ClCompile Include="..\..\src\system\artifact\artifact-record.cpp" />
     <ClCompile Include="..\..\src\system\floor\town-records.cpp" />
     <ClCompile Include="..\..\src\system\floor\wilderness-grid.cpp" />
     <ClCompile Include="..\..\src\system\services\dungeon-monrace-service.cpp" />
@@ -1041,6 +1042,8 @@
     <ClInclude Include="..\..\src\system\enums\store-sale-type.h" />
     <ClInclude Include="..\..\src\system\enums\terrain\building-type.h" />
     <ClInclude Include="..\..\src\system\enums\terrain\pattern-tile-type.h" />
+    <ClInclude Include="..\..\src\system\artifact\artifact-list.h" />
+    <ClInclude Include="..\..\src\system\artifact\artifact-record.h" />
     <ClInclude Include="..\..\src\system\enums\terrain\terrain-kind.h" />
     <ClInclude Include="..\..\src\system\enums\terrain\terrain-conversion-type.h" />
     <ClInclude Include="..\..\src\system\enums\terrain\trap.h" />

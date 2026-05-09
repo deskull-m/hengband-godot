@@ -2574,6 +2574,9 @@
     <ClCompile Include="..\..\src\system\artifact\artifact-list.cpp">
       <Filter>system\artifact</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\system\artifact\artifact-record.cpp">
+      <Filter>system\artifact</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\combat\shoot.h">
@@ -5587,6 +5590,9 @@
       <Filter>system\artifact</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\system\artifact\artifact-list.h">
+      <Filter>system\artifact</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\system\artifact\artifact-record.h">
       <Filter>system\artifact</Filter>
     </ClInclude>
   </ItemGroup>
