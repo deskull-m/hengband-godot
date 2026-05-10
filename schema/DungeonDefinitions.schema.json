@@ -79,7 +79,11 @@
           "uniqueItems": true
         },
         "nest": {
-          "$ref": "#/$defs/hex16String"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nestKind"
+          },
+          "uniqueItems": true
         }
       }
     },
@@ -406,6 +410,21 @@
         "SYMBOL_EVIL",
         "SYMBOL_GOOD",
         "TROLL"
+      ]
+    },
+    "nestKind": {
+      "type": "string",
+      "enum": [
+        "CLONE",
+        "JELLY",
+        "SYMBOL_GOOD",
+        "SYMBOL_EVIL",
+        "MIMIC",
+        "HORROR",
+        "KENNEL",
+        "ANIMAL",
+        "CHAPEL",
+        "UNDEAD"
       ]
     }
   }

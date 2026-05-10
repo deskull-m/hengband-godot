@@ -77,6 +77,22 @@ static bool grab_one_dungeon_pit_kind(DungeonDefinition &dungeon, std::string_vi
 }
 
 /*!
+ * @brief テキストトークンを走査してnest種別フラグを一つ得る
+ * @param dungeon ダンジョンへの参照
+ * @param what 参照元の文字列
+ * @return 見つけたらtrue
+ */
+static bool grab_one_dungeon_nest_kind(DungeonDefinition &dungeon, std::string_view what)
+{
+    if (EnumClassFlagGroup<NestKind>::grab_one_flag(dungeon.nest, dungeon_nest_kinds, what)) {
+        return true;
+    }
+
+    msg_print(_("未知のダンジョンnest種別 '{}'。", "Unknown dungeon nest kind '{}'."), what);
+    return false;
+}
+
+/*!
  * @brief テキストトークンを走査してフラグを一つ得る(モンスターのダンジョン出現条件用1)
  * @param dungeon ダンジョンへの参照
  * @param what 参照元の文字列
@@ -222,10 +238,23 @@ static errr set_dungeon_generation(const nlohmann::json &generation_obj, Dungeon
         }
     }
 
-    try {
-        dungeon.nest = static_cast<BIT_FLAGS16>(std::stoul(generation_obj["nest"].get<std::string>(), nullptr, 16));
-    } catch (const std::exception &) {
+    const auto &nest_obj = generation_obj["nest"];
+    if (nest_obj.is_null() || !nest_obj.is_array()) {
         return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    }
+    for (const auto &n_obj : nest_obj) {
+        if (!n_obj.is_string()) {
+            return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+        }
+
+        const auto n = n_obj.get<std::string>();
+        if (n.empty()) {
+            continue;
+        }
+
+        if (!grab_one_dungeon_nest_kind(dungeon, n)) {
+            return PARSE_ERROR_INVALID_FLAG;
+        }
     }
 
     return PARSE_ERROR_NONE;

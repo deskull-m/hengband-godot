@@ -71,3 +71,20 @@ const std::unordered_map<std::string_view, PitKind> dungeon_pit_kinds = {
     { "DEMON", PitKind::DEMON },
     { "DARK_ELF", PitKind::DARK_ELF },
 };
+
+/*!
+ * nest種別トークンの定義 /
+ * Dungeon nest kinds
+ */
+const std::unordered_map<std::string_view, NestKind> dungeon_nest_kinds = {
+    { "CLONE", NestKind::CLONE },
+    { "JELLY", NestKind::JELLY },
+    { "SYMBOL_GOOD", NestKind::SYMBOL_GOOD },
+    { "SYMBOL_EVIL", NestKind::SYMBOL_EVIL },
+    { "MIMIC", NestKind::MIMIC },
+    { "HORROR", NestKind::HORROR },
+    { "KENNEL", NestKind::KENNEL },
+    { "ANIMAL", NestKind::ANIMAL },
+    { "CHAPEL", NestKind::CHAPEL },
+    { "UNDEAD", NestKind::UNDEAD },
+};

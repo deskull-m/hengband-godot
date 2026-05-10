@@ -57,7 +57,7 @@ public:
     DEPTH maxdepth{}; /* Maximal depth */
     PLAYER_LEVEL min_plev{}; /* Minimal plev needed to enter -- it's an anti-cheating mesure */
     EnumClassFlagGroup<PitKind> pit{};
-    BIT_FLAGS16 nest{};
+    EnumClassFlagGroup<NestKind> nest{};
     DungeonMode mode{}; /* Mode of combinaison of the monster flags */
 
     int min_monster_count_on_floor{}; /* Minimal number of monsters per floor */

@@ -171,7 +171,7 @@ tl::optional<NestKind> pick_nest_type(const FloorType &floor, const std::map<Nes
             continue;
         }
 
-        if (none_bits(floor.get_dungeon_definition().nest, (1UL << enum2i(nest_kind)))) {
+        if (floor.get_dungeon_definition().nest.has_not(nest_kind)) {
             continue;
         }
 

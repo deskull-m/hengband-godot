@@ -22,7 +22,7 @@
         "objGood": 75,
         "objGreat": 20,
         "pit": [],
-        "nest": "0x0000",
+        "nest": [],
       },
       "monsters": {
         "minCount": 14,
@@ -85,7 +85,18 @@
           "DEMON",
           "DARK_ELF",
         ],
-        "nest": "0xffff",
+        "nest": [
+          "CLONE",
+          "JELLY",
+          "SYMBOL_GOOD",
+          "SYMBOL_EVIL",
+          "MIMIC",
+          "HORROR",
+          "KENNEL",
+          "ANIMAL",
+          "CHAPEL",
+          "UNDEAD",
+        ],
       },
       "monsters": {
         "minCount": 14,
@@ -154,7 +165,7 @@
         "objGood": 75,
         "objGreat": 20,
         "pit": [],
-        "nest": "0x0000",
+        "nest": [],
       },
       "monsters": {
         "minCount": 14,
@@ -208,7 +219,7 @@
         "objGood": 75,
         "objGreat": 20,
         "pit": ["ORC", "SYMBOL_GOOD", "SYMBOL_EVIL"],
-        "nest": "0x006d",
+        "nest": ["CLONE", "SYMBOL_GOOD", "SYMBOL_EVIL", "HORROR", "KENNEL"],
       },
       "monsters": {
         "minCount": 18,
@@ -271,7 +282,7 @@
         "objGood": 75,
         "objGreat": 20,
         "pit": [],
-        "nest": "0x0000",
+        "nest": [],
       },
       "monsters": {
         "minCount": 80,
@@ -324,7 +335,7 @@
         "objGood": 75,
         "objGreat": 20,
         "pit": ["TROLL", "GIANT", "SYMBOL_EVIL", "DRAGON"],
-        "nest": "0x00c1",
+        "nest": ["CLONE", "KENNEL", "ANIMAL"],
       },
       "monsters": {
         "minCount": 20,
@@ -395,7 +406,7 @@
         "objGood": 75,
         "objGreat": 20,
         "pit": ["HORROR", "SYMBOL_EVIL", "DEMON"],
-        "nest": "0x027b",
+        "nest": ["CLONE", "JELLY", "SYMBOL_EVIL", "MIMIC", "HORROR", "KENNEL", "UNDEAD"],
       },
       "monsters": {
         "minCount": 14,
@@ -465,7 +476,7 @@
         "objGood": 75,
         "objGreat": 20,
         "pit": ["ORC"],
-        "nest": "0x0052",
+        "nest": ["JELLY", "MIMIC", "KENNEL"],
       },
       "monsters": {
         "minCount": 14,
@@ -532,7 +543,16 @@
         "objGood": 80,
         "objGreat": 30,
         "pit": ["ORC", "TROLL", "GIANT", "HORROR", "SYMBOL_GOOD", "SYMBOL_EVIL", "DRAGON", "DEMON"],
-        "nest": "0x02fd",
+        "nest": [
+          "CLONE",
+          "SYMBOL_GOOD",
+          "SYMBOL_EVIL",
+          "MIMIC",
+          "HORROR",
+          "KENNEL",
+          "ANIMAL",
+          "UNDEAD",
+        ],
       },
       "monsters": {
         "minCount": 14,
@@ -598,7 +618,7 @@
         "objGood": 90,
         "objGreat": 77,
         "pit": ["HORROR", "DRAGON", "DEMON"],
-        "nest": "0x0280",
+        "nest": ["ANIMAL", "UNDEAD"],
       },
       "monsters": {
         "minCount": 14,
@@ -659,7 +679,7 @@
         "objGood": 85,
         "objGreat": 35,
         "pit": ["CHAPEL"],
-        "nest": "0x0104",
+        "nest": ["SYMBOL_GOOD", "CHAPEL"],
       },
       "monsters": {
         "minCount": 18,
@@ -712,7 +732,7 @@
         "objGood": 80,
         "objGreat": 30,
         "pit": [],
-        "nest": "0x0000",
+        "nest": [],
       },
       "monsters": {
         "minCount": 14,
@@ -788,7 +808,16 @@
           "DEMON",
           "DARK_ELF",
         ],
-        "nest": "0x033f",
+        "nest": [
+          "CLONE",
+          "JELLY",
+          "SYMBOL_GOOD",
+          "SYMBOL_EVIL",
+          "MIMIC",
+          "HORROR",
+          "CHAPEL",
+          "UNDEAD",
+        ],
       },
       "monsters": {
         "minCount": 14,
@@ -843,7 +872,7 @@
         "objGood": 75,
         "objGreat": 20,
         "pit": ["HORROR", "SYMBOL_EVIL", "DRAGON", "DEMON"],
-        "nest": "0x023f",
+        "nest": ["CLONE", "JELLY", "SYMBOL_GOOD", "SYMBOL_EVIL", "MIMIC", "HORROR", "UNDEAD"],
       },
       "monsters": {
         "minCount": 14,
@@ -914,7 +943,7 @@
         "objGood": 75,
         "objGreat": 20,
         "pit": ["ORC", "TROLL", "GIANT", "SYMBOL_GOOD", "SYMBOL_EVIL", "DRAGON"],
-        "nest": "0x00df",
+        "nest": ["CLONE", "JELLY", "SYMBOL_GOOD", "SYMBOL_EVIL", "MIMIC", "KENNEL", "ANIMAL"],
       },
       "monsters": {
         "minCount": 14,
@@ -969,7 +998,7 @@
         "objGood": 80,
         "objGreat": 25,
         "pit": [],
-        "nest": "0x0010",
+        "nest": ["MIMIC"],
       },
       "monsters": {
         "minCount": 18,
@@ -1049,7 +1078,7 @@
           "DRAGON",
           "DEMON",
         ],
-        "nest": "0x01ed",
+        "nest": ["CLONE", "SYMBOL_GOOD", "SYMBOL_EVIL", "HORROR", "KENNEL", "ANIMAL", "CHAPEL"],
       },
       "monsters": {
         "minCount": 14,
@@ -1122,7 +1151,7 @@
           "DRAGON",
           "DEMON",
         ],
-        "nest": "0x01ed",
+        "nest": ["CLONE", "SYMBOL_GOOD", "SYMBOL_EVIL", "HORROR", "KENNEL", "ANIMAL", "CHAPEL"],
       },
       "monsters": {
         "minCount": 14,
@@ -1186,7 +1215,7 @@
         "objGood": 75,
         "objGreat": 20,
         "pit": [],
-        "nest": "0x0000",
+        "nest": [],
       },
       "monsters": {
         "minCount": 30,
@@ -1262,7 +1291,18 @@
           "DEMON",
           "DARK_ELF",
         ],
-        "nest": "0xffff",
+        "nest": [
+          "CLONE",
+          "JELLY",
+          "SYMBOL_GOOD",
+          "SYMBOL_EVIL",
+          "MIMIC",
+          "HORROR",
+          "KENNEL",
+          "ANIMAL",
+          "CHAPEL",
+          "UNDEAD",
+        ],
       },
       "monsters": {
         "minCount": 14,
@@ -1332,7 +1372,7 @@
         "objGood": 75,
         "objGreat": 20,
         "pit": ["HORROR", "SYMBOL_GOOD", "SYMBOL_EVIL", "CHAPEL", "DRAGON", "DEMON"],
-        "nest": "0x033d",
+        "nest": ["CLONE", "SYMBOL_GOOD", "SYMBOL_EVIL", "MIMIC", "HORROR", "CHAPEL", "UNDEAD"],
       },
       "monsters": {
         "minCount": 14,
