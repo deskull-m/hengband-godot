@@ -126,7 +126,7 @@ static void invest_special_artifact_abilities(PlayerType *player_ptr, ItemEntity
  * @param a_ptr 固定アーティファクト情報への参照ポインタ
  * @param q_ptr オブジェクト情報への参照ポインタ
  */
-static void fixed_artifact_random_abilities(PlayerType *player_ptr, const ArtifactType &artifact, ItemEntity &item)
+static void fixed_artifact_random_abilities(PlayerType *player_ptr, const ArtifactDefinition &artifact, ItemEntity &item)
 {
     auto give_power = false;
     auto give_resistance = false;
@@ -180,7 +180,7 @@ static void fixed_artifact_random_abilities(PlayerType *player_ptr, const Artifa
  * @param a_ptr 固定アーティファクト情報への参照ポインタ
  * @param q_ptr オブジェクト情報への参照ポインタ
  */
-static void invest_curse_to_fixed_artifact(const ArtifactType &artifact, ItemEntity *o_ptr)
+static void invest_curse_to_fixed_artifact(const ArtifactDefinition &artifact, ItemEntity *o_ptr)
 {
     if (!artifact.cost) {
         set_bits(o_ptr->ident, IDENT_BROKEN);

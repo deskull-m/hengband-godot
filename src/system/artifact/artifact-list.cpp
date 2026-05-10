@@ -4,14 +4,14 @@
 
 ArtifactList ArtifactList::instance{};
 
-ArtifactType ArtifactList::dummy{};
+ArtifactDefinition ArtifactList::dummy{};
 
 ArtifactList &ArtifactList::get_instance()
 {
     return instance;
 }
 
-const ArtifactType &ArtifactList::get_artifact(const FixedArtifactId fa_id) const
+const ArtifactDefinition &ArtifactList::get_artifact(const FixedArtifactId fa_id) const
 {
     if (fa_id == FixedArtifactId::NONE) {
         return dummy;
@@ -43,7 +43,7 @@ bool ArtifactList::order(const FixedArtifactId id1, const FixedArtifactId id2) c
     return id1 < id2;
 }
 
-void ArtifactList::emplace(const FixedArtifactId fa_id, ArtifactType &&artifact)
+void ArtifactList::emplace(const FixedArtifactId fa_id, ArtifactDefinition &&artifact)
 {
     this->artifacts.emplace(fa_id, std::move(artifact));
 }

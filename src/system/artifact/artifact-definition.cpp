@@ -4,12 +4,12 @@
 #include "system/baseitem/baseitem-definition.h"
 #include "system/baseitem/baseitem-list.h"
 
-ArtifactType::ArtifactType()
+ArtifactDefinition::ArtifactDefinition()
     : bi_key(BaseitemKey(ItemKindType::NONE))
 {
 }
 
-bool ArtifactType::can_generate(const BaseitemKey &generaing_bi_key) const
+bool ArtifactDefinition::can_generate(const BaseitemKey &generaing_bi_key) const
 {
     if (this->gen_flags.has(ItemGenerationTraitType::QUESTITEM)) {
         return false;
@@ -22,7 +22,7 @@ bool ArtifactType::can_generate(const BaseitemKey &generaing_bi_key) const
     return this->bi_key == generaing_bi_key;
 }
 
-bool ArtifactType::is_instant_artifact() const
+bool ArtifactDefinition::is_instant_artifact() const
 {
     return this->gen_flags.has(ItemGenerationTraitType::INSTA_ART);
 }

@@ -49,7 +49,7 @@ tl::optional<ItemEntity> ArtifactService::try_make_instant_artifact(int making_l
  * @param fa_id 固定アーティファクトID
  * @return 生成に成功したらそのアイテム、失敗したらnullopt
  */
-tl::optional<BaseitemKey> ArtifactService::try_make_instant_artifact(FixedArtifactId fa_id, const ArtifactType &artifact, int making_level)
+tl::optional<BaseitemKey> ArtifactService::try_make_instant_artifact(FixedArtifactId fa_id, const ArtifactDefinition &artifact, int making_level)
 {
     if (!can_make_instant_artifact(fa_id, artifact)) {
         return tl::nullopt;
@@ -75,7 +75,7 @@ tl::optional<BaseitemKey> ArtifactService::try_make_instant_artifact(FixedArtifa
  * @return 生成可否
  * @details 生成済、クエスト属性付き、非INSTA_ARTはfalse、普通のINSTA_ARTはtrue
  */
-bool ArtifactService::can_make_instant_artifact(FixedArtifactId fa_id, const ArtifactType &artifact)
+bool ArtifactService::can_make_instant_artifact(FixedArtifactId fa_id, const ArtifactDefinition &artifact)
 {
     auto can_make = ArtifactRecords::get_instance().get_generated(fa_id);
     can_make &= artifact.gen_flags.has_not(ItemGenerationTraitType::QUESTITEM);
@@ -88,7 +88,7 @@ bool ArtifactService::can_make_instant_artifact(FixedArtifactId fa_id, const Art
  * @return 生成可否
  * @details 1/(不足階層*2) を満たさないと生成しない
  */
-bool ArtifactService::evaluate_shallow_instant_artifact(const ArtifactType &artifact, int making_level)
+bool ArtifactService::evaluate_shallow_instant_artifact(const ArtifactDefinition &artifact, int making_level)
 {
     if (artifact.level <= making_level) {
         return true;
@@ -101,7 +101,7 @@ bool ArtifactService::evaluate_shallow_instant_artifact(const ArtifactType &arti
  * @brief レアリティによる生成制限を判定する
  * @return 生成可否
  */
-bool ArtifactService::evaluate_rarity(const ArtifactType &artifact)
+bool ArtifactService::evaluate_rarity(const ArtifactDefinition &artifact)
 {
     return one_in_(artifact.rarity);
 }
@@ -111,7 +111,7 @@ bool ArtifactService::evaluate_rarity(const ArtifactType &artifact)
  * @return 生成可否
  * @details 1/(不足階層*5) を満たさないと生成しない
  */
-bool ArtifactService::evaluate_shallow_baseitem(const ArtifactType &artifact, int making_level)
+bool ArtifactService::evaluate_shallow_baseitem(const ArtifactDefinition &artifact, int making_level)
 {
     const auto &baseitems = BaseitemList::get_instance();
     const auto &baseitem = baseitems.lookup_baseitem(artifact.bi_key);

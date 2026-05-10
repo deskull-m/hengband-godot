@@ -1,5 +1,12 @@
 #pragma once
 
+/*!
+ * @class ArtifactDefinition
+ * @brief 読み取り専用の固定アーティファクト定義
+ * @author Hourier
+ * @date 2026/05/10
+ */
+
 #include "object-enchant/tr-flags.h"
 #include "object-enchant/trg-types.h"
 #include "system/angband.h"
@@ -10,19 +17,14 @@
 #include <string>
 #include <tl/optional.hpp>
 
-/*!
- * @class ArtifactType
- * @brief 固定アーティファクト情報の構造体 / Artifact structure.
- * @details is_generated とfloor_id フィールドのみセーブファイルへの保存対象
- */
 enum class RandomArtActType : short;
-class ArtifactType {
+class ArtifactDefinition {
 public:
-    ArtifactType();
-    ArtifactType(const ArtifactType &) = delete;
-    ArtifactType &operator=(const ArtifactType &) = delete;
-    ArtifactType(ArtifactType &&) = default;
-    ArtifactType &operator=(ArtifactType &&) = delete;
+    ArtifactDefinition();
+    ArtifactDefinition(const ArtifactDefinition &) = delete;
+    ArtifactDefinition &operator=(const ArtifactDefinition &) = delete;
+    ArtifactDefinition(ArtifactDefinition &&) = default;
+    ArtifactDefinition &operator=(ArtifactDefinition &&) = delete;
 
     std::string name; /*!< アーティファクト名 / Name */
     std::string text; /*!< アーティファクト解説 / Text */

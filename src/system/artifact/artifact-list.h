@@ -3,9 +3,9 @@
 #include "util/abstract-map-wrapper.h"
 
 enum class FixedArtifactId : short;
-class ArtifactType;
+class ArtifactDefinition;
 class ItemEntity;
-class ArtifactList : public util::AbstractMapWrapper<FixedArtifactId, ArtifactType> {
+class ArtifactList : public util::AbstractMapWrapper<FixedArtifactId, ArtifactDefinition> {
 public:
     ArtifactList(const ArtifactList &) = delete;
     ArtifactList(ArtifactList &&) = delete;
@@ -14,19 +14,19 @@ public:
     ~ArtifactList() = default;
 
     static ArtifactList &get_instance();
-    const ArtifactType &get_artifact(const FixedArtifactId fa_id) const;
+    const ArtifactDefinition &get_artifact(const FixedArtifactId fa_id) const;
 
     bool order(const FixedArtifactId id1, const FixedArtifactId id2) const;
-    void emplace(const FixedArtifactId fa_id, ArtifactType &&artifact);
+    void emplace(const FixedArtifactId fa_id, ArtifactDefinition &&artifact);
 
 private:
     ArtifactList() = default;
     static ArtifactList instance;
-    static ArtifactType dummy;
+    static ArtifactDefinition dummy;
 
-    std::map<FixedArtifactId, ArtifactType> artifacts{};
+    std::map<FixedArtifactId, ArtifactDefinition> artifacts{};
 
-    std::map<FixedArtifactId, ArtifactType> &get_inner_container() override
+    std::map<FixedArtifactId, ArtifactDefinition> &get_inner_container() override
     {
         return this->artifacts;
     }

@@ -836,7 +836,7 @@ EgoItemDefinition &ItemEntity::get_ego() const
     return egos_info.at(this->ego_idx);
 }
 
-const ArtifactType &ItemEntity::get_fixed_artifact() const
+const ArtifactDefinition &ItemEntity::get_fixed_artifact() const
 {
     return ArtifactList::get_instance().get_artifact(this->fa_id);
 }

@@ -1,5 +1,12 @@
 #pragma once
 
+/*!
+ * @class ArtifactRecord
+ * @brief ゲーム中可変な固定アーティファクト情報
+ * @author Hourier
+ * @date 2026/05/10
+ */
+
 #include "util/abstract-map-wrapper.h"
 #include <tl/optional.hpp>
 
