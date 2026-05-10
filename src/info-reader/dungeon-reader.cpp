@@ -61,6 +61,22 @@ static bool grab_one_dungeon_mode(DungeonDefinition &dungeon, std::string_view w
 }
 
 /*!
+ * @brief テキストトークンを走査してpit種別フラグを一つ得る
+ * @param dungeon ダンジョンへの参照
+ * @param what 参照元の文字列
+ * @return 見つけたらtrue
+ */
+static bool grab_one_dungeon_pit_kind(DungeonDefinition &dungeon, std::string_view what)
+{
+    if (EnumClassFlagGroup<PitKind>::grab_one_flag(dungeon.pit, dungeon_pit_kinds, what)) {
+        return true;
+    }
+
+    msg_print(_("未知のダンジョンpit種別 '{}'。", "Unknown dungeon pit kind '{}'."), what);
+    return false;
+}
+
+/*!
  * @brief テキストトークンを走査してフラグを一つ得る(モンスターのダンジョン出現条件用1)
  * @param dungeon ダンジョンへの参照
  * @param what 参照元の文字列
@@ -187,8 +203,26 @@ static errr set_dungeon_generation(const nlohmann::json &generation_obj, Dungeon
         return err;
     }
 
+    const auto &pit_obj = generation_obj["pit"];
+    if (pit_obj.is_null() || !pit_obj.is_array()) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    }
+    for (const auto &p_obj : pit_obj) {
+        if (!p_obj.is_string()) {
+            return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+        }
+
+        const auto p = p_obj.get<std::string>();
+        if (p.empty()) {
+            continue;
+        }
+
+        if (!grab_one_dungeon_pit_kind(dungeon, p)) {
+            return PARSE_ERROR_INVALID_FLAG;
+        }
+    }
+
     try {
-        dungeon.pit = static_cast<BIT_FLAGS16>(std::stoul(generation_obj["pit"].get<std::string>(), nullptr, 16));
         dungeon.nest = static_cast<BIT_FLAGS16>(std::stoul(generation_obj["nest"].get<std::string>(), nullptr, 16));
     } catch (const std::exception &) {
         return PARSE_ERROR_TOO_FEW_ARGUMENTS;

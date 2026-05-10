@@ -72,7 +72,11 @@
           "minimum": 0
         },
         "pit": {
-          "$ref": "#/$defs/hex16String"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/pitKind"
+          },
+          "uniqueItems": true
         },
         "nest": {
           "$ref": "#/$defs/hex16String"
@@ -388,6 +392,21 @@
           }
         }
       }
+    },
+    "pitKind": {
+      "type": "string",
+      "enum": [
+        "CHAPEL",
+        "DARK_ELF",
+        "DEMON",
+        "DRAGON",
+        "GIANT",
+        "HORROR",
+        "ORC",
+        "SYMBOL_EVIL",
+        "SYMBOL_GOOD",
+        "TROLL"
+      ]
     }
   }
 }
