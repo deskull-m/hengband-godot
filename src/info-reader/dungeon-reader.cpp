@@ -61,6 +61,46 @@ static bool grab_one_dungeon_mode(DungeonDefinition &dungeon, std::string_view w
 }
 
 /*!
+ * @brief JSON配列からEnumClassFlagGroupを読み込む
+ * @param obj JSONオブジェクト
+ * @param key 読み込むキー
+ * @param flags 読み込み先フラグ群
+ * @param tokens 文字列トークンとenum値の対応表
+ * @param label エラー表示用ラベル
+ * @return パースエラー
+ */
+template <typename Enum>
+static errr info_set_enum_flag_group(const nlohmann::json &obj, std::string_view key, EnumClassFlagGroup<Enum> &flags, const std::unordered_map<std::string_view, Enum> &tokens, std::string_view label)
+{
+    const auto it = obj.find(key);
+    if (it == obj.end() || it->is_null() || !it->is_array()) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    }
+
+    const auto &array_obj = *it;
+
+    for (const auto &flag_obj : array_obj) {
+        if (!flag_obj.is_string()) {
+            return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+        }
+
+        const auto token = flag_obj.get<std::string_view>();
+        if (token.empty()) {
+            continue;
+        }
+
+        if (EnumClassFlagGroup<Enum>::grab_one_flag(flags, tokens, token)) {
+            continue;
+        }
+
+        msg_print(_("未知のダンジョン{}種別 '{}'。", "Unknown dungeon {} kind '{}'."), label, token);
+        return PARSE_ERROR_INVALID_FLAG;
+    }
+
+    return PARSE_ERROR_NONE;
+}
+
+/*!
  * @brief テキストトークンを走査してフラグを一つ得る(モンスターのダンジョン出現条件用1)
  * @param dungeon ダンジョンへの参照
  * @param what 参照元の文字列
@@ -187,11 +227,12 @@ static errr set_dungeon_generation(const nlohmann::json &generation_obj, Dungeon
         return err;
     }
 
-    try {
-        dungeon.pit = static_cast<BIT_FLAGS16>(std::stoul(generation_obj["pit"].get<std::string>(), nullptr, 16));
-        dungeon.nest = static_cast<BIT_FLAGS16>(std::stoul(generation_obj["nest"].get<std::string>(), nullptr, 16));
-    } catch (const std::exception &) {
-        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    if (auto err = info_set_enum_flag_group(generation_obj, "pit", dungeon.pit, dungeon_pit_kinds, "pit")) {
+        return err;
+    }
+
+    if (auto err = info_set_enum_flag_group(generation_obj, "nest", dungeon.nest, dungeon_nest_kinds, "nest")) {
+        return err;
     }
 
     return PARSE_ERROR_NONE;

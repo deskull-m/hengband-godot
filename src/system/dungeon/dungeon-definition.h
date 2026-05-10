@@ -15,6 +15,7 @@
 #include "monster-race/race-special-flags.h"
 #include "monster-race/race-visual-flags.h"
 #include "monster-race/race-wilderness-flags.h"
+#include "room/pit-nest-util.h"
 #include "system/angband.h"
 #include "util/flag-group.h"
 #include "util/point-2d.h"
@@ -55,8 +56,8 @@ public:
     DEPTH mindepth{}; /* Minimal depth */
     DEPTH maxdepth{}; /* Maximal depth */
     PLAYER_LEVEL min_plev{}; /* Minimal plev needed to enter -- it's an anti-cheating mesure */
-    BIT_FLAGS16 pit{};
-    BIT_FLAGS16 nest{};
+    EnumClassFlagGroup<PitKind> pit{};
+    EnumClassFlagGroup<NestKind> nest{};
     DungeonMode mode{}; /* Mode of combinaison of the monster flags */
 
     int min_monster_count_on_floor{}; /* Minimal number of monsters per floor */
