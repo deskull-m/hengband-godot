@@ -2,6 +2,11 @@
 #include "artifact/fixed-art-types.h"
 #include "util/enum-converter.h"
 
+const tl::optional<short> &ArtifactRecord::get_floor_id() const
+{
+    return this->floor_id;
+}
+
 bool ArtifactRecord::get_generated() const
 {
     return this->is_generated;
@@ -15,6 +20,11 @@ bool ArtifactRecord::get_identified() const
 bool ArtifactRecord::get_known() const
 {
     return this->is_known;
+}
+
+void ArtifactRecord::set_floor_id(const tl::optional<short> &id)
+{
+    this->floor_id = id;
 }
 
 void ArtifactRecord::set_generated(bool new_state)
@@ -46,6 +56,16 @@ void ArtifactRecords::initialize(size_t size)
     }
 }
 
+const tl::optional<short> &ArtifactRecords::get_floor_id(FixedArtifactId fa_id) const
+{
+    if (fa_id == FixedArtifactId::NONE) {
+        static tl::optional<short> dummy;
+        return dummy;
+    }
+
+    return this->records.at(fa_id).get_floor_id();
+}
+
 bool ArtifactRecords::get_generated(FixedArtifactId fa_id) const
 {
     if (fa_id == FixedArtifactId::NONE) {
@@ -71,6 +91,15 @@ bool ArtifactRecords::get_known(FixedArtifactId fa_id) const
     }
 
     return this->records.at(fa_id).get_known();
+}
+
+void ArtifactRecords::set_floor_id(FixedArtifactId fa_id, const tl::optional<short> &id)
+{
+    if (fa_id == FixedArtifactId::NONE) {
+        return;
+    }
+
+    this->records.at(fa_id).set_floor_id(id);
 }
 
 void ArtifactRecords::set_generated(FixedArtifactId fa_id, bool new_state)
@@ -103,6 +132,7 @@ void ArtifactRecords::set_known(FixedArtifactId fa_id, bool new_state)
 void ArtifactRecords::reset_all_without_knowledge()
 {
     for (auto &[_, record] : this->records) {
+        record.set_floor_id(tl::nullopt);
         record.set_generated(false);
         record.set_identified(false);
     }

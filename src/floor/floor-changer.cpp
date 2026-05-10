@@ -30,7 +30,6 @@
 #include "monster/monster-update.h"
 #include "player-base/player-class.h"
 #include "spell-kind/spells-floor.h"
-#include "system/artifact/artifact-definition.h"
 #include "system/artifact/artifact-record.h"
 #include "system/dungeon/dungeon-definition.h"
 #include "system/enums/dungeon/dungeon-id.h"
@@ -202,7 +201,7 @@ static void update_unique_artifact(const FloorType &floor, int16_t cur_floor_id)
         }
 
         if (item_ptr->is_fixed_artifact()) {
-            item_ptr->get_fixed_artifact().floor_id = cur_floor_id;
+            item_ptr->set_fixed_artifact_floor_id(cur_floor_id);
         }
     }
 }
@@ -314,7 +313,7 @@ static void allocate_loaded_floor(PlayerType *player_ptr, saved_floor_type *sf_p
             continue;
         }
 
-        if (item_ptr->get_fixed_artifact().floor_id == new_floor_id) {
+        if (item_ptr->get_fixed_artifact_floor_id() == new_floor_id) {
             item_ptr->set_fixed_artifact_generated(true);
         } else {
             delete_i_idx_list.push_back(static_cast<OBJECT_IDX>(i_idx));

@@ -169,9 +169,9 @@ static bool wr_savefile_new(PlayerType *player_ptr)
     wr_u16b(tmp16u);
     for (auto i = 0U; i < tmp16u; i++) {
         const auto fa_id = i2enum<FixedArtifactId>(i);
-        const auto &artifact = artifacts.get_artifact(fa_id);
         wr_bool(artifact_records.get_generated(fa_id));
-        wr_s16b(artifact.floor_id);
+        const auto floor_id = artifact_records.get_floor_id(fa_id);
+        wr_s16b(floor_id ? *floor_id : 0);
     }
 
     wr_u32b(world.sf_play_time);

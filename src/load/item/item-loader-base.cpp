@@ -2,8 +2,6 @@
 #include "artifact/fixed-art-types.h"
 #include "load/angband-version-comparer.h"
 #include "load/load-util.h"
-#include "system/artifact/artifact-definition.h"
-#include "system/artifact/artifact-list.h"
 #include "system/artifact/artifact-record.h"
 #include "system/baseitem/baseitem-definition.h"
 #include "system/baseitem/baseitem-list.h"
@@ -33,18 +31,16 @@ void ItemLoaderBase::load_item()
  */
 void ItemLoaderBase::load_artifact()
 {
-    auto &artifacts = ArtifactList::get_instance();
-    auto &artifact_records = ArtifactRecords::get_instance();
+    auto &records = ArtifactRecords::get_instance();
     auto loading_max_a_idx = rd_u16b();
     for (auto i = 0U; i < loading_max_a_idx; i++) {
         const auto fa_id = i2enum<FixedArtifactId>(i);
-        artifact_records.set_generated(fa_id, rd_bool());
-        auto &artifact = artifacts.get_artifact(fa_id);
+        records.set_generated(fa_id, rd_bool());
         if (h_older_than(1, 5, 0, 0)) {
-            artifact.floor_id = 0;
             strip_bytes(3);
         } else {
-            artifact.floor_id = rd_s16b();
+            const auto tmp16s = rd_s16b();
+            records.set_floor_id(fa_id, tmp16s > 0 ? tl::make_optional<short>(tmp16s) : tl::nullopt);
         }
     }
 

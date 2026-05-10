@@ -455,8 +455,7 @@ short drop_near(PlayerType *player_ptr, ItemEntity &drop_item, const Pos2D &pos,
     }
 
     if (drop_item.is_fixed_artifact() && world.character_dungeon) {
-        auto &artifact = drop_item.get_fixed_artifact();
-        artifact.floor_id = player_ptr->floor_id;
+        drop_item.set_fixed_artifact_floor_id(player_ptr->floor_id);
     }
 
     note_spot(player_ptr, pos_drop);

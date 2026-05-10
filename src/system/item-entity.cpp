@@ -836,14 +836,19 @@ EgoItemDefinition &ItemEntity::get_ego() const
     return egos_info.at(this->ego_idx);
 }
 
-ArtifactType &ItemEntity::get_fixed_artifact()
+const ArtifactType &ItemEntity::get_fixed_artifact() const
 {
     return ArtifactList::get_instance().get_artifact(this->fa_id);
 }
 
-const ArtifactType &ItemEntity::get_fixed_artifact() const
+const tl::optional<short> &ItemEntity::get_fixed_artifact_floor_id() const
 {
-    return ArtifactList::get_instance().get_artifact(this->fa_id);
+    return ArtifactRecords::get_instance().get_floor_id(this->fa_id);
+}
+
+void ItemEntity::set_fixed_artifact_floor_id(const tl::optional<short> &id)
+{
+    ArtifactRecords::get_instance().set_floor_id(this->fa_id, id);
 }
 
 TrFlags ItemEntity::get_flags() const
