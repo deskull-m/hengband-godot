@@ -102,6 +102,7 @@ enum class DungeonId;
 enum class FixedArtifactId : short;
 enum class MonraceId : short;
 class ArtifactType;
+class BaseitemKey;
 class MonraceDefinition;
 class QuestType {
 public:
@@ -128,7 +129,11 @@ public:
 
     static bool is_fixed(QuestId quest_idx);
     bool has_reward() const;
-    ArtifactType &get_reward() const;
+    short get_reward_bi_id() const;
+    bool is_reward_instant_artifact() const;
+    bool is_reward_target(const BaseitemKey &key) const;
+    void set_reward() const;
+    void reset_reward() const;
     MonraceDefinition &get_bounty();
     const MonraceDefinition &get_bounty() const;
 };

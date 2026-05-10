@@ -15,7 +15,6 @@ public:
 
     static ArtifactList &get_instance();
     const ArtifactType &get_artifact(const FixedArtifactId fa_id) const;
-    ArtifactType &get_artifact(const FixedArtifactId fa_id);
 
     bool order(const FixedArtifactId id1, const FixedArtifactId id2) const;
     void emplace(const FixedArtifactId fa_id, ArtifactType &&artifact);

@@ -14,6 +14,7 @@
 #include "player/player-status.h"
 #include "system/artifact/artifact-definition.h"
 #include "system/artifact/artifact-list.h"
+#include "system/artifact/artifact-record.h"
 #include "system/floor/floor-info.h" // @todo 相互参照、将来的に削除する.
 #include "system/grid-type-definition.h"
 #include "system/item-entity.h"
@@ -59,10 +60,30 @@ bool QuestType::has_reward() const
     return this->reward_fa_id != FixedArtifactId::NONE;
 }
 
-ArtifactType &QuestType::get_reward() const
+short QuestType::get_reward_bi_id() const
 {
-    auto &artifacts = ArtifactList::get_instance();
-    return artifacts.get_artifact(this->reward_fa_id);
+    const auto &artifact = ArtifactList::get_instance().get_artifact(this->reward_fa_id);
+    return BaseitemList::get_instance().lookup_baseitem_id(artifact.bi_key);
+}
+
+bool QuestType::is_reward_instant_artifact() const
+{
+    return ArtifactList::get_instance().get_artifact(this->reward_fa_id).is_instant_artifact();
+}
+
+bool QuestType::is_reward_target(const BaseitemKey &key) const
+{
+    return ArtifactList::get_instance().get_artifact(this->reward_fa_id).bi_key == key;
+}
+
+void QuestType::set_reward() const
+{
+    ArtifactRecords::get_instance().set_quest_reward(this->reward_fa_id, true);
+}
+
+void QuestType::reset_reward() const
+{
+    ArtifactRecords::get_instance().set_quest_reward(this->reward_fa_id, false);
 }
 
 /*!
@@ -292,7 +313,7 @@ void leave_quest_check(PlayerType *player_ptr)
         quests.get_quest(QuestId::TOWER1).complev = player_ptr->lev;
         break;
     case QuestKindType::FIND_ARTIFACT:
-        quest.get_reward().gen_flags.reset(ItemGenerationTraitType::QUESTITEM);
+        quest.reset_reward();
         break;
     case QuestKindType::RANDOM:
         quest.get_bounty().misc_flags.reset(MonsterMiscType::QUESTOR);

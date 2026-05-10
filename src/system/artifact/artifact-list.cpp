@@ -20,15 +20,6 @@ const ArtifactType &ArtifactList::get_artifact(const FixedArtifactId fa_id) cons
     return this->artifacts.at(fa_id);
 }
 
-ArtifactType &ArtifactList::get_artifact(const FixedArtifactId fa_id)
-{
-    if (fa_id == FixedArtifactId::NONE) {
-        return dummy;
-    }
-
-    return this->artifacts.at(fa_id);
-}
-
 bool ArtifactList::order(const FixedArtifactId id1, const FixedArtifactId id2) const
 {
     const auto &artifact1 = this->get_artifact(id1);

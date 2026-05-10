@@ -27,6 +27,7 @@
 #include "system/artifact/artifact-definition.h"
 #include "system/artifact/artifact-list.h"
 #include "system/artifact/artifact-record.h"
+#include "system/artifact/artifact-service.h"
 #include "system/baseitem/baseitem-definition.h"
 #include "system/baseitem/baseitem-list.h"
 #include "system/enums/monrace/monrace-id.h"
@@ -818,12 +819,11 @@ bool ItemEntity::is_target_of(QuestId quest_id) const
         return false;
     }
 
-    const auto &artifact = quest.get_reward();
-    if (artifact.gen_flags.has(ItemGenerationTraitType::INSTA_ART)) {
+    if (quest.is_reward_instant_artifact()) {
         return false;
     }
 
-    return this->bi_key == artifact.bi_key;
+    return quest.is_reward_target(this->bi_key);
 }
 
 BaseitemDefinition &ItemEntity::get_baseitem() const
@@ -1373,21 +1373,8 @@ bool ItemEntity::try_become_artifact(int dungeon_level)
         return false;
     }
 
-    const auto &records = ArtifactRecords::get_instance();
-    for (const auto &[generating_fa_id, artifact] : ArtifactList::get_instance()) {
-        if (records.get_generated(generating_fa_id) || !artifact.can_generate(this->bi_key)) {
-            continue;
-        }
-
-        if ((artifact.level > dungeon_level) && !one_in_((artifact.level - dungeon_level) * 2)) {
-            continue;
-        }
-
-        if (!one_in_(artifact.rarity)) {
-            continue;
-        }
-
-        this->fa_id = generating_fa_id;
+    if (const auto fa_id_opt = ArtifactService::find_generatable_fixed_artifact(this->bi_key, dungeon_level); fa_id_opt) {
+        this->fa_id = *fa_id_opt;
         return true;
     }
 

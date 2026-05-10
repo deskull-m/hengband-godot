@@ -70,7 +70,7 @@ static void load_quest_details(PlayerType *player_ptr, QuestType *q_ptr, const Q
     }
     q_ptr->reward_fa_id = i2enum<FixedArtifactId>(rd_s16b());
     if (q_ptr->has_reward()) {
-        q_ptr->get_reward().gen_flags.set(ItemGenerationTraitType::QUESTITEM);
+        q_ptr->set_reward();
     }
 
     q_ptr->flags = rd_byte();

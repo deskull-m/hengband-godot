@@ -15,9 +15,14 @@ bool ArtifactType::can_generate(const BaseitemKey &generaing_bi_key) const
         return false;
     }
 
-    if (this->gen_flags.has(ItemGenerationTraitType::INSTA_ART)) {
+    if (this->is_instant_artifact()) {
         return false;
     }
 
     return this->bi_key == generaing_bi_key;
+}
+
+bool ArtifactType::is_instant_artifact() const
+{
+    return this->gen_flags.has(ItemGenerationTraitType::INSTA_ART);
 }

@@ -217,8 +217,7 @@ static bool parse_qtw_QQ(QuestType *q_ptr, const std::vector<std::string> &token
         return true;
     }
 
-    auto &artifact = q_ptr->get_reward();
-    artifact.gen_flags.set(ItemGenerationTraitType::QUESTITEM);
+    q_ptr->set_reward();
     return true;
 }
 
@@ -256,7 +255,7 @@ static bool parse_qtw_QR(QuestType *q_ptr, const std::vector<std::string> &token
 
     if (reward_idx != FixedArtifactId::NONE) {
         q_ptr->reward_fa_id = reward_idx;
-        ArtifactList::get_instance().get_artifact(reward_idx).gen_flags.set(ItemGenerationTraitType::QUESTITEM);
+        q_ptr->set_reward();
     } else {
         q_ptr->type = QuestKindType::KILL_ALL;
     }

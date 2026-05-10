@@ -22,6 +22,11 @@ bool ArtifactRecord::get_known() const
     return this->is_known;
 }
 
+bool ArtifactRecord::can_generate() const
+{
+    return !this->is_generated && !this->is_quest_reward;
+}
+
 void ArtifactRecord::set_floor_id(const tl::optional<short> &id)
 {
     this->floor_id = id;
@@ -40,6 +45,11 @@ void ArtifactRecord::set_identified(bool new_state)
 void ArtifactRecord::set_known(bool new_state)
 {
     this->is_known = new_state;
+}
+
+void ArtifactRecord::set_quest_reward(bool new_state)
+{
+    this->is_quest_reward = new_state;
 }
 
 ArtifactRecords ArtifactRecords::instance{};
@@ -93,6 +103,15 @@ bool ArtifactRecords::get_known(FixedArtifactId fa_id) const
     return this->records.at(fa_id).get_known();
 }
 
+bool ArtifactRecords::can_generate(FixedArtifactId fa_id) const
+{
+    if (fa_id == FixedArtifactId::NONE) {
+        return false;
+    }
+
+    return this->records.at(fa_id).can_generate();
+}
+
 void ArtifactRecords::set_floor_id(FixedArtifactId fa_id, const tl::optional<short> &id)
 {
     if (fa_id == FixedArtifactId::NONE) {
@@ -129,11 +148,21 @@ void ArtifactRecords::set_known(FixedArtifactId fa_id, bool new_state)
     return this->records.at(fa_id).set_known(new_state);
 }
 
+void ArtifactRecords::set_quest_reward(FixedArtifactId fa_id, bool new_state)
+{
+    if (fa_id == FixedArtifactId::NONE) {
+        return;
+    }
+
+    return this->records.at(fa_id).set_quest_reward(new_state);
+}
+
 void ArtifactRecords::reset_all_without_knowledge()
 {
     for (auto &[_, record] : this->records) {
         record.set_floor_id(tl::nullopt);
         record.set_generated(false);
         record.set_identified(false);
+        record.set_quest_reward(false);
     }
 }

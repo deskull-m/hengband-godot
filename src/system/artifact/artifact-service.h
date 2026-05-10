@@ -11,6 +11,7 @@ class ArtifactService {
 public:
     ArtifactService() = delete;
 
+    static tl::optional<FixedArtifactId> find_generatable_fixed_artifact(const BaseitemKey &bi_key, int dungeon_level);
     static tl::optional<ItemEntity> try_make_instant_artifact(int making_level);
 
 private:

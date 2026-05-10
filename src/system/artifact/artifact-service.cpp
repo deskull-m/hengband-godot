@@ -7,6 +7,28 @@
 #include "system/baseitem/baseitem-list.h"
 #include "system/item-entity.h"
 
+tl::optional<FixedArtifactId> ArtifactService::find_generatable_fixed_artifact(const BaseitemKey &bi_key, int dungeon_level)
+{
+    const auto &records = ArtifactRecords::get_instance();
+    for (const auto &[fa_id, artifact] : ArtifactList::get_instance()) {
+        if (!records.can_generate(fa_id) || !artifact.can_generate(bi_key)) {
+            continue;
+        }
+
+        if ((artifact.level > dungeon_level) && !one_in_((artifact.level - dungeon_level) * 2)) {
+            continue;
+        }
+
+        if (!one_in_(artifact.rarity)) {
+            continue;
+        }
+
+        return fa_id;
+    }
+
+    return tl::nullopt;
+}
+
 tl::optional<ItemEntity> ArtifactService::try_make_instant_artifact(int making_level)
 {
     for (const auto &[fa_id, artifact] : ArtifactList::get_instance()) {
