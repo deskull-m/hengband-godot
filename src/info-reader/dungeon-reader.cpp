@@ -61,35 +61,43 @@ static bool grab_one_dungeon_mode(DungeonDefinition &dungeon, std::string_view w
 }
 
 /*!
- * @brief テキストトークンを走査してpit種別フラグを一つ得る
- * @param dungeon ダンジョンへの参照
- * @param what 参照元の文字列
- * @return 見つけたらtrue
+ * @brief JSON配列からEnumClassFlagGroupを読み込む
+ * @param obj JSONオブジェクト
+ * @param key 読み込むキー
+ * @param flags 読み込み先フラグ群
+ * @param tokens 文字列トークンとenum値の対応表
+ * @param label エラー表示用ラベル
+ * @return パースエラー
  */
-static bool grab_one_dungeon_pit_kind(DungeonDefinition &dungeon, std::string_view what)
+template <typename Enum>
+static errr info_set_enum_flag_group(const nlohmann::json &obj, std::string_view key, EnumClassFlagGroup<Enum> &flags, const std::unordered_map<std::string_view, Enum> &tokens, std::string_view label)
 {
-    if (EnumClassFlagGroup<PitKind>::grab_one_flag(dungeon.pit, dungeon_pit_kinds, what)) {
-        return true;
+    const auto it = obj.find(key);
+    if (it == obj.end() || it->is_null() || !it->is_array()) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
     }
 
-    msg_print(_("未知のダンジョンpit種別 '{}'。", "Unknown dungeon pit kind '{}'."), what);
-    return false;
-}
+    const auto &array_obj = *it;
 
-/*!
- * @brief テキストトークンを走査してnest種別フラグを一つ得る
- * @param dungeon ダンジョンへの参照
- * @param what 参照元の文字列
- * @return 見つけたらtrue
- */
-static bool grab_one_dungeon_nest_kind(DungeonDefinition &dungeon, std::string_view what)
-{
-    if (EnumClassFlagGroup<NestKind>::grab_one_flag(dungeon.nest, dungeon_nest_kinds, what)) {
-        return true;
+    for (const auto &flag_obj : array_obj) {
+        if (!flag_obj.is_string()) {
+            return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+        }
+
+        const auto token = flag_obj.get<std::string_view>();
+        if (token.empty()) {
+            continue;
+        }
+
+        if (EnumClassFlagGroup<Enum>::grab_one_flag(flags, tokens, token)) {
+            continue;
+        }
+
+        msg_print(_("未知のダンジョン{}種別 '{}'。", "Unknown dungeon {} kind '{}'."), label, token);
+        return PARSE_ERROR_INVALID_FLAG;
     }
 
-    msg_print(_("未知のダンジョンnest種別 '{}'。", "Unknown dungeon nest kind '{}'."), what);
-    return false;
+    return PARSE_ERROR_NONE;
 }
 
 /*!
@@ -219,42 +227,12 @@ static errr set_dungeon_generation(const nlohmann::json &generation_obj, Dungeon
         return err;
     }
 
-    const auto &pit_obj = generation_obj["pit"];
-    if (pit_obj.is_null() || !pit_obj.is_array()) {
-        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
-    }
-    for (const auto &p_obj : pit_obj) {
-        if (!p_obj.is_string()) {
-            return PARSE_ERROR_TOO_FEW_ARGUMENTS;
-        }
-
-        const auto p = p_obj.get<std::string>();
-        if (p.empty()) {
-            continue;
-        }
-
-        if (!grab_one_dungeon_pit_kind(dungeon, p)) {
-            return PARSE_ERROR_INVALID_FLAG;
-        }
+    if (auto err = info_set_enum_flag_group(generation_obj, "pit", dungeon.pit, dungeon_pit_kinds, "pit")) {
+        return err;
     }
 
-    const auto &nest_obj = generation_obj["nest"];
-    if (nest_obj.is_null() || !nest_obj.is_array()) {
-        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
-    }
-    for (const auto &n_obj : nest_obj) {
-        if (!n_obj.is_string()) {
-            return PARSE_ERROR_TOO_FEW_ARGUMENTS;
-        }
-
-        const auto n = n_obj.get<std::string>();
-        if (n.empty()) {
-            continue;
-        }
-
-        if (!grab_one_dungeon_nest_kind(dungeon, n)) {
-            return PARSE_ERROR_INVALID_FLAG;
-        }
+    if (auto err = info_set_enum_flag_group(generation_obj, "nest", dungeon.nest, dungeon_nest_kinds, "nest")) {
+        return err;
     }
 
     return PARSE_ERROR_NONE;
