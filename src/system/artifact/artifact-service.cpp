@@ -15,7 +15,7 @@ tl::optional<FixedArtifactId> ArtifactService::find_generatable_fixed_artifact(c
             continue;
         }
 
-        if ((artifact.level > dungeon_level) && !one_in_((artifact.level - dungeon_level) * 2)) {
+        if (!evaluate_shallow_fixed_artifact(artifact, dungeon_level)) {
             continue;
         }
 
@@ -55,11 +55,11 @@ tl::optional<BaseitemKey> ArtifactService::try_make_instant_artifact(FixedArtifa
         return tl::nullopt;
     }
 
-    if (!evaluate_shallow_instant_artifact(artifact, making_level)) {
+    if (!evaluate_shallow_fixed_artifact(artifact, making_level)) {
         return tl::nullopt;
     }
 
-    if (!evaluate_rarity(artifact)) {
+    if (!one_in_(artifact.rarity)) {
         return tl::nullopt;
     }
 
@@ -77,7 +77,7 @@ tl::optional<BaseitemKey> ArtifactService::try_make_instant_artifact(FixedArtifa
  */
 bool ArtifactService::can_make_instant_artifact(FixedArtifactId fa_id, const ArtifactDefinition &artifact)
 {
-    auto can_make = ArtifactRecords::get_instance().get_generated(fa_id);
+    auto can_make = ArtifactRecords::get_instance().can_generate(fa_id);
     can_make &= artifact.gen_flags.has_not(ItemGenerationTraitType::QUESTITEM);
     can_make &= artifact.gen_flags.has(ItemGenerationTraitType::INSTA_ART);
     return can_make;
@@ -88,22 +88,13 @@ bool ArtifactService::can_make_instant_artifact(FixedArtifactId fa_id, const Art
  * @return 生成可否
  * @details 1/(不足階層*2) を満たさないと生成しない
  */
-bool ArtifactService::evaluate_shallow_instant_artifact(const ArtifactDefinition &artifact, int making_level)
+bool ArtifactService::evaluate_shallow_fixed_artifact(const ArtifactDefinition &artifact, int making_level)
 {
     if (artifact.level <= making_level) {
         return true;
     }
 
     return one_in_((artifact.level - making_level) * 2);
-}
-
-/*!
- * @brief レアリティによる生成制限を判定する
- * @return 生成可否
- */
-bool ArtifactService::evaluate_rarity(const ArtifactDefinition &artifact)
-{
-    return one_in_(artifact.rarity);
 }
 
 /*!
