@@ -8,7 +8,6 @@
 #include "grid/lighting-colors-table.h"
 #include "system/enums/terrain/terrain-characteristics.h"
 #include "system/enums/terrain/terrain-tag.h"
-#include "util/enum-converter.h"
 #include "util/flag-group.h"
 #include <algorithm>
 #include <unordered_map>
@@ -21,8 +20,6 @@ const std::unordered_map<TerrainCharacteristics, EnumClassFlagGroup<TerrainActio
     { TerrainCharacteristics::STONE, { TerrainAction::DESTROY, TerrainAction::CRASH_GLASS } },
     { TerrainCharacteristics::CAN_DISINTEGRATE, { TerrainAction::DESTROY, TerrainAction::NO_DROP, TerrainAction::CRASH_GLASS } },
 };
-
-constexpr auto CONVERSION_STREAM_BEGIN = 5;
 }
 
 TerrainType::TerrainType()
@@ -73,40 +70,62 @@ bool TerrainType::has(TerrainCharacteristics tc) const
     return this->flags.has(tc);
 }
 
-bool TerrainType::set_specific_type(uint8_t specific_type)
+bool TerrainType::init_trap_type(TrapType type)
 {
-    if (this->flags.has(TerrainCharacteristics::TRAP)) {
-        this->trap_type = i2enum<TrapType>(specific_type);
-        return true;
+    if (this->flags.has_not(TerrainCharacteristics::TRAP)) {
+        return false;
     }
 
-    if (this->flags.has(TerrainCharacteristics::PATTERN)) {
-        this->pattern_tile_type = i2enum<PatternTileType>(specific_type);
-        return true;
+    this->trap_type = type;
+    return true;
+}
+
+bool TerrainType::init_pattern_tile_type(PatternTileType type)
+{
+    if (this->flags.has_not(TerrainCharacteristics::PATTERN)) {
+        return false;
     }
 
-    if (this->flags.has(TerrainCharacteristics::STORE)) {
-        this->store_sale_type = i2enum<StoreSaleType>(specific_type);
-        return true;
+    this->pattern_tile_type = type;
+    return true;
+}
+
+bool TerrainType::init_store_sale_type(StoreSaleType type)
+{
+    if (this->flags.has_not(TerrainCharacteristics::STORE)) {
+        return false;
     }
 
-    if (this->flags.has(TerrainCharacteristics::BLDG)) {
-        this->building_type = i2enum<BuildingType>(specific_type);
-        return true;
+    this->store_sale_type = type;
+    return true;
+}
+
+bool TerrainType::init_building_type(BuildingType type)
+{
+    if (this->flags.has_not(TerrainCharacteristics::BLDG)) {
+        return false;
     }
 
-    if (this->flags.has(TerrainCharacteristics::CONVERT)) {
-        if (specific_type >= CONVERSION_STREAM_BEGIN) {
-            this->conversion_type = TerrainConversionType::STREAM;
-            this->stream_index = specific_type - CONVERSION_STREAM_BEGIN;
-            return true;
+    this->building_type = type;
+    return true;
+}
+
+bool TerrainType::init_conversion_type(TerrainConversionType type, int index)
+{
+    if (this->flags.has_not(TerrainCharacteristics::CONVERT)) {
+        return false;
+    }
+
+    if (type == TerrainConversionType::STREAM) {
+        if (index < 0) {
+            return false;
         }
 
-        this->conversion_type = i2enum<TerrainConversionType>(specific_type);
-        return true;
+        this->stream_index = index;
     }
+    this->conversion_type = type;
 
-    return false;
+    return true;
 }
 
 /*!

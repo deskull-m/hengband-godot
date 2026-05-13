@@ -78,7 +78,6 @@
                 "CAN_SWIM",
                 "CLOSE",
                 "COLD_PUDDLE",
-                "CONVERT",
                 "DEEP",
                 "DISARM",
                 "DOOR",
@@ -134,38 +133,6 @@
                 "SPIKE",
                 "STAIRS",
                 "STORE",
-                "SUBTYPE_0",
-                "SUBTYPE_1",
-                "SUBTYPE_10",
-                "SUBTYPE_11",
-                "SUBTYPE_12",
-                "SUBTYPE_13",
-                "SUBTYPE_14",
-                "SUBTYPE_15",
-                "SUBTYPE_16",
-                "SUBTYPE_17",
-                "SUBTYPE_18",
-                "SUBTYPE_19",
-                "SUBTYPE_2",
-                "SUBTYPE_20",
-                "SUBTYPE_21",
-                "SUBTYPE_22",
-                "SUBTYPE_23",
-                "SUBTYPE_24",
-                "SUBTYPE_25",
-                "SUBTYPE_26",
-                "SUBTYPE_27",
-                "SUBTYPE_28",
-                "SUBTYPE_29",
-                "SUBTYPE_3",
-                "SUBTYPE_30",
-                "SUBTYPE_31",
-                "SUBTYPE_4",
-                "SUBTYPE_5",
-                "SUBTYPE_6",
-                "SUBTYPE_7",
-                "SUBTYPE_8",
-                "SUBTYPE_9",
                 "TELEPORTABLE",
                 "TOWN",
                 "TRAP",
@@ -175,6 +142,65 @@
                 "WATER"
               ]
             }
+          },
+          "trap": {
+            "type": ["object", "null"],
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["TRAPDOOR", "PIT", "SPIKED_PIT", "POISON_PIT", "TY_CURSE", "TELEPORT", "FIRE", "ACID", "SLOW", "LOSE_STR", "LOSE_DEX", "LOSE_CON", "BLIND", "CONFUSE", "POISON", "SLEEP", "TRAPS", "ALARM", "OPEN", "ARMAGEDDON", "PIRANHA"]
+              }
+            },
+            "additionalProperties": false
+          },
+          "pattern": {
+            "type": ["object", "null"],
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["START", "TILE_1", "TILE_2", "TILE_3", "TILE_4", "END", "OLD", "TELEPORT", "WRECKED"]
+              }
+            },
+            "additionalProperties": false
+          },
+          "store": {
+            "type": ["object", "null"],
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["GENERAL", "ARMOURY", "WEAPON", "TEMPLE", "ALCHEMIST", "MAGIC", "BLACK", "HOME", "BOOK", "MUSEUM"]
+              }
+            },
+            "additionalProperties": false
+          },
+          "building": {
+            "type": ["object", "null"],
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["BUILDING_00", "BUILDING_01", "BUILDING_02", "BUILDING_03", "BUILDING_04", "BUILDING_05", "BUILDING_06", "BUILDING_07", "BUILDING_08", "BUILDING_09", "BUILDING_10", "BUILDING_11", "BUILDING_12", "BUILDING_13", "BUILDING_14", "BUILDING_15", "BUILDING_16", "BUILDING_17", "BUILDING_18", "BUILDING_19", "BUILDING_20", "BUILDING_21", "BUILDING_22", "BUILDING_23", "BUILDING_24", "BUILDING_25", "BUILDING_26", "BUILDING_27", "BUILDING_28", "BUILDING_29", "BUILDING_30", "BUILDING_31"]
+              }
+            },
+            "additionalProperties": false
+          },
+          "convert": {
+            "type": ["object", "null"],
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["FLOOR", "WALL", "INNER", "OUTER", "SOLID", "STREAM"]
+              },
+              "stream_index": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "additionalProperties": false
           },
           "interactions": {
             "type": "object",

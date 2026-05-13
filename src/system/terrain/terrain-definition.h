@@ -81,7 +81,11 @@ public:
     bool is_open() const;
     bool is_closed_door() const;
     bool has(TerrainCharacteristics tc) const;
-    bool set_specific_type(uint8_t specific_type);
+    bool init_trap_type(TrapType type);
+    bool init_pattern_tile_type(PatternTileType type);
+    bool init_store_sale_type(StoreSaleType type);
+    bool init_building_type(BuildingType type);
+    bool init_conversion_type(TerrainConversionType type, int index_stream);
 
     void reset_lighting(bool is_config = true);
 
