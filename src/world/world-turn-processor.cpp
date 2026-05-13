@@ -286,7 +286,7 @@ void WorldTurnProcessor::shuffle_shopkeeper()
     StoreSaleType store_sale_type;
     while (true) {
         store_sale_type = randnum0<StoreSaleType>(MAX_STORES);
-        if ((store_sale_type == StoreSaleType::HOME) || (store_sale_type == StoreSaleType::MUSEUM)) {
+        if ((store_sale_type != StoreSaleType::HOME) && (store_sale_type != StoreSaleType::MUSEUM)) {
             break;
         }
     }
