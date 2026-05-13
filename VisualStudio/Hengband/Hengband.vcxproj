@@ -1037,7 +1037,12 @@
     <ClInclude Include="..\..\src\external-lib\include-json.h" />
     <ClInclude Include="..\..\src\io\macro-configurations-store.h" />
     <ClInclude Include="..\..\src\monster-floor\monster-movement-direction-list.h" />
+    <ClInclude Include="..\..\src\system\enums\store-sale-type.h" />
+    <ClInclude Include="..\..\src\system\enums\terrain\building-type.h" />
+    <ClInclude Include="..\..\src\system\enums\terrain\pattern-tile-type.h" />
     <ClInclude Include="..\..\src\system\enums\terrain\terrain-kind.h" />
+    <ClInclude Include="..\..\src\system\enums\terrain\terrain-conversion-type.h" />
+    <ClInclude Include="..\..\src\system\enums\terrain\trap.h" />
     <ClInclude Include="..\..\src\system\enums\terrain\wilderness-terrain.h" />
     <ClInclude Include="..\..\src\system\floor\town-records.h" />
     <ClInclude Include="..\..\src\system\floor\wilderness-grid.h" />
