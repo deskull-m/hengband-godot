@@ -117,11 +117,13 @@
         "NOTICE",
         "REMEMBER",
         "CLOSE",
-        "DOOR",
         "CAN_FLY",
         "CAN_DISINTEGRATE",
         "TELEPORTABLE",
       ],
+      "door": {
+        "power": 0,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "CLOSE": "CLOSED_DOOR",
@@ -150,11 +152,13 @@
         "NOTICE",
         "REMEMBER",
         "CLOSE",
-        "DOOR",
         "CAN_FLY",
         "CAN_DISINTEGRATE",
         "TELEPORTABLE",
       ],
+      "door": {
+        "power": 0,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
       },
@@ -449,7 +453,6 @@
       "mimic": null,
       "map_priority": 2,
       "flags": [
-        "POWER_5",
         "LOS",
         "PROJECTION",
         "MOVE",
@@ -465,6 +468,7 @@
       ],
       "trap": {
         "type": "TRAPDOOR",
+        "power": 5,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
@@ -485,7 +489,6 @@
       "mimic": null,
       "map_priority": 2,
       "flags": [
-        "POWER_5",
         "LOS",
         "PROJECTION",
         "MOVE",
@@ -500,6 +503,7 @@
       ],
       "trap": {
         "type": "PIT",
+        "power": 5,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
@@ -520,7 +524,6 @@
       "mimic": "TRAP_PIT",
       "map_priority": 2,
       "flags": [
-        "POWER_5",
         "LOS",
         "PROJECTION",
         "MOVE",
@@ -535,6 +538,7 @@
       ],
       "trap": {
         "type": "SPIKED_PIT",
+        "power": 5,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
@@ -555,7 +559,6 @@
       "mimic": "TRAP_PIT",
       "map_priority": 2,
       "flags": [
-        "POWER_5",
         "LOS",
         "PROJECTION",
         "MOVE",
@@ -570,6 +573,7 @@
       ],
       "trap": {
         "type": "POISON_PIT",
+        "power": 5,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
@@ -590,7 +594,6 @@
       "mimic": null,
       "map_priority": 2,
       "flags": [
-        "POWER_5",
         "LOS",
         "PROJECTION",
         "MOVE",
@@ -605,6 +608,7 @@
       ],
       "trap": {
         "type": "TY_CURSE",
+        "power": 5,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
@@ -626,7 +630,6 @@
       "mimic": null,
       "map_priority": 2,
       "flags": [
-        "POWER_5",
         "LOS",
         "PROJECTION",
         "MOVE",
@@ -641,6 +644,7 @@
       ],
       "trap": {
         "type": "TELEPORT",
+        "power": 5,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
@@ -661,7 +665,6 @@
       "mimic": null,
       "map_priority": 2,
       "flags": [
-        "POWER_5",
         "LOS",
         "PROJECTION",
         "MOVE",
@@ -676,6 +679,7 @@
       ],
       "trap": {
         "type": "FIRE",
+        "power": 5,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
@@ -696,7 +700,6 @@
       "mimic": "TRAP_FIRE",
       "map_priority": 2,
       "flags": [
-        "POWER_5",
         "LOS",
         "PROJECTION",
         "MOVE",
@@ -711,6 +714,7 @@
       ],
       "trap": {
         "type": "ACID",
+        "power": 5,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
@@ -731,7 +735,6 @@
       "mimic": null,
       "map_priority": 2,
       "flags": [
-        "POWER_5",
         "LOS",
         "PROJECTION",
         "MOVE",
@@ -746,6 +749,7 @@
       ],
       "trap": {
         "type": "SLOW",
+        "power": 5,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
@@ -766,7 +770,6 @@
       "mimic": "TRAP_SLOW",
       "map_priority": 2,
       "flags": [
-        "POWER_5",
         "LOS",
         "PROJECTION",
         "MOVE",
@@ -781,6 +784,7 @@
       ],
       "trap": {
         "type": "LOSE_STR",
+        "power": 5,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
@@ -801,7 +805,6 @@
       "mimic": "TRAP_SLOW",
       "map_priority": 2,
       "flags": [
-        "POWER_5",
         "LOS",
         "PROJECTION",
         "MOVE",
@@ -816,6 +819,7 @@
       ],
       "trap": {
         "type": "LOSE_DEX",
+        "power": 5,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
@@ -836,7 +840,6 @@
       "mimic": "TRAP_SLOW",
       "map_priority": 2,
       "flags": [
-        "POWER_5",
         "LOS",
         "PROJECTION",
         "MOVE",
@@ -851,6 +854,7 @@
       ],
       "trap": {
         "type": "LOSE_CON",
+        "power": 5,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
@@ -871,7 +875,6 @@
       "mimic": null,
       "map_priority": 2,
       "flags": [
-        "POWER_5",
         "LOS",
         "PROJECTION",
         "MOVE",
@@ -886,6 +889,7 @@
       ],
       "trap": {
         "type": "BLIND",
+        "power": 5,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
@@ -906,7 +910,6 @@
       "mimic": "TRAP_BLIND",
       "map_priority": 2,
       "flags": [
-        "POWER_5",
         "LOS",
         "PROJECTION",
         "MOVE",
@@ -921,6 +924,7 @@
       ],
       "trap": {
         "type": "CONFUSE",
+        "power": 5,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
@@ -941,7 +945,6 @@
       "mimic": "TRAP_BLIND",
       "map_priority": 2,
       "flags": [
-        "POWER_5",
         "LOS",
         "PROJECTION",
         "MOVE",
@@ -956,6 +959,7 @@
       ],
       "trap": {
         "type": "POISON",
+        "power": 5,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
@@ -976,7 +980,6 @@
       "mimic": "TRAP_BLIND",
       "map_priority": 2,
       "flags": [
-        "POWER_5",
         "LOS",
         "PROJECTION",
         "MOVE",
@@ -991,6 +994,7 @@
       ],
       "trap": {
         "type": "SLEEP",
+        "power": 5,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
@@ -1011,18 +1015,21 @@
       "mimic": null,
       "map_priority": 10,
       "flags": [
-        "POWER_0",
         "NOTICE",
         "REMEMBER",
         "OPEN",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
       ],
+      "door": {
+        "power": 0,
+      },
+      "tunnel": {
+        "power": 0,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_DOOR",
@@ -1045,18 +1052,21 @@
       "mimic": "CLOSED_DOOR",
       "map_priority": 10,
       "flags": [
-        "POWER_1",
         "NOTICE",
         "REMEMBER",
         "OPEN",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
       ],
+      "door": {
+        "power": 1,
+      },
+      "tunnel": {
+        "power": 1,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_DOOR",
@@ -1080,18 +1090,21 @@
       "mimic": "CLOSED_DOOR",
       "map_priority": 10,
       "flags": [
-        "POWER_2",
         "NOTICE",
         "REMEMBER",
         "OPEN",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
       ],
+      "door": {
+        "power": 2,
+      },
+      "tunnel": {
+        "power": 2,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_DOOR",
@@ -1115,18 +1128,21 @@
       "mimic": "CLOSED_DOOR",
       "map_priority": 10,
       "flags": [
-        "POWER_3",
         "NOTICE",
         "REMEMBER",
         "OPEN",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
       ],
+      "door": {
+        "power": 3,
+      },
+      "tunnel": {
+        "power": 3,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_DOOR",
@@ -1150,18 +1166,21 @@
       "mimic": "CLOSED_DOOR",
       "map_priority": 10,
       "flags": [
-        "POWER_4",
         "NOTICE",
         "REMEMBER",
         "OPEN",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
       ],
+      "door": {
+        "power": 4,
+      },
+      "tunnel": {
+        "power": 4,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_DOOR",
@@ -1185,18 +1204,21 @@
       "mimic": "CLOSED_DOOR",
       "map_priority": 10,
       "flags": [
-        "POWER_5",
         "NOTICE",
         "REMEMBER",
         "OPEN",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
       ],
+      "door": {
+        "power": 5,
+      },
+      "tunnel": {
+        "power": 5,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_DOOR",
@@ -1220,18 +1242,21 @@
       "mimic": "CLOSED_DOOR",
       "map_priority": 10,
       "flags": [
-        "POWER_6",
         "NOTICE",
         "REMEMBER",
         "OPEN",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
       ],
+      "door": {
+        "power": 6,
+      },
+      "tunnel": {
+        "power": 6,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_DOOR",
@@ -1255,18 +1280,21 @@
       "mimic": "CLOSED_DOOR",
       "map_priority": 10,
       "flags": [
-        "POWER_7",
         "NOTICE",
         "REMEMBER",
         "OPEN",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
       ],
+      "door": {
+        "power": 7,
+      },
+      "tunnel": {
+        "power": 7,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_DOOR",
@@ -1289,18 +1317,13 @@
       },
       "mimic": "CLOSED_DOOR",
       "map_priority": 10,
-      "flags": [
-        "POWER_0",
-        "NOTICE",
-        "REMEMBER",
-        "BASH",
-        "SPIKE",
-        "TUNNEL",
-        "DOOR",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DISINTEGRATE",
-      ],
+      "flags": ["NOTICE", "REMEMBER", "BASH", "SPIKE", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "door": {
+        "power": 0,
+      },
+      "tunnel": {
+        "power": 0,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_DOOR",
@@ -1322,18 +1345,13 @@
       },
       "mimic": "CLOSED_DOOR",
       "map_priority": 10,
-      "flags": [
-        "POWER_1",
-        "NOTICE",
-        "REMEMBER",
-        "BASH",
-        "SPIKE",
-        "TUNNEL",
-        "DOOR",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DISINTEGRATE",
-      ],
+      "flags": ["NOTICE", "REMEMBER", "BASH", "SPIKE", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "door": {
+        "power": 1,
+      },
+      "tunnel": {
+        "power": 1,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_DOOR",
@@ -1355,18 +1373,13 @@
       },
       "mimic": "CLOSED_DOOR",
       "map_priority": 10,
-      "flags": [
-        "POWER_2",
-        "NOTICE",
-        "REMEMBER",
-        "BASH",
-        "SPIKE",
-        "TUNNEL",
-        "DOOR",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DISINTEGRATE",
-      ],
+      "flags": ["NOTICE", "REMEMBER", "BASH", "SPIKE", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "door": {
+        "power": 2,
+      },
+      "tunnel": {
+        "power": 2,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_DOOR",
@@ -1388,18 +1401,13 @@
       },
       "mimic": "CLOSED_DOOR",
       "map_priority": 10,
-      "flags": [
-        "POWER_3",
-        "NOTICE",
-        "REMEMBER",
-        "BASH",
-        "SPIKE",
-        "TUNNEL",
-        "DOOR",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DISINTEGRATE",
-      ],
+      "flags": ["NOTICE", "REMEMBER", "BASH", "SPIKE", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "door": {
+        "power": 3,
+      },
+      "tunnel": {
+        "power": 3,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_DOOR",
@@ -1421,18 +1429,13 @@
       },
       "mimic": "CLOSED_DOOR",
       "map_priority": 10,
-      "flags": [
-        "POWER_4",
-        "NOTICE",
-        "REMEMBER",
-        "BASH",
-        "SPIKE",
-        "TUNNEL",
-        "DOOR",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DISINTEGRATE",
-      ],
+      "flags": ["NOTICE", "REMEMBER", "BASH", "SPIKE", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "door": {
+        "power": 4,
+      },
+      "tunnel": {
+        "power": 4,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_DOOR",
@@ -1454,18 +1457,13 @@
       },
       "mimic": "CLOSED_DOOR",
       "map_priority": 10,
-      "flags": [
-        "POWER_5",
-        "NOTICE",
-        "REMEMBER",
-        "BASH",
-        "SPIKE",
-        "TUNNEL",
-        "DOOR",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DISINTEGRATE",
-      ],
+      "flags": ["NOTICE", "REMEMBER", "BASH", "SPIKE", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "door": {
+        "power": 5,
+      },
+      "tunnel": {
+        "power": 5,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_DOOR",
@@ -1487,18 +1485,13 @@
       },
       "mimic": "CLOSED_DOOR",
       "map_priority": 10,
-      "flags": [
-        "POWER_6",
-        "NOTICE",
-        "REMEMBER",
-        "BASH",
-        "SPIKE",
-        "TUNNEL",
-        "DOOR",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DISINTEGRATE",
-      ],
+      "flags": ["NOTICE", "REMEMBER", "BASH", "SPIKE", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "door": {
+        "power": 6,
+      },
+      "tunnel": {
+        "power": 6,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_DOOR",
@@ -1520,18 +1513,13 @@
       },
       "mimic": "CLOSED_DOOR",
       "map_priority": 10,
-      "flags": [
-        "POWER_7",
-        "NOTICE",
-        "REMEMBER",
-        "BASH",
-        "SPIKE",
-        "TUNNEL",
-        "DOOR",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DISINTEGRATE",
-      ],
+      "flags": ["NOTICE", "REMEMBER", "BASH", "SPIKE", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "door": {
+        "power": 7,
+      },
+      "tunnel": {
+        "power": 7,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_DOOR",
@@ -1558,12 +1546,16 @@
         "REMEMBER",
         "OPEN",
         "BASH",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
       ],
+      "door": {
+        "power": 0,
+      },
+      "tunnel": {
+        "power": 0,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "SECRET": "CLOSED_DOOR",
@@ -1585,16 +1577,10 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": [
-        "POWER_10",
-        "REMEMBER",
-        "TUNNEL",
-        "HAS_ITEM",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DIG",
-        "CAN_DISINTEGRATE",
-      ],
+      "flags": ["REMEMBER", "HAS_ITEM", "STONE", "CAN_PASS", "CAN_DIG", "CAN_DISINTEGRATE"],
+      "tunnel": {
+        "power": 10,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
       },
@@ -1613,16 +1599,10 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": [
-        "POWER_10",
-        "REMEMBER",
-        "TUNNEL",
-        "MAY_HAVE_GOLD",
-        "WALL",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DISINTEGRATE",
-      ],
+      "flags": ["REMEMBER", "MAY_HAVE_GOLD", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "tunnel": {
+        "power": 10,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "MAY_HAVE_GOLD": "MAGMA_TREASURE",
@@ -1642,16 +1622,10 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": [
-        "POWER_20",
-        "REMEMBER",
-        "TUNNEL",
-        "MAY_HAVE_GOLD",
-        "WALL",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DISINTEGRATE",
-      ],
+      "flags": ["REMEMBER", "MAY_HAVE_GOLD", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "tunnel": {
+        "power": 20,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "MAY_HAVE_GOLD": "QUARTZ_TREASURE",
@@ -1671,17 +1645,10 @@
       },
       "mimic": "MAGMA_VEIN",
       "map_priority": 2,
-      "flags": [
-        "POWER_10",
-        "SECRET",
-        "REMEMBER",
-        "TUNNEL",
-        "HAS_GOLD",
-        "WALL",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DISINTEGRATE",
-      ],
+      "flags": ["SECRET", "REMEMBER", "HAS_GOLD", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "tunnel": {
+        "power": 10,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "SECRET": "MAGMA_TREASURE",
@@ -1701,17 +1668,10 @@
       },
       "mimic": "QUARTZ_VEIN",
       "map_priority": 2,
-      "flags": [
-        "POWER_20",
-        "SECRET",
-        "REMEMBER",
-        "TUNNEL",
-        "HAS_GOLD",
-        "WALL",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DISINTEGRATE",
-      ],
+      "flags": ["SECRET", "REMEMBER", "HAS_GOLD", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "tunnel": {
+        "power": 20,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "SECRET": "QUARTZ_TREASURE",
@@ -1731,16 +1691,10 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": [
-        "POWER_20",
-        "REMEMBER",
-        "TUNNEL",
-        "HAS_GOLD",
-        "WALL",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DISINTEGRATE",
-      ],
+      "flags": ["REMEMBER", "HAS_GOLD", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "tunnel": {
+        "power": 20,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "ENSECRET": "MAGMA_HIDDEN",
@@ -1760,16 +1714,10 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": [
-        "POWER_20",
-        "REMEMBER",
-        "TUNNEL",
-        "HAS_GOLD",
-        "WALL",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DISINTEGRATE",
-      ],
+      "flags": ["REMEMBER", "HAS_GOLD", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "tunnel": {
+        "power": 20,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "ENSECRET": "QUARTZ_HIDDEN",
@@ -1789,7 +1737,10 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": ["POWER_40", "REMEMBER", "TUNNEL", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "flags": ["REMEMBER", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "tunnel": {
+        "power": 40,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
       },
@@ -1808,7 +1759,10 @@
       },
       "mimic": "GRANITE",
       "map_priority": 2,
-      "flags": ["POWER_40", "REMEMBER", "TUNNEL", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "flags": ["REMEMBER", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "tunnel": {
+        "power": 40,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
       },
@@ -1827,7 +1781,10 @@
       },
       "mimic": "GRANITE",
       "map_priority": 2,
-      "flags": ["POWER_40", "REMEMBER", "TUNNEL", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "flags": ["REMEMBER", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "tunnel": {
+        "power": 40,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
       },
@@ -1846,7 +1803,10 @@
       },
       "mimic": "GRANITE",
       "map_priority": 2,
-      "flags": ["POWER_40", "REMEMBER", "TUNNEL", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "flags": ["REMEMBER", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "tunnel": {
+        "power": 40,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
       },
@@ -1865,7 +1825,10 @@
       },
       "mimic": null,
       "map_priority": 5,
-      "flags": ["REMEMBER", "TUNNEL", "WALL", "PERMANENT"],
+      "flags": ["REMEMBER", "WALL", "PERMANENT"],
+      "tunnel": {
+        "power": 0,
+      },
       "interactions": {
         "UNPERM": "GRANITE",
       },
@@ -1884,7 +1847,10 @@
       },
       "mimic": "PERMANENT",
       "map_priority": 5,
-      "flags": ["REMEMBER", "TUNNEL", "WALL", "PERMANENT"],
+      "flags": ["REMEMBER", "WALL", "PERMANENT"],
+      "tunnel": {
+        "power": 0,
+      },
       "interactions": {
         "UNPERM": "GRANITE",
       },
@@ -1903,7 +1869,10 @@
       },
       "mimic": "PERMANENT",
       "map_priority": 5,
-      "flags": ["REMEMBER", "TUNNEL", "WALL", "PERMANENT"],
+      "flags": ["REMEMBER", "WALL", "PERMANENT"],
+      "tunnel": {
+        "power": 0,
+      },
       "interactions": {
         "UNPERM": "GRANITE",
       },
@@ -1922,7 +1891,10 @@
       },
       "mimic": "PERMANENT",
       "map_priority": 5,
-      "flags": ["REMEMBER", "TUNNEL", "WALL", "PERMANENT"],
+      "flags": ["REMEMBER", "WALL", "PERMANENT"],
+      "tunnel": {
+        "power": 0,
+      },
       "interactions": {
         "UNPERM": "GRANITE",
       },
@@ -2150,7 +2122,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "store": {
         "type": "GENERAL",
       },
@@ -2170,7 +2145,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "store": {
         "type": "ARMOURY",
       },
@@ -2190,7 +2168,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "store": {
         "type": "WEAPON",
       },
@@ -2210,7 +2191,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "store": {
         "type": "TEMPLE",
       },
@@ -2230,7 +2214,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "store": {
         "type": "ALCHEMIST",
       },
@@ -2250,7 +2237,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "store": {
         "type": "MAGIC",
       },
@@ -2270,7 +2260,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "store": {
         "type": "BLACK",
       },
@@ -2290,7 +2283,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "store": {
         "type": "HOME",
       },
@@ -2310,7 +2306,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "store": {
         "type": "BOOK",
       },
@@ -2506,7 +2505,6 @@
       "mimic": null,
       "map_priority": 2,
       "flags": [
-        "POWER_5",
         "LOS",
         "PROJECTION",
         "MOVE",
@@ -2521,6 +2519,7 @@
       ],
       "trap": {
         "type": "TRAPS",
+        "power": 5,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
@@ -2542,7 +2541,6 @@
       "mimic": null,
       "map_priority": 2,
       "flags": [
-        "POWER_5",
         "LOS",
         "PROJECTION",
         "MOVE",
@@ -2557,6 +2555,7 @@
       ],
       "trap": {
         "type": "ALARM",
+        "power": 5,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
@@ -2577,7 +2576,6 @@
       "mimic": null,
       "map_priority": 10,
       "flags": [
-        "POWER_100",
         "LOS",
         "PROJECTION",
         "MOVE",
@@ -2592,6 +2590,7 @@
       ],
       "trap": {
         "type": "OPEN",
+        "power": 100,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
@@ -2673,7 +2672,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "store": {
         "type": "MUSEUM",
       },
@@ -2694,18 +2696,19 @@
       "mimic": null,
       "map_priority": 2,
       "flags": [
-        "POWER_10",
         "MOVE",
         "PLACE",
         "DROP",
         "REMEMBER",
-        "TUNNEL",
         "AVOID_RUN",
         "CAN_FLY",
         "TREE",
         "PLANT",
         "CAN_DISINTEGRATE",
       ],
+      "tunnel": {
+        "power": 10,
+      },
       "interactions": {
         "DESTROYED": "GRASS",
       },
@@ -2726,7 +2729,6 @@
       "map_priority": 5,
       "flags": [
         "REMEMBER",
-        "TUNNEL",
         "WALL",
         "PERMANENT",
         "MOUNTAIN",
@@ -2735,6 +2737,9 @@
         "CAN_FLY",
         "AVOID_RUN",
       ],
+      "tunnel": {
+        "power": 0,
+      },
       "interactions": {
         "UNPERM": "*INNER*",
       },
@@ -2753,7 +2758,10 @@
       },
       "mimic": "MOUNTAIN",
       "map_priority": 5,
-      "flags": ["REMEMBER", "TUNNEL", "WALL", "PERMANENT"],
+      "flags": ["REMEMBER", "WALL", "PERMANENT"],
+      "tunnel": {
+        "power": 0,
+      },
       "interactions": {
         "UNPERM": "*INNER*",
       },
@@ -2772,7 +2780,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_00",
       },
@@ -2792,7 +2803,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_01",
       },
@@ -2812,7 +2826,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_02",
       },
@@ -2832,7 +2849,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_03",
       },
@@ -2852,7 +2872,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_04",
       },
@@ -2872,7 +2895,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_05",
       },
@@ -2892,7 +2918,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_06",
       },
@@ -2912,7 +2941,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_07",
       },
@@ -2932,7 +2964,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_08",
       },
@@ -2952,7 +2987,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_09",
       },
@@ -2972,7 +3010,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_10",
       },
@@ -2992,7 +3033,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_11",
       },
@@ -3012,7 +3056,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_12",
       },
@@ -3032,7 +3079,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_13",
       },
@@ -3052,7 +3102,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_14",
       },
@@ -3072,7 +3125,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_15",
       },
@@ -3092,7 +3148,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_16",
       },
@@ -3112,7 +3171,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_17",
       },
@@ -3132,7 +3194,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_18",
       },
@@ -3152,7 +3217,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_19",
       },
@@ -3172,7 +3240,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_20",
       },
@@ -3192,7 +3263,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_21",
       },
@@ -3212,7 +3286,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_22",
       },
@@ -3232,7 +3309,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_23",
       },
@@ -3252,7 +3332,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_24",
       },
@@ -3272,7 +3355,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_25",
       },
@@ -3292,7 +3378,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_26",
       },
@@ -3312,7 +3401,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_27",
       },
@@ -3332,7 +3424,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_28",
       },
@@ -3352,7 +3447,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_29",
       },
@@ -3372,7 +3470,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_30",
       },
@@ -3392,7 +3493,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT", "GLOW"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT", "GLOW"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_31",
       },
@@ -3555,7 +3659,10 @@
       },
       "mimic": null,
       "map_priority": 10,
-      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "DOOR", "PERMANENT"],
+      "flags": ["LOS", "PROJECTION", "MOVE", "NOTICE", "REMEMBER", "PERMANENT"],
+      "door": {
+        "power": 0,
+      },
       "building": {
         "type": "BUILDING_02",
       },
@@ -3710,7 +3817,6 @@
       "mimic": null,
       "map_priority": 10,
       "flags": [
-        "POWER_100",
         "LOS",
         "PROJECTION",
         "MOVE",
@@ -3725,6 +3831,7 @@
       ],
       "trap": {
         "type": "ARMAGEDDON",
+        "power": 100,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
@@ -3746,7 +3853,6 @@
       "mimic": null,
       "map_priority": 10,
       "flags": [
-        "POWER_100",
         "LOS",
         "PROJECTION",
         "MOVE",
@@ -3761,6 +3867,7 @@
       ],
       "trap": {
         "type": "PIRANHA",
+        "power": 100,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
@@ -3819,12 +3926,14 @@
         "NOTICE",
         "REMEMBER",
         "CLOSE",
-        "DOOR",
         "CAN_FLY",
         "CAN_DISINTEGRATE",
         "TELEPORTABLE",
         "GLASS",
       ],
+      "door": {
+        "power": 0,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "CLOSE": "CLOSED_GLASS_DOOR",
@@ -3853,12 +3962,14 @@
         "NOTICE",
         "REMEMBER",
         "CLOSE",
-        "DOOR",
         "CAN_FLY",
         "CAN_DISINTEGRATE",
         "TELEPORTABLE",
         "GLASS",
       ],
+      "door": {
+        "power": 0,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
       },
@@ -3878,20 +3989,23 @@
       "mimic": null,
       "map_priority": 10,
       "flags": [
-        "POWER_0",
         "LOS",
         "NOTICE",
         "REMEMBER",
         "OPEN",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
         "GLASS",
       ],
+      "door": {
+        "power": 0,
+      },
+      "tunnel": {
+        "power": 0,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_GLASS_DOOR",
@@ -3914,20 +4028,23 @@
       "mimic": "CLOSED_GLASS_DOOR",
       "map_priority": 10,
       "flags": [
-        "POWER_1",
         "LOS",
         "NOTICE",
         "REMEMBER",
         "OPEN",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
         "GLASS",
       ],
+      "door": {
+        "power": 1,
+      },
+      "tunnel": {
+        "power": 1,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_GLASS_DOOR",
@@ -3951,20 +4068,23 @@
       "mimic": "CLOSED_GLASS_DOOR",
       "map_priority": 10,
       "flags": [
-        "POWER_2",
         "LOS",
         "NOTICE",
         "REMEMBER",
         "OPEN",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
         "GLASS",
       ],
+      "door": {
+        "power": 2,
+      },
+      "tunnel": {
+        "power": 2,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_GLASS_DOOR",
@@ -3988,20 +4108,23 @@
       "mimic": "CLOSED_GLASS_DOOR",
       "map_priority": 10,
       "flags": [
-        "POWER_3",
         "LOS",
         "NOTICE",
         "REMEMBER",
         "OPEN",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
         "GLASS",
       ],
+      "door": {
+        "power": 3,
+      },
+      "tunnel": {
+        "power": 3,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_GLASS_DOOR",
@@ -4025,20 +4148,23 @@
       "mimic": "CLOSED_GLASS_DOOR",
       "map_priority": 10,
       "flags": [
-        "POWER_4",
         "LOS",
         "NOTICE",
         "REMEMBER",
         "OPEN",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
         "GLASS",
       ],
+      "door": {
+        "power": 4,
+      },
+      "tunnel": {
+        "power": 4,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_GLASS_DOOR",
@@ -4062,20 +4188,23 @@
       "mimic": "CLOSED_GLASS_DOOR",
       "map_priority": 10,
       "flags": [
-        "POWER_5",
         "LOS",
         "NOTICE",
         "REMEMBER",
         "OPEN",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
         "GLASS",
       ],
+      "door": {
+        "power": 5,
+      },
+      "tunnel": {
+        "power": 5,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_GLASS_DOOR",
@@ -4099,20 +4228,23 @@
       "mimic": "CLOSED_GLASS_DOOR",
       "map_priority": 10,
       "flags": [
-        "POWER_6",
         "LOS",
         "NOTICE",
         "REMEMBER",
         "OPEN",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
         "GLASS",
       ],
+      "door": {
+        "power": 6,
+      },
+      "tunnel": {
+        "power": 6,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_GLASS_DOOR",
@@ -4136,20 +4268,23 @@
       "mimic": "CLOSED_GLASS_DOOR",
       "map_priority": 10,
       "flags": [
-        "POWER_7",
         "LOS",
         "NOTICE",
         "REMEMBER",
         "OPEN",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
         "GLASS",
       ],
+      "door": {
+        "power": 7,
+      },
+      "tunnel": {
+        "power": 7,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_GLASS_DOOR",
@@ -4173,19 +4308,22 @@
       "mimic": "CLOSED_GLASS_DOOR",
       "map_priority": 10,
       "flags": [
-        "POWER_0",
         "LOS",
         "NOTICE",
         "REMEMBER",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
         "GLASS",
       ],
+      "door": {
+        "power": 0,
+      },
+      "tunnel": {
+        "power": 0,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "BROKEN_GLASS_DOOR",
@@ -4208,19 +4346,22 @@
       "mimic": "CLOSED_GLASS_DOOR",
       "map_priority": 10,
       "flags": [
-        "POWER_1",
         "LOS",
         "NOTICE",
         "REMEMBER",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
         "GLASS",
       ],
+      "door": {
+        "power": 1,
+      },
+      "tunnel": {
+        "power": 1,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "BROKEN_GLASS_DOOR",
@@ -4243,19 +4384,22 @@
       "mimic": "CLOSED_GLASS_DOOR",
       "map_priority": 10,
       "flags": [
-        "POWER_2",
         "LOS",
         "NOTICE",
         "REMEMBER",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
         "GLASS",
       ],
+      "door": {
+        "power": 2,
+      },
+      "tunnel": {
+        "power": 2,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "BROKEN_GLASS_DOOR",
@@ -4278,19 +4422,22 @@
       "mimic": "CLOSED_GLASS_DOOR",
       "map_priority": 10,
       "flags": [
-        "POWER_3",
         "LOS",
         "NOTICE",
         "REMEMBER",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
         "GLASS",
       ],
+      "door": {
+        "power": 3,
+      },
+      "tunnel": {
+        "power": 3,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "BROKEN_GLASS_DOOR",
@@ -4313,19 +4460,22 @@
       "mimic": "CLOSED_GLASS_DOOR",
       "map_priority": 10,
       "flags": [
-        "POWER_4",
         "LOS",
         "NOTICE",
         "REMEMBER",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
         "GLASS",
       ],
+      "door": {
+        "power": 4,
+      },
+      "tunnel": {
+        "power": 4,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "BROKEN_GLASS_DOOR",
@@ -4348,19 +4498,22 @@
       "mimic": "CLOSED_GLASS_DOOR",
       "map_priority": 10,
       "flags": [
-        "POWER_5",
         "LOS",
         "NOTICE",
         "REMEMBER",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
         "GLASS",
       ],
+      "door": {
+        "power": 5,
+      },
+      "tunnel": {
+        "power": 5,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "BROKEN_GLASS_DOOR",
@@ -4383,19 +4536,22 @@
       "mimic": "CLOSED_GLASS_DOOR",
       "map_priority": 10,
       "flags": [
-        "POWER_6",
         "LOS",
         "NOTICE",
         "REMEMBER",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
         "GLASS",
       ],
+      "door": {
+        "power": 6,
+      },
+      "tunnel": {
+        "power": 6,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "BROKEN_GLASS_DOOR",
@@ -4418,19 +4574,22 @@
       "mimic": "CLOSED_GLASS_DOOR",
       "map_priority": 10,
       "flags": [
-        "POWER_7",
         "LOS",
         "NOTICE",
         "REMEMBER",
         "BASH",
         "SPIKE",
-        "TUNNEL",
-        "DOOR",
         "STONE",
         "CAN_PASS",
         "CAN_DISINTEGRATE",
         "GLASS",
       ],
+      "door": {
+        "power": 7,
+      },
+      "tunnel": {
+        "power": 7,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "BROKEN_GLASS_DOOR",
@@ -4451,17 +4610,10 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": [
-        "POWER_40",
-        "LOS",
-        "REMEMBER",
-        "TUNNEL",
-        "WALL",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DISINTEGRATE",
-        "GLASS",
-      ],
+      "flags": ["LOS", "REMEMBER", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE", "GLASS"],
+      "tunnel": {
+        "power": 40,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
       },
@@ -4480,7 +4632,10 @@
       },
       "mimic": null,
       "map_priority": 5,
-      "flags": ["REMEMBER", "LOS", "TUNNEL", "WALL", "PERMANENT", "GLASS"],
+      "flags": ["REMEMBER", "LOS", "WALL", "PERMANENT", "GLASS"],
+      "tunnel": {
+        "power": 0,
+      },
       "interactions": {
         "UNPERM": "GLASS_WALL",
       },
@@ -4508,11 +4663,13 @@
         "NOTICE",
         "REMEMBER",
         "CLOSE",
-        "DOOR",
         "CAN_FLY",
         "CAN_DISINTEGRATE",
         "TELEPORTABLE",
       ],
+      "door": {
+        "power": 0,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "CLOSE": "CLOSED_CURTAIN",
@@ -4540,10 +4697,12 @@
         "NOTICE",
         "REMEMBER",
         "OPEN",
-        "DOOR",
         "CAN_DISINTEGRATE",
         "TELEPORTABLE",
       ],
+      "door": {
+        "power": 0,
+      },
       "interactions": {
         "DESTROYED": "*FLOOR*",
         "OPEN": "OPEN_CURTAIN",
@@ -4563,16 +4722,10 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": [
-        "POWER_10",
-        "REMEMBER",
-        "TUNNEL",
-        "HAS_ITEM",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DIG",
-        "CAN_DISINTEGRATE",
-      ],
+      "flags": ["REMEMBER", "HAS_ITEM", "STONE", "CAN_PASS", "CAN_DIG", "CAN_DISINTEGRATE"],
+      "tunnel": {
+        "power": 10,
+      },
       "interactions": {
         "DESTROYED": "SHALLOW_WATER",
       },
@@ -4591,16 +4744,10 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": [
-        "POWER_10",
-        "REMEMBER",
-        "TUNNEL",
-        "MAY_HAVE_GOLD",
-        "WALL",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DISINTEGRATE",
-      ],
+      "flags": ["REMEMBER", "MAY_HAVE_GOLD", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "tunnel": {
+        "power": 10,
+      },
       "interactions": {
         "DESTROYED": "SHALLOW_WATER",
         "MAY_HAVE_GOLD": "MAGMA_TREASURE",
@@ -4620,16 +4767,10 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": [
-        "POWER_20",
-        "REMEMBER",
-        "TUNNEL",
-        "MAY_HAVE_GOLD",
-        "WALL",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DISINTEGRATE",
-      ],
+      "flags": ["REMEMBER", "MAY_HAVE_GOLD", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "tunnel": {
+        "power": 20,
+      },
       "interactions": {
         "DESTROYED": "SHALLOW_WATER",
         "MAY_HAVE_GOLD": "QUARTZ_TREASURE",
@@ -4649,7 +4790,10 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": ["POWER_40", "REMEMBER", "TUNNEL", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "flags": ["REMEMBER", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "tunnel": {
+        "power": 40,
+      },
       "interactions": {
         "DESTROYED": "SHALLOW_WATER",
       },
@@ -4668,17 +4812,10 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": [
-        "POWER_40",
-        "LOS",
-        "REMEMBER",
-        "TUNNEL",
-        "WALL",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DISINTEGRATE",
-        "GLASS",
-      ],
+      "flags": ["LOS", "REMEMBER", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE", "GLASS"],
+      "tunnel": {
+        "power": 40,
+      },
       "interactions": {
         "DESTROYED": "SHALLOW_WATER",
       },
@@ -4918,16 +5055,10 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": [
-        "POWER_10",
-        "REMEMBER",
-        "TUNNEL",
-        "HAS_ITEM",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DIG",
-        "CAN_DISINTEGRATE",
-      ],
+      "flags": ["REMEMBER", "HAS_ITEM", "STONE", "CAN_PASS", "CAN_DIG", "CAN_DISINTEGRATE"],
+      "tunnel": {
+        "power": 10,
+      },
       "interactions": {
         "DESTROYED": "DEEP_WATER",
       },
@@ -4946,16 +5077,10 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": [
-        "POWER_10",
-        "REMEMBER",
-        "TUNNEL",
-        "MAY_HAVE_GOLD",
-        "WALL",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DISINTEGRATE",
-      ],
+      "flags": ["REMEMBER", "MAY_HAVE_GOLD", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "tunnel": {
+        "power": 10,
+      },
       "interactions": {
         "DESTROYED": "DEEP_WATER",
         "MAY_HAVE_GOLD": "MAGMA_TREASURE",
@@ -4975,16 +5100,10 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": [
-        "POWER_20",
-        "REMEMBER",
-        "TUNNEL",
-        "MAY_HAVE_GOLD",
-        "WALL",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DISINTEGRATE",
-      ],
+      "flags": ["REMEMBER", "MAY_HAVE_GOLD", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "tunnel": {
+        "power": 20,
+      },
       "interactions": {
         "DESTROYED": "DEEP_WATER",
         "MAY_HAVE_GOLD": "QUARTZ_TREASURE",
@@ -5004,7 +5123,10 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": ["POWER_40", "REMEMBER", "TUNNEL", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "flags": ["REMEMBER", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "tunnel": {
+        "power": 40,
+      },
       "interactions": {
         "DESTROYED": "DEEP_WATER",
       },
@@ -5023,17 +5145,10 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": [
-        "POWER_40",
-        "LOS",
-        "REMEMBER",
-        "TUNNEL",
-        "WALL",
-        "STONE",
-        "CAN_PASS",
-        "CAN_DISINTEGRATE",
-        "GLASS",
-      ],
+      "flags": ["LOS", "REMEMBER", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE", "GLASS"],
+      "tunnel": {
+        "power": 40,
+      },
       "interactions": {
         "DESTROYED": "DEEP_WATER",
       },

@@ -12,7 +12,9 @@
 #include "util/bit-flags-calculator.h"
 #include "util/string-processor.h"
 #include "view/display-messages.h"
+#include <cstdint>
 #include <map>
+#include <optional>
 #include <set>
 
 /*!
@@ -215,22 +217,37 @@ errr parse_terrains_info(std::string_view buf, angband_header *)
         }
 
         const auto &flags = str_split(tokens[1], '|', true, 10);
+        auto &terrain = *terrains.rbegin();
+        std::optional<uint8_t> terrain_power;
         for (const auto &f : flags) {
             if (f.size() == 0) {
                 continue;
             }
 
             const auto &f_tokens = str_split(f, '_', false, 2);
-            auto &terrain = *terrains.rbegin();
             if (f_tokens.size() == 2) {
                 if (f_tokens[0] == "POWER") {
-                    info_set_value(terrain.power, f_tokens[1]);
+                    uint8_t power = 0;
+                    info_set_value(power, f_tokens[1]);
+                    terrain_power = power;
                     continue;
                 }
             }
 
             if (!grab_one_feat_flag(&terrain, f)) {
                 return PARSE_ERROR_INVALID_FLAG;
+            }
+        }
+
+        if (terrain_power) {
+            if (terrain.flags.has(TerrainCharacteristics::DOOR)) {
+                terrain.door_power = *terrain_power;
+            }
+            if (terrain.flags.has(TerrainCharacteristics::TRAP)) {
+                terrain.trap_power = *terrain_power;
+            }
+            if (terrain.flags.has(TerrainCharacteristics::TUNNEL)) {
+                terrain.tunnel_power = *terrain_power;
             }
         }
 
