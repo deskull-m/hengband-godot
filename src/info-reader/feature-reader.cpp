@@ -13,7 +13,6 @@
 #include "util/string-processor.h"
 #include "view/display-messages.h"
 #include <map>
-#include <optional>
 #include <set>
 
 /*!
@@ -216,7 +215,6 @@ errr parse_terrains_info(std::string_view buf, angband_header *)
         }
 
         const auto &flags = str_split(tokens[1], '|', true, 10);
-        std::optional<uint8_t> specific_type;
         for (const auto &f : flags) {
             if (f.size() == 0) {
                 continue;
@@ -225,13 +223,6 @@ errr parse_terrains_info(std::string_view buf, angband_header *)
             const auto &f_tokens = str_split(f, '_', false, 2);
             auto &terrain = *terrains.rbegin();
             if (f_tokens.size() == 2) {
-                if (f_tokens[0] == "SUBTYPE") {
-                    uint8_t parsed_specific_type{};
-                    info_set_value(parsed_specific_type, f_tokens[1]);
-                    specific_type = parsed_specific_type;
-                    continue;
-                }
-
                 if (f_tokens[0] == "POWER") {
                     info_set_value(terrain.power, f_tokens[1]);
                     continue;
@@ -241,10 +232,6 @@ errr parse_terrains_info(std::string_view buf, angband_header *)
             if (!grab_one_feat_flag(&terrain, f)) {
                 return PARSE_ERROR_INVALID_FLAG;
             }
-        }
-        auto &terrain = *terrains.rbegin();
-        if (specific_type && !terrain.set_specific_type(*specific_type)) {
-            return PARSE_ERROR_INVALID_FLAG;
         }
 
         return PARSE_ERROR_NONE;
