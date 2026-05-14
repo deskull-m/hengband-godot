@@ -310,6 +310,9 @@
     <ClCompile Include="..\..\src\io\macro-configurations-store.cpp" />
     <ClCompile Include="..\..\src\monster-floor\monster-movement-direction-list.cpp" />
     <ClCompile Include="..\..\src\player-info\bluemage-data.cpp" />
+    <ClCompile Include="..\..\src\system\artifact\artifact-list.cpp" />
+    <ClCompile Include="..\..\src\system\artifact\artifact-record.cpp" />
+    <ClCompile Include="..\..\src\system\artifact\artifact-service.cpp" />
     <ClCompile Include="..\..\src\system\floor\town-records.cpp" />
     <ClCompile Include="..\..\src\system\floor\wilderness-grid.cpp" />
     <ClCompile Include="..\..\src\system\services\dungeon-monrace-service.cpp" />
@@ -788,7 +791,7 @@
     <ClCompile Include="..\..\src\mspell\mspell-attack\mspell-particularity.cpp" />
     <ClCompile Include="..\..\src\mspell\mspell-special.cpp" />
     <ClCompile Include="..\..\src\mspell\mspell-status.cpp" />
-    <ClCompile Include="..\..\src\system\artifact-type-definition.cpp" />
+    <ClCompile Include="..\..\src\system\artifact\artifact-definition.cpp" />
     <ClCompile Include="..\..\src\autopick\autopick-command-menu.cpp" />
     <ClCompile Include="..\..\src\autopick\autopick-describer.cpp" />
     <ClCompile Include="..\..\src\autopick\autopick-destroyer.cpp" />
@@ -1040,10 +1043,14 @@
     <ClInclude Include="..\..\src\system\enums\store-sale-type.h" />
     <ClInclude Include="..\..\src\system\enums\terrain\building-type.h" />
     <ClInclude Include="..\..\src\system\enums\terrain\pattern-tile-type.h" />
+    <ClInclude Include="..\..\src\system\artifact\artifact-list.h" />
+    <ClInclude Include="..\..\src\system\artifact\artifact-record.h" />
+    <ClInclude Include="..\..\src\system\artifact\artifact-service.h" />
     <ClInclude Include="..\..\src\system\enums\terrain\terrain-kind.h" />
     <ClInclude Include="..\..\src\system\enums\terrain\terrain-conversion-type.h" />
     <ClInclude Include="..\..\src\system\enums\terrain\trap.h" />
     <ClInclude Include="..\..\src\system\enums\terrain\wilderness-terrain.h" />
+    <ClInclude Include="..\..\src\system\artifact\artifact-list.h" />
     <ClInclude Include="..\..\src\system\floor\town-records.h" />
     <ClInclude Include="..\..\src\system\floor\wilderness-grid.h" />
     <ClInclude Include="..\..\src\system\services\dungeon-monrace-service.h" />
@@ -1646,7 +1653,7 @@
     <ClInclude Include="..\..\src\mspell\mspell-attack\mspell-particularity.h" />
     <ClInclude Include="..\..\src\mspell\mspell-special.h" />
     <ClInclude Include="..\..\src\mspell\mspell-status.h" />
-    <ClInclude Include="..\..\src\system\artifact-type-definition.h" />
+    <ClInclude Include="..\..\src\system\artifact\artifact-definition.h" />
     <ClInclude Include="..\..\src\autopick\autopick-command-menu.h" />
     <ClInclude Include="..\..\src\autopick\autopick-commands-table.h" />
     <ClInclude Include="..\..\src\autopick\autopick-describer.h" />

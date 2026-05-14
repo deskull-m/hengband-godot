@@ -13,7 +13,7 @@
 #include "sv-definition/sv-other-types.h"
 #include "sv-definition/sv-ring-types.h"
 #include "sv-definition/sv-weapon-types.h"
-#include "system/artifact-type-definition.h"
+#include "system/artifact/artifact-definition.h"
 #include "system/baseitem/baseitem-definition.h"
 #include "system/enums/monrace/monrace-id.h"
 #include "system/item-entity.h"

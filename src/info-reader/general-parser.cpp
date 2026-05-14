@@ -10,7 +10,7 @@
 #include "player-info/class-types.h"
 #include "player-info/race-types.h"
 #include "realm/realm-types.h"
-#include "system/artifact-type-definition.h"
+#include "system/artifact/artifact-definition.h"
 #include "system/baseitem/baseitem-definition.h"
 #include "system/baseitem/baseitem-list.h"
 #include "system/building-type-definition.h"
@@ -175,9 +175,8 @@ parse_error_type parse_line_feature(const FloorType &floor, std::string_view buf
                 const auto &quests = QuestList::get_instance();
                 const auto &quest = quests.get_quest(floor.quest_number);
                 if (quest.has_reward()) {
-                    const auto &artifact = quest.get_reward();
-                    if (artifact.gen_flags.has_not(ItemGenerationTraitType::INSTA_ART)) {
-                        one_letter.object = BaseitemList::get_instance().lookup_baseitem_id(artifact.bi_key);
+                    if (!quest.is_reward_instant_artifact()) {
+                        one_letter.object = quest.get_reward_bi_id();
                     }
                 }
             }

@@ -29,7 +29,9 @@
 #include "player/player-skill.h"
 #include "room/rooms-vault.h"
 #include "system/angband-version.h"
-#include "system/artifact-type-definition.h"
+#include "system/artifact/artifact-definition.h"
+#include "system/artifact/artifact-list.h"
+#include "system/artifact/artifact-record.h"
 #include "system/baseitem/baseitem-definition.h"
 #include "system/baseitem/baseitem-list.h"
 #include "system/dungeon/dungeon-definition.h"
@@ -171,8 +173,10 @@ static void init_json(std::string_view filename, std::string_view keyname, angba
  */
 void init_artifacts_info()
 {
+    auto &artifacts = ArtifactList::get_instance();
     init_header(&artifacts_header);
-    init_json("ArtifactDefinitions.jsonc", "artifacts", artifacts_header, ArtifactList::get_instance(), parse_artifacts_info);
+    init_json("ArtifactDefinitions.jsonc", "artifacts", artifacts_header, artifacts, parse_artifacts_info);
+    ArtifactRecords::get_instance().initialize(artifacts.size());
 }
 
 /*!

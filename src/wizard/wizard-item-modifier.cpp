@@ -24,7 +24,9 @@
 #include "object/object-value.h"
 #include "spell-kind/spells-perception.h"
 #include "spell/spells-object.h"
-#include "system/artifact-type-definition.h"
+#include "system/artifact/artifact-definition.h"
+#include "system/artifact/artifact-list.h"
+#include "system/artifact/artifact-record.h"
 #include "system/baseitem/baseitem-allocation.h"
 #include "system/baseitem/baseitem-definition.h"
 #include "system/baseitem/baseitem-list.h"
@@ -216,15 +218,15 @@ void wizard_item_modifier(PlayerType *player_ptr)
 
 /*!
  * @brief 固定アーティファクトの出現フラグをリセットする
- * @param reset_artifact_idx 指定したアーティファクトID
+ * @param fa_id 指定したアーティファクトID
  */
-void wiz_restore_aware_flag_of_fixed_arfifact(FixedArtifactId reset_artifact_idx, bool aware)
+void wiz_restore_aware_flag_of_fixed_arfifact(FixedArtifactId fa_id, bool aware)
 {
-    auto &artifacts = ArtifactList::get_instance();
-    const auto max_a_idx = enum2i(artifacts.rbegin()->first);
+    auto &artifact_records = ArtifactRecords::get_instance();
+    const auto max_a_idx = enum2i(artifact_records.crbegin()->first);
     const auto message = aware ? "Modified." : "Restored.";
-    if (reset_artifact_idx != FixedArtifactId::NONE) {
-        artifacts.get_artifact(reset_artifact_idx).is_generated = aware;
+    if (fa_id != FixedArtifactId::NONE) {
+        artifact_records.set_generated(fa_id, aware);
         msg_print(message);
         return;
     }
@@ -234,7 +236,7 @@ void wiz_restore_aware_flag_of_fixed_arfifact(FixedArtifactId reset_artifact_idx
         return;
     }
 
-    artifacts.get_artifact(*input_artifact_id).is_generated = aware;
+    artifact_records.set_generated(*input_artifact_id, aware);
     msg_print(message);
 }
 
@@ -458,7 +460,7 @@ static void wiz_statistics(PlayerType *player_ptr, ItemEntity *o_ptr)
 {
     constexpr auto prompt = "Roll for [n]ormal, [g]ood, or [e]xcellent treasure? ";
     if (o_ptr->is_fixed_artifact()) {
-        o_ptr->get_fixed_artifact().is_generated = false;
+        o_ptr->set_fixed_artifact_generated(false);
     }
 
     auto rolls = 1000000;
@@ -517,7 +519,7 @@ static void wiz_statistics(PlayerType *player_ptr, ItemEntity *o_ptr)
             }
 
             if (item->is_fixed_artifact()) {
-                item->get_fixed_artifact().is_generated = false;
+                item->set_fixed_artifact_generated(false);
             }
 
             if (o_ptr->bi_key != item->bi_key) {
@@ -542,7 +544,7 @@ static void wiz_statistics(PlayerType *player_ptr, ItemEntity *o_ptr)
     }
 
     if (o_ptr->is_fixed_artifact()) {
-        o_ptr->get_fixed_artifact().is_generated = true;
+        o_ptr->set_fixed_artifact_generated(true);
     }
 }
 
@@ -608,7 +610,7 @@ static void wiz_reroll_item(PlayerType *player_ptr, ItemEntity *o_ptr)
         const auto command = input_command(prompt);
         if (!command) {
             if (item.is_fixed_artifact()) {
-                item.get_fixed_artifact().is_generated = false;
+                item.set_fixed_artifact_generated(false);
                 item.fa_id = FixedArtifactId::NONE;
             }
 
@@ -622,7 +624,7 @@ static void wiz_reroll_item(PlayerType *player_ptr, ItemEntity *o_ptr)
         }
 
         if (item.is_fixed_artifact()) {
-            item.get_fixed_artifact().is_generated = false;
+            item.set_fixed_artifact_generated(false);
             item.fa_id = FixedArtifactId::NONE;
         }
 
@@ -1062,11 +1064,10 @@ WishResultType do_cmd_wishing(PlayerType *player_ptr, int prob, bool allow_art, 
         return WishResultType::FAIL;
     }
 
-    const auto &artifacts = ArtifactList::get_instance();
+    const auto &artifact_records = ArtifactRecords::get_instance();
     if (!wishing_fa_ids.empty()) {
         const auto wishing_fa_id = *wishing_fa_ids.begin();
-        const auto &artifact = artifacts.get_artifact(wishing_fa_id);
-        if (must || (ok_art && !artifact.is_generated)) {
+        if (must || (ok_art && !artifact_records.get_generated(wishing_fa_id))) {
             (void)create_named_art(player_ptr, wishing_fa_id, player_ptr->y, player_ptr->x);
         } else {
             wishing_puff_of_smoke();
@@ -1081,6 +1082,7 @@ WishResultType do_cmd_wishing(PlayerType *player_ptr, int prob, bool allow_art, 
     }
 
     if (baseitem_ids.size() == 1) {
+        const auto &artifacts = ArtifactList::get_instance();
         const auto bi_id = baseitem_ids.back();
         const auto &baseitem = BaseitemList::get_instance().get_baseitem(bi_id);
         auto a_idx = FixedArtifactId::NONE;
@@ -1096,8 +1098,7 @@ WishResultType do_cmd_wishing(PlayerType *player_ptr, int prob, bool allow_art, 
         }
 
         if (a_idx != FixedArtifactId::NONE) {
-            const auto &artifact = artifacts.get_artifact(a_idx);
-            if (must || (ok_art && !artifact.is_generated)) {
+            if (must || (ok_art && !artifact_records.get_generated(a_idx))) {
                 (void)create_named_art(player_ptr, a_idx, player_ptr->y, player_ptr->x);
             } else {
                 wishing_puff_of_smoke();

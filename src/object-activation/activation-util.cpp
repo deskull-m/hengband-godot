@@ -1,7 +1,7 @@
 #include "object-activation/activation-util.h"
 #include "object-enchant/activation-info-table.h"
 #include "object/object-info.h"
-#include "system/artifact-type-definition.h"
+#include "system/artifact/artifact-definition.h"
 #include "system/item-entity.h"
 #include "system/player-type-definition.h"
 

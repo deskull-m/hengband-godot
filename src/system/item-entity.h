@@ -29,7 +29,7 @@ enum class RandomArtifactBias : int;
 enum class RandomArtActType : short;
 enum class SmithEffectType : short;
 class ActivationType;
-class ArtifactType;
+class ArtifactDefinition;
 class BaseitemDefinition;
 class DisplaySymbol;
 class EgoItemDefinition;
@@ -157,8 +157,9 @@ public:
     bool is_target_of(QuestId quest_id) const;
     BaseitemDefinition &get_baseitem() const;
     EgoItemDefinition &get_ego() const;
-    ArtifactType &get_fixed_artifact();
-    const ArtifactType &get_fixed_artifact() const;
+    const ArtifactDefinition &get_fixed_artifact() const;
+    const tl::optional<short> &get_fixed_artifact_floor_id() const;
+    void set_fixed_artifact_floor_id(const tl::optional<short> &id);
     TrFlags get_flags() const;
     TrFlags get_flags_known() const;
     std::string explain_activation() const;
@@ -183,6 +184,7 @@ public:
     void set_position(const Pos2D &pos);
     bool try_become_artifact(int dungeon_level);
     void absorb(ItemEntity &other);
+    void set_fixed_artifact_generated(bool new_state) const;
 
 private:
     ItemEntity(const ItemEntity &) = default;

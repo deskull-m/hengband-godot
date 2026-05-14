@@ -15,7 +15,6 @@
 #include "pet/pet-util.h"
 #include "save/floor-writer.h"
 #include "spell-class/spells-mirror-master.h"
-#include "system/artifact-type-definition.h"
 #include "system/dungeon/dungeon-definition.h"
 #include "system/enums/dungeon/dungeon-id.h"
 #include "system/floor/floor-info.h"
@@ -285,7 +284,7 @@ static void preserve_info(PlayerType *player_ptr)
         }
 
         if (o_ptr->is_fixed_artifact()) {
-            o_ptr->get_fixed_artifact().floor_id = 0;
+            o_ptr->set_fixed_artifact_floor_id(tl::nullopt);
         }
     }
 }

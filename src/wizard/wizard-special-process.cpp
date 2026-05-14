@@ -54,7 +54,9 @@
 #include "spell-kind/spells-world.h"
 #include "spell/spells-status.h"
 #include "status/bad-status-setter.h"
-#include "system/artifact-type-definition.h"
+#include "system/artifact/artifact-definition.h"
+#include "system/artifact/artifact-list.h"
+#include "system/artifact/artifact-record.h"
 #include "system/dungeon/dungeon-definition.h"
 #include "system/dungeon/dungeon-list.h"
 #include "system/enums/dungeon/dungeon-id.h"
@@ -265,8 +267,7 @@ void wiz_create_named_art(PlayerType *player_ptr)
     }
 
     screen_load();
-    const auto &artifact = ArtifactList::get_instance().get_artifact(*created_fa_id);
-    if (artifact.is_generated) {
+    if (ArtifactRecords::get_instance().get_generated(*created_fa_id)) {
         msg_print("It's already allocated.");
         return;
     }
