@@ -57,33 +57,63 @@ bool QuestType::is_fixed(QuestId quest_id)
 
 bool QuestType::has_reward() const
 {
-    return this->reward_fa_id != FixedArtifactId::NONE;
+    return this->reward_fa_id.has_value();
+}
+
+tl::optional<FixedArtifactId> QuestType::get_reward() const
+{
+    return this->reward_fa_id;
 }
 
 short QuestType::get_reward_bi_id() const
 {
-    const auto &artifact = ArtifactList::get_instance().get_artifact(this->reward_fa_id);
+    if (!this->has_reward()) {
+        return 0;
+    }
+
+    const auto &artifact = ArtifactList::get_instance().get_artifact(*this->reward_fa_id);
     return BaseitemList::get_instance().lookup_baseitem_id(artifact.bi_key);
 }
 
 bool QuestType::is_reward_instant_artifact() const
 {
-    return ArtifactList::get_instance().get_artifact(this->reward_fa_id).is_instant_artifact();
+    if (!this->has_reward()) {
+        return false;
+    }
+
+    return ArtifactList::get_instance().get_artifact(*this->reward_fa_id).is_instant_artifact();
 }
 
 bool QuestType::is_reward_target(const BaseitemKey &key) const
 {
-    return ArtifactList::get_instance().get_artifact(this->reward_fa_id).bi_key == key;
+    if (!this->has_reward()) {
+        return false;
+    }
+
+    return ArtifactList::get_instance().get_artifact(*this->reward_fa_id).bi_key == key;
 }
 
-void QuestType::set_reward() const
+void QuestType::set_reward(FixedArtifactId fa_id)
 {
-    ArtifactRecords::get_instance().set_quest_reward(this->reward_fa_id, true);
+    if (fa_id == FixedArtifactId::NONE) {
+        this->reset_reward();
+        return;
+    }
+
+    if (this->reward_fa_id && (*this->reward_fa_id != fa_id)) {
+        ArtifactRecords::get_instance().set_quest_reward(*this->reward_fa_id, false);
+    }
+
+    this->reward_fa_id = fa_id;
+    ArtifactRecords::get_instance().set_quest_reward(fa_id, true);
 }
 
-void QuestType::reset_reward() const
+void QuestType::reset_reward()
 {
-    ArtifactRecords::get_instance().set_quest_reward(this->reward_fa_id, false);
+    if (this->reward_fa_id) {
+        ArtifactRecords::get_instance().set_quest_reward(*this->reward_fa_id, false);
+        this->reward_fa_id.reset();
+    }
 }
 
 /*!
@@ -243,7 +273,7 @@ void check_find_art_quest_completion(PlayerType *player_ptr, ItemEntity *o_ptr)
     for (const auto &[quest_id, quest] : quests) {
         auto found_artifact = (quest.type == QuestKindType::FIND_ARTIFACT);
         found_artifact &= (quest.status == QuestStatusType::TAKEN);
-        found_artifact &= (o_ptr->is_specific_artifact(quest.reward_fa_id));
+        found_artifact &= quest.get_reward().map_or([o_ptr](FixedArtifactId fa_id) { return o_ptr->is_specific_artifact(fa_id); }, false);
         if (found_artifact) {
             complete_quest(player_ptr, quest_id);
         }
