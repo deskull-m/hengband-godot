@@ -143,8 +143,8 @@ parse_error_type parse_line_feature(const FloorType &floor, std::string_view buf
             }
         } else if (token.starts_with('!')) {
             if (floor.is_in_quest()) {
-                const auto &quests = QuestList::get_instance();
-                one_letter.artifact = quests.get_quest(floor.quest_number).reward_fa_id;
+                const auto &quest = QuestList::get_instance().get_quest(floor.quest_number);
+                one_letter.artifact = quest.get_reward().value_or(FixedArtifactId::NONE);
             }
         } else {
             one_letter.artifact = i2enum<FixedArtifactId>(std::stoi(token));
