@@ -947,9 +947,6 @@
     <ClCompile Include="..\..\src\info-reader\json-reader-util.cpp">
       <Filter>info-reader</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\info-reader\feature-reader.cpp">
-      <Filter>info-reader</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\info-reader\feature-info-tokens-table.cpp">
       <Filter>info-reader</Filter>
     </ClCompile>
@@ -3654,9 +3651,6 @@
       <Filter>info-reader</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\info-reader\parse-error-types.h">
-      <Filter>info-reader</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\info-reader\feature-reader.h">
       <Filter>info-reader</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\info-reader\feature-info-tokens-table.h">

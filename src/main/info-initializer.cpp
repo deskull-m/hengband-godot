@@ -10,7 +10,6 @@
 #include "info-reader/baseitem-reader.h"
 #include "info-reader/dungeon-reader.h"
 #include "info-reader/ego-reader.h"
-#include "info-reader/feature-reader.h"
 #include "info-reader/fixed-map-parser.h"
 #include "info-reader/general-parser.h"
 #include "info-reader/info-reader-util.h"
@@ -234,6 +233,15 @@ void init_terrains_info()
     init_header(&terrains_header);
     auto &terrains = TerrainList::get_instance();
     init_json("TerrainDefinitions.jsonc", "terrains", terrains_header, terrains, parse_terrains_json_info, [&terrains] { terrains.retouch(); });
+}
+
+/*!
+ * @brief 地形の派生情報を初期化する
+ */
+void init_feat_variables()
+{
+    TerrainList::get_instance().emplace_tags();
+    init_wilderness_terrains();
 }
 
 /*!

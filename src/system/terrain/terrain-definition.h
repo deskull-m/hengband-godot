@@ -12,7 +12,7 @@
 #include <cstdint>
 #include <map>
 
-/* Number of feats we change to (Excluding default). Used in TerrainDefinitions.txt. */
+/* Number of feats we change to (Excluding default). Used in TerrainDefinitions.jsonc. */
 constexpr auto MAX_FEAT_STATES = 8;
 
 /* Lighting levels of features' attr and char */
