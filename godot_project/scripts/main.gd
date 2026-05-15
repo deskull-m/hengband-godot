@@ -25,6 +25,9 @@ const TILE_ITEMS: Array[String] = ["なし", "8×8.bmp", "16×16.bmp"]
 ## 下部ツールバーの高さ (px) — main.tscn の LayoutRoot offset_bottom と合わせること
 const BOTTOM_BAR_HEIGHT: int = 45
 
+## ウィンドウサイズ変更後の保存をデバウンスするフラグ
+var _window_save_pending: bool = false
+
 ## ターミナルの最大数 (0=メイン, 1〜7=サブ)
 const MAX_TERMINALS: int = 8
 
@@ -47,8 +50,6 @@ func _ready() -> void:
 	# ウィンドウ × ボタンを自前で処理するため自動終了を無効化する
 	get_tree().set_auto_accept_quit(false)
 
-	GameState.load_config()
-
 	var game := $HengbandGame
 	if not game:
 		push_error("HengbandGame node not found")
@@ -67,10 +68,16 @@ func _ready() -> void:
 	if _lib_path.is_empty():
 		_lib_path = ProjectSettings.globalize_path("res://../lib")
 
-	# 初期レイアウト: メインターミナルペイン (idx=0) を作成
-	var main_pane := _create_terminal_pane(0)
-	$LayoutRoot.add_child(main_pane)
-	main_pane.setup(game, 0)
+	# 保存済みレイアウトを復元、なければデフォルト単一ペイン
+	if not GameState.layout_data.is_empty():
+		var root_node := _restore_layout_node(GameState.layout_data)
+		$LayoutRoot.add_child(root_node)
+		_setup_panes_in_subtree(root_node, game)
+		_apply_font(game)
+	else:
+		var main_pane := _create_terminal_pane(0)
+		$LayoutRoot.add_child(main_pane)
+		main_pane.setup(game, 0)
 
 	# レイアウト確定後にグリッドをフィット（1フレーム後に実行）
 	_fit_main_term.call_deferred()
@@ -84,6 +91,7 @@ func _ready() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		_save_layout_config()
 		var game := $HengbandGame
 		if game and game.is_game_started():
 			# ゲームが起動中 → セーブ＆終了をキューに注入する。
@@ -101,6 +109,12 @@ func _notification(what: int) -> void:
 
 func _on_viewport_size_changed() -> void:
 	_fit_main_term()
+	if not _window_save_pending:
+		_window_save_pending = true
+		get_tree().create_timer(1.0).timeout.connect(func():
+			_window_save_pending = false
+			_save_layout_config()
+		)
 
 ## マウスホイールでフォントサイズを拡大縮小する
 func _input(event: InputEvent) -> void:
@@ -281,11 +295,76 @@ func _apply_config_live() -> void:
 ## 設定を保存してパネルを閉じる
 func _on_apply_config() -> void:
 	_apply_config_live()
-	GameState.save_config()
+	_save_layout_config()
 	$ConfigLayer/ConfigPanel.visible = false
 
 func _on_close_config() -> void:
 	$ConfigLayer/ConfigPanel.visible = false
+
+# ---------------------------------------------------------------------------
+# ウィンドウ・レイアウト保存/復元
+# ---------------------------------------------------------------------------
+
+## 現在のウィンドウ位置・サイズとレイアウトを設定に書き込む
+func _save_layout_config() -> void:
+	GameState.window_rect = Rect2i(
+		DisplayServer.window_get_position(),
+		DisplayServer.window_get_size()
+	)
+	var children := $LayoutRoot.get_children()
+	GameState.layout_data = _serialize_layout_node(children[0]) if not children.is_empty() else {}
+	GameState.save_config()
+
+## レイアウトノードをシリアライズして辞書に変換する（再帰）
+func _serialize_layout_node(node: Node) -> Dictionary:
+	if node is SplitContainer:
+		var children_data: Array = []
+		for child in node.get_children():
+			children_data.append(_serialize_layout_node(child))
+		return {
+			"type": "split",
+			"dir": "v" if node is VSplitContainer else "h",
+			"offset": node.split_offset,
+			"children": children_data
+		}
+	return {
+		"type": "pane",
+		"index": node.terminal_index,
+		"font_name": node.pane_font_name,
+		"font_size": node.pane_font_size
+	}
+
+## 辞書からレイアウトノードを再構築する（再帰）
+func _restore_layout_node(data: Dictionary) -> Node:
+	if data.get("type", "") == "split":
+		var split: SplitContainer
+		if data.get("dir", "h") == "v":
+			split = VSplitContainer.new()
+		else:
+			split = HSplitContainer.new()
+		split.size_flags_horizontal = Control.SIZE_FILL | Control.SIZE_EXPAND
+		split.size_flags_vertical = Control.SIZE_FILL | Control.SIZE_EXPAND
+		split.add_theme_constant_override("separation", 8)
+		split.focus_mode = Control.FOCUS_NONE
+		for child_data in data.get("children", []):
+			split.add_child(_restore_layout_node(child_data))
+		var offset: int = data.get("offset", 0)
+		if offset != 0:
+			split.set_deferred("split_offset", offset)
+		return split
+	var idx: int = data.get("index", 0)
+	var pane := _create_terminal_pane(idx)
+	pane.terminal_index = idx
+	pane.pane_font_name = data.get("font_name", "")
+	pane.pane_font_size = data.get("font_size", 0)
+	return pane
+
+## ツリー内の全 TerminalPane に setup() を呼ぶ（add_child 後に実行）
+func _setup_panes_in_subtree(node: Node, game: Node) -> void:
+	if node.has_method("setup"):
+		node.setup(game, node.terminal_index)
+	for child in node.get_children():
+		_setup_panes_in_subtree(child, game)
 
 ## 開いているペインをターミナルインデックス順に返す
 func _get_sorted_panes() -> Array:
@@ -441,6 +520,7 @@ func _do_split(pane: Node, vertical: bool, new_idx: int) -> void:
 	# 両ペインの SubViewport サイズをレイアウト確定後に更新する
 	pane.fit_subviewport.call_deferred()
 	new_pane.fit_subviewport.call_deferred()
+	_save_layout_config.call_deferred()
 
 ## ペインを閉じる（メインペインは閉じない）
 func _on_close_requested(pane: Node) -> void:
@@ -474,3 +554,4 @@ func _on_close_requested(pane: Node) -> void:
 		parent.queue_free()  # parent ごと pane を解放
 	else:
 		pane.queue_free()
+	_save_layout_config.call_deferred()
