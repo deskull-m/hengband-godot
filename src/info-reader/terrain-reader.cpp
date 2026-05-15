@@ -129,6 +129,13 @@ static errr set_terrain_conversion(const nlohmann::json &convert_obj, TerrainTyp
     return terrain.init_conversion_type(it->second, stream_index) ? PARSE_ERROR_NONE : PARSE_ERROR_INVALID_VALUE;
 }
 
+/*!
+ * @brief 地形の用途別強度をJSON定義から設定する
+ * @param power_obj 強度値を表すJSON値
+ * @param power 設定先の強度
+ * @param is_required trueなら未定義時にエラーとする
+ * @return パース結果
+ */
 static errr set_terrain_power(const nlohmann::json &power_obj, uint8_t &power, bool is_required = false)
 {
     return info_set_integer(power_obj, power, is_required, Range(0, 255));
@@ -184,6 +191,12 @@ static errr set_terrain_trap(const nlohmann::json &trap_obj, TerrainType &terrai
     return terrain.init_trap_type(it->second) ? PARSE_ERROR_NONE : PARSE_ERROR_INVALID_VALUE;
 }
 
+/*!
+ * @brief 扉定義を地形情報へ反映する
+ * @param door_obj 扉定義を表すJSONオブジェクト
+ * @param terrain 設定先の地形情報
+ * @return パース結果
+ */
 static errr set_terrain_door(const nlohmann::json &door_obj, TerrainType &terrain)
 {
     if (door_obj.is_null()) {
@@ -197,6 +210,12 @@ static errr set_terrain_door(const nlohmann::json &door_obj, TerrainType &terrai
     return set_terrain_power(door_obj["power"], terrain.door_power, true);
 }
 
+/*!
+ * @brief 掘削定義を地形情報へ反映する
+ * @param tunnel_obj 掘削定義を表すJSONオブジェクト
+ * @param terrain 設定先の地形情報
+ * @return パース結果
+ */
 static errr set_terrain_tunnel(const nlohmann::json &tunnel_obj, TerrainType &terrain)
 {
     if (tunnel_obj.is_null()) {

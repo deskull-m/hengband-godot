@@ -72,9 +72,9 @@ public:
     BuildingType building_type = BuildingType::NONE; /*!< 施設種別 */
     TerrainConversionType conversion_type = TerrainConversionType::NONE; /*!< 変換地形種別 */
     int stream_index = -1; /*!< 川地形種別 */
-    uint8_t door_power{}; /*!< Door strength */
-    uint8_t trap_power{}; /*!< Trap disarm difficulty */
-    uint8_t tunnel_power{}; /*!< Tunneling difficulty */
+    uint8_t door_power{}; /*!< 扉の強度 */
+    uint8_t trap_power{}; /*!< 罠の解除難易度 */
+    uint8_t tunnel_power{}; /*!< トンネル掘削難易度 */
     std::map<int, DisplaySymbol> symbol_definitions; //!< デフォルトの地形シンボル (色/文字).
     std::map<int, DisplaySymbol> symbol_configs; //!< 設定変更後の地形シンボル (色/文字).
 
