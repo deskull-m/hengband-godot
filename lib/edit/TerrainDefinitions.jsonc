@@ -1645,12 +1645,13 @@
       },
       "mimic": "MAGMA_VEIN",
       "map_priority": 2,
-      "flags": ["SECRET", "REMEMBER", "HAS_GOLD", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "flags": ["SECRET", "REMEMBER", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
       "tunnel": {
         "power": 10,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
+        "DROP_GOLD": "1d1",
         "SECRET": "MAGMA_TREASURE",
       },
     },
@@ -1668,12 +1669,13 @@
       },
       "mimic": "QUARTZ_VEIN",
       "map_priority": 2,
-      "flags": ["SECRET", "REMEMBER", "HAS_GOLD", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "flags": ["SECRET", "REMEMBER", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
       "tunnel": {
         "power": 20,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
+        "DROP_GOLD": "1d1",
         "SECRET": "QUARTZ_TREASURE",
       },
     },
@@ -1691,12 +1693,13 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": ["REMEMBER", "HAS_GOLD", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "flags": ["REMEMBER", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
       "tunnel": {
         "power": 20,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
+        "DROP_GOLD": "1d1",
         "ENSECRET": "MAGMA_HIDDEN",
       },
     },
@@ -1714,12 +1717,13 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": ["REMEMBER", "HAS_GOLD", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "flags": ["REMEMBER", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
       "tunnel": {
         "power": 20,
       },
       "interactions": {
         "DESTROYED": "*FLOOR*",
+        "DROP_GOLD": "1d1",
         "ENSECRET": "QUARTZ_HIDDEN",
       },
     },

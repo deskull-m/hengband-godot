@@ -6,6 +6,7 @@
 #include "system/terrain/terrain-definition.h"
 #include "system/terrain/terrain-list.h"
 #include "term/gameterm.h"
+#include "util/dice.h"
 #include "util/string-processor.h"
 #include "view/display-messages.h"
 #include <algorithm>
@@ -382,6 +383,17 @@ static errr set_terrain_interactions(const nlohmann::json &interactions_obj, Ter
         const auto result_tag = value_obj.get<std::string>();
         if (result_tag.empty()) {
             return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+        }
+
+        if (action == "DROP_GOLD") {
+            Dice dice;
+            if (auto err = info_set_dice(value_obj, dice, true)) {
+                return err;
+            }
+            if (dice.is_valid()) {
+                terrain.flags.set(TerrainCharacteristics::HAS_GOLD);
+            }
+            continue;
         }
 
         if (action == "DESTROYED") {
