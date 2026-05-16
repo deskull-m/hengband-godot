@@ -130,6 +130,52 @@ static errr set_terrain_conversion(const nlohmann::json &convert_obj, TerrainTyp
     return terrain.init_conversion_type(it->second, stream_index) ? PARSE_ERROR_NONE : PARSE_ERROR_INVALID_VALUE;
 }
 
+static errr set_terrain_generation(const nlohmann::json &generation_obj, TerrainType &terrain)
+{
+    if (generation_obj.is_null()) {
+        return PARSE_ERROR_NONE;
+    }
+    if (!generation_obj.is_object()) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    }
+
+    const auto &changes_obj = generation_obj["changes"];
+    if (!changes_obj.is_array()) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    }
+
+    auto probability_sum = 0;
+    for (const auto &change_obj : changes_obj) {
+        if (!change_obj.is_object()) {
+            return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+        }
+
+        const auto &terrain_obj = change_obj["terrain"];
+        if (!terrain_obj.is_string()) {
+            return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+        }
+
+        auto change = TerrainGenerationChange{};
+        change.result_tag = terrain_obj.get<std::string>();
+        if (change.result_tag.empty()) {
+            return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+        }
+
+        if (auto err = info_set_integer(change_obj["probability"], change.probability, true, Range(1, 100))) {
+            return err;
+        }
+
+        probability_sum += change.probability;
+        if (probability_sum > 100) {
+            return PARSE_ERROR_INVALID_FLAG;
+        }
+
+        terrain.generation_changes.push_back(change);
+    }
+
+    return PARSE_ERROR_NONE;
+}
+
 /*!
  * @brief 地形の用途別強度をJSON定義から設定する
  * @param power_obj 強度値を表すJSON値
@@ -391,6 +437,7 @@ static errr set_terrain_interactions(const nlohmann::json &interactions_obj, Ter
                 return err;
             }
             if (dice.is_valid()) {
+                terrain.gold_drop = dice;
                 terrain.flags.set(TerrainCharacteristics::HAS_GOLD);
             }
             continue;
@@ -464,6 +511,8 @@ errr parse_terrains_json_info(nlohmann::json &element, angband_header *)
 
     terrain.mimic = s;
     terrain.destroyed = s;
+    terrain.gold_drop = Dice{};
+    terrain.generation_changes.clear();
     for (auto j = 0; j < MAX_FEAT_STATES; j++) {
         terrain.state[j].action = TerrainCharacteristics::MAX;
         terrain.state[j].result_tag.clear();
@@ -530,6 +579,9 @@ errr parse_terrains_json_info(nlohmann::json &element, angband_header *)
         return err;
     }
     if (auto err = set_terrain_conversion(element["convert"], terrain)) {
+        return err;
+    }
+    if (auto err = set_terrain_generation(element["generation"], terrain)) {
         return err;
     }
     if (auto err = set_terrain_interactions(element["interactions"], terrain)) {
