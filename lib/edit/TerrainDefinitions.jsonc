@@ -1599,7 +1599,7 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": ["REMEMBER", "MAY_HAVE_GOLD", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "flags": ["REMEMBER", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
       "tunnel": {
         "power": 10,
       },
@@ -1622,7 +1622,7 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": ["REMEMBER", "MAY_HAVE_GOLD", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "flags": ["REMEMBER", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
       "tunnel": {
         "power": 20,
       },
@@ -4744,7 +4744,7 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": ["REMEMBER", "MAY_HAVE_GOLD", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "flags": ["REMEMBER", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
       "tunnel": {
         "power": 10,
       },
@@ -4767,7 +4767,7 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": ["REMEMBER", "MAY_HAVE_GOLD", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "flags": ["REMEMBER", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
       "tunnel": {
         "power": 20,
       },
@@ -5077,7 +5077,7 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": ["REMEMBER", "MAY_HAVE_GOLD", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "flags": ["REMEMBER", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
       "tunnel": {
         "power": 10,
       },
@@ -5100,7 +5100,7 @@
       },
       "mimic": null,
       "map_priority": 2,
-      "flags": ["REMEMBER", "MAY_HAVE_GOLD", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
+      "flags": ["REMEMBER", "WALL", "STONE", "CAN_PASS", "CAN_DISINTEGRATE"],
       "tunnel": {
         "power": 20,
       },

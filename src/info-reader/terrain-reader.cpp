@@ -358,6 +358,60 @@ static errr set_terrain_building(const nlohmann::json &building_obj, TerrainType
     return terrain.init_building_type(it->second) ? PARSE_ERROR_NONE : PARSE_ERROR_INVALID_VALUE;
 }
 
+/*!
+ * @brief 地形変化定義を地形情報へ反映する
+ * @param interactions_obj 地形変化定義を表すJSONオブジェクト
+ * @param terrain 設定先の地形情報
+ * @return パース結果
+ */
+static errr set_terrain_interactions(const nlohmann::json &interactions_obj, TerrainType &terrain)
+{
+    if (interactions_obj.is_null()) {
+        return PARSE_ERROR_NONE;
+    }
+    if (!interactions_obj.is_object()) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    }
+
+    for (auto it = interactions_obj.begin(); it != interactions_obj.end(); ++it) {
+        const auto action = it.key();
+        const auto &value_obj = it.value();
+        if (!value_obj.is_string()) {
+            return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+        }
+        const auto result_tag = value_obj.get<std::string>();
+        if (result_tag.empty()) {
+            return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+        }
+
+        if (action == "DESTROYED") {
+            terrain.destroyed_tag = result_tag;
+            continue;
+        }
+
+        const auto state_it = std::find_if(std::begin(terrain.state), std::end(terrain.state),
+            [](const auto &s) { return s.action == TerrainCharacteristics::MAX; });
+        if (state_it == std::end(terrain.state)) {
+            return PARSE_ERROR_GENERIC;
+        }
+
+        const auto idx_state = static_cast<int>(std::distance(std::begin(terrain.state), state_it));
+
+        if (auto val = parse_terrain_action(action)) {
+            terrain.state[idx_state].action = *val;
+            if (*val == TerrainCharacteristics::MAY_HAVE_GOLD) {
+                terrain.flags.set(TerrainCharacteristics::MAY_HAVE_GOLD);
+            }
+        } else {
+            msg_format(_("未知の地形アクション '%s'。", "Unknown feature action '%s'."), action.data());
+            return PARSE_ERROR_INVALID_FLAG;
+        }
+        terrain.state[idx_state].result_tag = result_tag;
+    }
+
+    return PARSE_ERROR_NONE;
+}
+
 errr parse_terrains_json_info(nlohmann::json &element, angband_header *)
 {
     if (element.is_null() || !element.is_object()) {
@@ -466,45 +520,8 @@ errr parse_terrains_json_info(nlohmann::json &element, angband_header *)
     if (auto err = set_terrain_conversion(element["convert"], terrain)) {
         return err;
     }
-
-    const auto &inter_obj = element["interactions"];
-    if (!inter_obj.is_null()) {
-        if (!inter_obj.is_object()) {
-            return PARSE_ERROR_TOO_FEW_ARGUMENTS;
-        }
-
-        for (auto it = inter_obj.begin(); it != inter_obj.end(); ++it) {
-            const auto action = it.key();
-            const auto &value_obj = it.value();
-            if (!value_obj.is_string()) {
-                return PARSE_ERROR_TOO_FEW_ARGUMENTS;
-            }
-            const auto result_tag = value_obj.get<std::string>();
-            if (result_tag.empty()) {
-                return PARSE_ERROR_TOO_FEW_ARGUMENTS;
-            }
-
-            if (action == "DESTROYED") {
-                terrain.destroyed_tag = result_tag;
-                continue;
-            }
-
-            const auto state_it = std::find_if(std::begin(terrain.state), std::end(terrain.state),
-                [](const auto &s) { return s.action == TerrainCharacteristics::MAX; });
-            if (state_it == std::end(terrain.state)) {
-                return PARSE_ERROR_GENERIC;
-            }
-
-            const auto idx_state = static_cast<int>(std::distance(std::begin(terrain.state), state_it));
-
-            if (auto val = parse_terrain_action(action)) {
-                terrain.state[idx_state].action = *val;
-            } else {
-                msg_format(_("未知の地形アクション '%s'。", "Unknown feature action '%s'."), action.data());
-                return PARSE_ERROR_INVALID_FLAG;
-            }
-            terrain.state[idx_state].result_tag = result_tag;
-        }
+    if (auto err = set_terrain_interactions(element["interactions"], terrain)) {
+        return err;
     }
 
     return PARSE_ERROR_NONE;
