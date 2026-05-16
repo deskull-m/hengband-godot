@@ -86,7 +86,6 @@
                 "FLOOR",
                 "GLASS",
                 "GLOW",
-                "HAS_GOLD",
                 "HAS_ITEM",
                 "HIT_TRAP",
                 "CAN_DISINTEGRATE",
@@ -94,7 +93,6 @@
                 "LAVA",
                 "UP_STAIRS",
                 "LOS",
-                "MAY_HAVE_GOLD",
                 "MIRROR",
                 "DOWN_STAIRS",
                 "MOUNTAIN",
@@ -135,7 +133,29 @@
             "properties": {
               "type": {
                 "type": "string",
-                "enum": ["TRAPDOOR", "PIT", "SPIKED_PIT", "POISON_PIT", "TY_CURSE", "TELEPORT", "FIRE", "ACID", "SLOW", "LOSE_STR", "LOSE_DEX", "LOSE_CON", "BLIND", "CONFUSE", "POISON", "SLEEP", "TRAPS", "ALARM", "OPEN", "ARMAGEDDON", "PIRANHA"]
+                "enum": [
+                  "TRAPDOOR",
+                  "PIT",
+                  "SPIKED_PIT",
+                  "POISON_PIT",
+                  "TY_CURSE",
+                  "TELEPORT",
+                  "FIRE",
+                  "ACID",
+                  "SLOW",
+                  "LOSE_STR",
+                  "LOSE_DEX",
+                  "LOSE_CON",
+                  "BLIND",
+                  "CONFUSE",
+                  "POISON",
+                  "SLEEP",
+                  "TRAPS",
+                  "ALARM",
+                  "OPEN",
+                  "ARMAGEDDON",
+                  "PIRANHA"
+                ]
               },
               "power": {
                 "type": "integer",
@@ -175,7 +195,17 @@
             "properties": {
               "type": {
                 "type": "string",
-                "enum": ["START", "TILE_1", "TILE_2", "TILE_3", "TILE_4", "END", "OLD", "TELEPORT", "WRECKED"]
+                "enum": [
+                  "START",
+                  "TILE_1",
+                  "TILE_2",
+                  "TILE_3",
+                  "TILE_4",
+                  "END",
+                  "OLD",
+                  "TELEPORT",
+                  "WRECKED"
+                ]
               }
             },
             "additionalProperties": false
@@ -186,7 +216,18 @@
             "properties": {
               "type": {
                 "type": "string",
-                "enum": ["GENERAL", "ARMOURY", "WEAPON", "TEMPLE", "ALCHEMIST", "MAGIC", "BLACK", "HOME", "BOOK", "MUSEUM"]
+                "enum": [
+                  "GENERAL",
+                  "ARMOURY",
+                  "WEAPON",
+                  "TEMPLE",
+                  "ALCHEMIST",
+                  "MAGIC",
+                  "BLACK",
+                  "HOME",
+                  "BOOK",
+                  "MUSEUM"
+                ]
               }
             },
             "additionalProperties": false
@@ -197,7 +238,40 @@
             "properties": {
               "type": {
                 "type": "string",
-                "enum": ["BUILDING_00", "BUILDING_01", "BUILDING_02", "BUILDING_03", "BUILDING_04", "BUILDING_05", "BUILDING_06", "BUILDING_07", "BUILDING_08", "BUILDING_09", "BUILDING_10", "BUILDING_11", "BUILDING_12", "BUILDING_13", "BUILDING_14", "BUILDING_15", "BUILDING_16", "BUILDING_17", "BUILDING_18", "BUILDING_19", "BUILDING_20", "BUILDING_21", "BUILDING_22", "BUILDING_23", "BUILDING_24", "BUILDING_25", "BUILDING_26", "BUILDING_27", "BUILDING_28", "BUILDING_29", "BUILDING_30", "BUILDING_31"]
+                "enum": [
+                  "BUILDING_00",
+                  "BUILDING_01",
+                  "BUILDING_02",
+                  "BUILDING_03",
+                  "BUILDING_04",
+                  "BUILDING_05",
+                  "BUILDING_06",
+                  "BUILDING_07",
+                  "BUILDING_08",
+                  "BUILDING_09",
+                  "BUILDING_10",
+                  "BUILDING_11",
+                  "BUILDING_12",
+                  "BUILDING_13",
+                  "BUILDING_14",
+                  "BUILDING_15",
+                  "BUILDING_16",
+                  "BUILDING_17",
+                  "BUILDING_18",
+                  "BUILDING_19",
+                  "BUILDING_20",
+                  "BUILDING_21",
+                  "BUILDING_22",
+                  "BUILDING_23",
+                  "BUILDING_24",
+                  "BUILDING_25",
+                  "BUILDING_26",
+                  "BUILDING_27",
+                  "BUILDING_28",
+                  "BUILDING_29",
+                  "BUILDING_30",
+                  "BUILDING_31"
+                ]
               }
             },
             "additionalProperties": false
@@ -220,9 +294,49 @@
           "interactions": {
             "type": "object",
             "description": "特定行動後の地形変化定義",
-            "additionalProperties": {
-              "type": "string"
-            }
+            "properties": {
+              "BASH": {
+                "type": "string"
+              },
+              "CLOSE": {
+                "type": "string"
+              },
+              "DESTROYED": {
+                "type": "string"
+              },
+              "DISARM": {
+                "type": "string"
+              },
+              "DROP_GOLD": {
+                "type": "string",
+                "pattern": "^1d1$"
+              },
+              "ENSECRET": {
+                "type": "string"
+              },
+              "HIT_TRAP": {
+                "type": "string"
+              },
+              "MAY_HAVE_GOLD": {
+                "type": "string"
+              },
+              "OPEN": {
+                "type": "string"
+              },
+              "SECRET": {
+                "type": "string"
+              },
+              "SHAFT": {
+                "type": "string"
+              },
+              "SPIKE": {
+                "type": "string"
+              },
+              "UNPERM": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
           }
         },
         "additionalProperties": false
