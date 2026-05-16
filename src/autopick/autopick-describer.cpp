@@ -11,150 +11,146 @@
 #include "autopick/autopick-util.h"
 #include "system/angband.h"
 #include "util/string-processor.h"
+#include <string>
+#include <vector>
 
 struct autopick_describer {
     concptr str;
     EnumClassFlagGroup<AutopickMethod> act;
     concptr insc;
     bool top;
-    int before_n;
     concptr body_str;
 };
 
 #if JP
 static void describe_autpick_jp(char *buff, const autopick_type &entry, autopick_describer *describer)
 {
-    concptr before_str[100]{};
+    std::vector<std::string> before_strings;
+    before_strings.reserve(100);
     if (entry.has(FLG_COLLECTING)) {
-        before_str[describer->before_n++] = "収集中で既に持っているスロットにまとめられる";
+        before_strings.emplace_back("収集中で既に持っているスロットにまとめられる");
     }
 
     if (entry.has(FLG_UNAWARE)) {
-        before_str[describer->before_n++] = "未鑑定でその効果も判明していない";
+        before_strings.emplace_back("未鑑定でその効果も判明していない");
     }
 
     if (entry.has(FLG_UNIDENTIFIED)) {
-        before_str[describer->before_n++] = "未鑑定の";
+        before_strings.emplace_back("未鑑定の");
     }
 
     if (entry.has(FLG_IDENTIFIED)) {
-        before_str[describer->before_n++] = "鑑定済みの";
+        before_strings.emplace_back("鑑定済みの");
     }
 
     if (entry.has(FLG_STAR_IDENTIFIED)) {
-        before_str[describer->before_n++] = "完全に鑑定済みの";
+        before_strings.emplace_back("完全に鑑定済みの");
     }
 
     if (entry.has(FLG_BOOSTED)) {
-        before_str[describer->before_n++] = "ダメージダイスが通常より大きい";
+        before_strings.emplace_back("ダメージダイスが通常より大きい");
         describer->body_str = "武器";
     }
 
     if (entry.has(FLG_MORE_DICE)) {
-        static char more_than_desc_str[] = "___";
-        before_str[describer->before_n++] = "ダメージダイスの最大値が";
         describer->body_str = "武器";
-
-        snprintf(more_than_desc_str, sizeof(more_than_desc_str), "%d", entry.dice);
-        before_str[describer->before_n++] = more_than_desc_str;
-        before_str[describer->before_n++] = "以上の";
+        before_strings.emplace_back("ダメージダイスの最大値が");
+        before_strings.emplace_back(std::to_string(entry.dice));
+        before_strings.emplace_back("以上の");
     }
 
     if (entry.has(FLG_MORE_BONUS)) {
-        static char more_bonus_desc_str[] = "___";
-        before_str[describer->before_n++] = "修正値が(+";
-
-        snprintf(more_bonus_desc_str, sizeof(more_bonus_desc_str), "%d", entry.bonus);
-        before_str[describer->before_n++] = more_bonus_desc_str;
-        before_str[describer->before_n++] = ")以上の";
+        before_strings.emplace_back("修正値が(+");
+        before_strings.emplace_back(std::to_string(entry.bonus));
+        before_strings.emplace_back(")以上の");
     }
 
     if (entry.has(FLG_WORTHLESS)) {
-        before_str[describer->before_n++] = "店で無価値と判定される";
+        before_strings.emplace_back("店で無価値と判定される");
     }
 
     if (entry.has(FLG_ARTIFACT)) {
-        before_str[describer->before_n++] = "アーティファクトの";
+        before_strings.emplace_back("アーティファクトの");
         describer->body_str = "装備";
     }
 
     if (entry.has(FLG_EGO)) {
-        before_str[describer->before_n++] = "エゴアイテムの";
+        before_strings.emplace_back("エゴアイテムの");
         describer->body_str = "装備";
     }
 
     if (entry.has(FLG_GOOD)) {
-        before_str[describer->before_n++] = "上質の";
+        before_strings.emplace_back("上質の");
         describer->body_str = "装備";
     }
 
     if (entry.has(FLG_NAMELESS)) {
-        before_str[describer->before_n++] = "エゴでもアーティファクトでもない";
+        before_strings.emplace_back("エゴでもアーティファクトでもない");
         describer->body_str = "装備";
     }
 
     if (entry.has(FLG_AVERAGE)) {
-        before_str[describer->before_n++] = "並の";
+        before_strings.emplace_back("並の");
         describer->body_str = "装備";
     }
 
     if (entry.has(FLG_RARE)) {
-        before_str[describer->before_n++] = "ドラゴン装備やカオス・ブレード等を含む珍しい";
+        before_strings.emplace_back("ドラゴン装備やカオス・ブレード等を含む珍しい");
         describer->body_str = "装備";
     }
 
     if (entry.has(FLG_COMMON)) {
-        before_str[describer->before_n++] = "ありふれた(ドラゴン装備やカオス・ブレード等の珍しい物ではない)";
+        before_strings.emplace_back("ありふれた(ドラゴン装備やカオス・ブレード等の珍しい物ではない)");
         describer->body_str = "装備";
     }
 
     if (entry.has(FLG_WANTED)) {
-        before_str[describer->before_n++] = "ハンター事務所で賞金首とされている";
+        before_strings.emplace_back("ハンター事務所で賞金首とされている");
         describer->body_str = "死体や骨";
     }
 
     if (entry.has(FLG_HUMAN)) {
-        before_str[describer->before_n++] = "悪魔魔法で使うための人間やヒューマノイドの";
+        before_strings.emplace_back("悪魔魔法で使うための人間やヒューマノイドの");
         describer->body_str = "死体や骨";
     }
 
     if (entry.has(FLG_UNIQUE)) {
-        before_str[describer->before_n++] = "ユニークモンスターの";
+        before_strings.emplace_back("ユニークモンスターの");
         describer->body_str = "死体や骨";
     }
 
     if (entry.has(FLG_UNREADABLE)) {
-        before_str[describer->before_n++] = "あなたが読めない領域の";
+        before_strings.emplace_back("あなたが読めない領域の");
         describer->body_str = "魔法書";
     }
 
     if (entry.has(FLG_REALM1)) {
-        before_str[describer->before_n++] = "第一領域の";
+        before_strings.emplace_back("第一領域の");
         describer->body_str = "魔法書";
     }
 
     if (entry.has(FLG_REALM2)) {
-        before_str[describer->before_n++] = "第二領域の";
+        before_strings.emplace_back("第二領域の");
         describer->body_str = "魔法書";
     }
 
     if (entry.has(FLG_FIRST)) {
-        before_str[describer->before_n++] = "全4冊の内の1冊目の";
+        before_strings.emplace_back("全4冊の内の1冊目の");
         describer->body_str = "魔法書";
     }
 
     if (entry.has(FLG_SECOND)) {
-        before_str[describer->before_n++] = "全4冊の内の2冊目の";
+        before_strings.emplace_back("全4冊の内の2冊目の");
         describer->body_str = "魔法書";
     }
 
     if (entry.has(FLG_THIRD)) {
-        before_str[describer->before_n++] = "全4冊の内の3冊目の";
+        before_strings.emplace_back("全4冊の内の3冊目の");
         describer->body_str = "魔法書";
     }
 
     if (entry.has(FLG_FOURTH)) {
-        before_str[describer->before_n++] = "全4冊の内の4冊目の";
+        before_strings.emplace_back("全4冊の内の4冊目の");
         describer->body_str = "魔法書";
     }
 
@@ -202,11 +198,11 @@ static void describe_autpick_jp(char *buff, const autopick_type &entry, autopick
     }
 
     *buff = '\0';
-    if (!describer->before_n) {
+    if (before_strings.empty()) {
         strcat(buff, "全ての");
     } else {
-        for (int i = 0; i < describer->before_n && before_str[i]; i++) {
-            strcat(buff, before_str[i]);
+        for (const auto &before_string : before_strings) {
+            strcat(buff, before_string.data());
         }
     }
 
@@ -273,7 +269,8 @@ static void describe_autpick_jp(char *buff, const autopick_type &entry, autopick
 
 void describe_autopick_en(char *buff, const autopick_type &entry, autopick_describer *describer)
 {
-    concptr before_str[20]{};
+    std::vector<std::string_view> before_strings;
+    before_strings.reserve(20);
     concptr after_str[20]{};
     concptr which_str[20]{};
     concptr whose_str[20]{};
@@ -285,45 +282,45 @@ void describe_autopick_en(char *buff, const autopick_type &entry, autopick_descr
     }
 
     if (entry.has(FLG_UNAWARE)) {
-        before_str[describer->before_n++] = "unidentified";
+        before_strings.emplace_back("unidentified");
         whose_str[whose_n] = "basic abilities are not known";
         whose_arg_str[whose_n] = "";
         ++whose_n;
     }
 
     if (entry.has(FLG_UNIDENTIFIED)) {
-        before_str[describer->before_n++] = "unidentified";
+        before_strings.emplace_back("unidentified");
     }
 
     if (entry.has(FLG_IDENTIFIED)) {
-        before_str[describer->before_n++] = "identified";
+        before_strings.emplace_back("identified");
     }
 
     if (entry.has(FLG_STAR_IDENTIFIED)) {
-        before_str[describer->before_n++] = "fully identified";
+        before_strings.emplace_back("fully identified");
     }
 
     if (entry.has(FLG_RARE)) {
-        before_str[describer->before_n++] = "very rare";
+        before_strings.emplace_back("very rare");
         after_str[after_n++] = "such as Dragon armor, Blades of Chaos, etc.";
     }
 
     if (entry.has(FLG_COMMON)) {
-        before_str[describer->before_n++] = "relatively common";
+        before_strings.emplace_back("relatively common");
         after_str[after_n++] = "compared to very rare Dragon armor, Blades of Chaos, etc.";
     }
 
     if (entry.has(FLG_WORTHLESS)) {
-        before_str[describer->before_n++] = "worthless";
+        before_strings.emplace_back("worthless");
         which_str[which_n++] = "can not be sold at stores";
     }
 
     if (entry.has(FLG_ARTIFACT)) {
-        before_str[describer->before_n++] = "artifact";
+        before_strings.emplace_back("artifact");
     }
 
     if (entry.has(FLG_EGO)) {
-        before_str[describer->before_n++] = "ego";
+        before_strings.emplace_back("ego");
     }
 
     if (entry.has(FLG_GOOD)) {
@@ -376,13 +373,13 @@ void describe_autopick_en(char *buff, const autopick_type &entry, autopick_descr
     }
 
     if (entry.has(FLG_HUMAN)) {
-        before_str[describer->before_n++] = "humanoid";
+        before_strings.emplace_back("humanoid");
         describer->body_str = "corpses or skeletons";
         which_str[which_n++] = "can be used for Daemon magic";
     }
 
     if (entry.has(FLG_UNIQUE)) {
-        before_str[describer->before_n++] = "unique monsters'";
+        before_strings.emplace_back("unique monsters'");
         describer->body_str = "corpses or skeletons";
     }
 
@@ -402,22 +399,22 @@ void describe_autopick_en(char *buff, const autopick_type &entry, autopick_descr
     }
 
     if (entry.has(FLG_FIRST)) {
-        before_str[describer->before_n++] = "first one of four";
+        before_strings.emplace_back("first one of four");
         describer->body_str = "spellbooks";
     }
 
     if (entry.has(FLG_SECOND)) {
-        before_str[describer->before_n++] = "second one of four";
+        before_strings.emplace_back("second one of four");
         describer->body_str = "spellbooks";
     }
 
     if (entry.has(FLG_THIRD)) {
-        before_str[describer->before_n++] = "third one of four";
+        before_strings.emplace_back("third one of four");
         describer->body_str = "spellbooks";
     }
 
     if (entry.has(FLG_FOURTH)) {
-        before_str[describer->before_n++] = "fourth one of four";
+        before_strings.emplace_back("fourth one of four");
         describer->body_str = "spellbooks";
     }
 
@@ -498,11 +495,11 @@ void describe_autopick_en(char *buff, const autopick_type &entry, autopick_descr
         strcat(buff, " on ");
     }
 
-    if (!describer->before_n) {
+    if (before_strings.empty()) {
         strcat(buff, "all ");
     } else {
-        for (int i = 0; i < describer->before_n && before_str[i]; i++) {
-            strcat(buff, before_str[i]);
+        for (const auto &before_string : before_strings) {
+            strcat(buff, before_string.data());
             strcat(buff, " ");
         }
     }
@@ -575,7 +572,6 @@ void describe_autopick(char *buff, const autopick_type &entry)
     describer.act = entry.action;
     describer.insc = entry.insc.empty() ? nullptr : entry.insc.data();
     describer.top = false;
-    describer.before_n = 0;
     describer.body_str = _("アイテム", "items");
 #ifdef JP
     describe_autpick_jp(buff, entry, &describer);
