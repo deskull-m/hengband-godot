@@ -80,7 +80,6 @@
                 "COLD_PUDDLE",
                 "DEEP",
                 "DISARM",
-                "DOOR",
                 "DROP",
                 "ELEC_PUDDLE",
                 "ENTRANCE",
@@ -107,18 +106,6 @@
                 "PLACE",
                 "PLANT",
                 "POISON_PUDDLE",
-                "POWER_0",
-                "POWER_1",
-                "POWER_10",
-                "POWER_100",
-                "POWER_2",
-                "POWER_20",
-                "POWER_3",
-                "POWER_4",
-                "POWER_40",
-                "POWER_5",
-                "POWER_6",
-                "POWER_7",
                 "PROJECTION",
                 "QUEST",
                 "QUEST_ENTER",
@@ -137,7 +124,6 @@
                 "TOWN",
                 "TRAP",
                 "TREE",
-                "TUNNEL",
                 "WALL",
                 "WATER"
               ]
@@ -145,11 +131,40 @@
           },
           "trap": {
             "type": ["object", "null"],
-            "required": ["type"],
+            "required": ["type", "power"],
             "properties": {
               "type": {
                 "type": "string",
                 "enum": ["TRAPDOOR", "PIT", "SPIKED_PIT", "POISON_PIT", "TY_CURSE", "TELEPORT", "FIRE", "ACID", "SLOW", "LOSE_STR", "LOSE_DEX", "LOSE_CON", "BLIND", "CONFUSE", "POISON", "SLEEP", "TRAPS", "ALARM", "OPEN", "ARMAGEDDON", "PIRANHA"]
+              },
+              "power": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              }
+            },
+            "additionalProperties": false
+          },
+          "door": {
+            "type": ["object", "null"],
+            "required": ["power"],
+            "properties": {
+              "power": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              }
+            },
+            "additionalProperties": false
+          },
+          "tunnel": {
+            "type": ["object", "null"],
+            "required": ["power"],
+            "properties": {
+              "power": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
               }
             },
             "additionalProperties": false

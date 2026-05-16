@@ -9,6 +9,7 @@
 #include "util/string-processor.h"
 #include "view/display-messages.h"
 #include <algorithm>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -128,6 +129,18 @@ static errr set_terrain_conversion(const nlohmann::json &convert_obj, TerrainTyp
     return terrain.init_conversion_type(it->second, stream_index) ? PARSE_ERROR_NONE : PARSE_ERROR_INVALID_VALUE;
 }
 
+/*!
+ * @brief 地形の用途別強度をJSON定義から設定する
+ * @param power_obj 強度値を表すJSON値
+ * @param power 設定先の強度
+ * @param is_required trueなら未定義時にエラーとする
+ * @return パース結果
+ */
+static errr set_terrain_power(const nlohmann::json &power_obj, uint8_t &power, bool is_required = false)
+{
+    return info_set_integer(power_obj, power, is_required, Range(0, 255));
+}
+
 static errr set_terrain_trap(const nlohmann::json &trap_obj, TerrainType &terrain)
 {
     if (trap_obj.is_null()) {
@@ -140,6 +153,9 @@ static errr set_terrain_trap(const nlohmann::json &trap_obj, TerrainType &terrai
     const auto &type_obj = trap_obj["type"];
     if (!type_obj.is_string()) {
         return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    }
+    if (auto err = set_terrain_power(trap_obj["power"], terrain.trap_power, true)) {
+        return err;
     }
 
     static const std::unordered_map<std::string_view, TrapType> trap_types = {
@@ -173,6 +189,44 @@ static errr set_terrain_trap(const nlohmann::json &trap_obj, TerrainType &terrai
 
     terrain.flags.set(TerrainCharacteristics::TRAP);
     return terrain.init_trap_type(it->second) ? PARSE_ERROR_NONE : PARSE_ERROR_INVALID_VALUE;
+}
+
+/*!
+ * @brief 扉定義を地形情報へ反映する
+ * @param door_obj 扉定義を表すJSONオブジェクト
+ * @param terrain 設定先の地形情報
+ * @return パース結果
+ */
+static errr set_terrain_door(const nlohmann::json &door_obj, TerrainType &terrain)
+{
+    if (door_obj.is_null()) {
+        return PARSE_ERROR_NONE;
+    }
+    if (!door_obj.is_object()) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    }
+
+    terrain.flags.set(TerrainCharacteristics::DOOR);
+    return set_terrain_power(door_obj["power"], terrain.door_power, true);
+}
+
+/*!
+ * @brief 掘削定義を地形情報へ反映する
+ * @param tunnel_obj 掘削定義を表すJSONオブジェクト
+ * @param terrain 設定先の地形情報
+ * @return パース結果
+ */
+static errr set_terrain_tunnel(const nlohmann::json &tunnel_obj, TerrainType &terrain)
+{
+    if (tunnel_obj.is_null()) {
+        return PARSE_ERROR_NONE;
+    }
+    if (!tunnel_obj.is_object()) {
+        return PARSE_ERROR_TOO_FEW_ARGUMENTS;
+    }
+
+    terrain.flags.set(TerrainCharacteristics::TUNNEL);
+    return set_terrain_power(tunnel_obj["power"], terrain.tunnel_power, true);
 }
 
 static errr set_terrain_pattern(const nlohmann::json &pattern_obj, TerrainType &terrain)
@@ -387,14 +441,15 @@ errr parse_terrains_json_info(nlohmann::json &element, angband_header *)
             continue;
         }
 
-        if (f.starts_with("POWER_")) {
-            info_set_value(terrain.power, f.substr(sizeof("POWER_") - 1));
-            continue;
-        }
-
         if (!grab_one_feat_flag(terrain, f)) {
             return PARSE_ERROR_INVALID_FLAG;
         }
+    }
+    if (auto err = set_terrain_door(element["door"], terrain)) {
+        return err;
+    }
+    if (auto err = set_terrain_tunnel(element["tunnel"], terrain)) {
+        return err;
     }
     if (auto err = set_terrain_trap(element["trap"], terrain)) {
         return err;
