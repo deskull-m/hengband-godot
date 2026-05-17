@@ -22,9 +22,9 @@
  * @param start
  * @param linestr
  * @param menu_key 自動拾いエディタのメニューで入力したキー
- * @param max_len
+ * @param max_length メニューボックスの横幅 (メニューの最大文字列長に合わせる)
  */
-static uint8_t redraw_edit_command_menu(bool redraw, int menu_depth, int start, std::string_view line, uint8_t initial_menu_key, int max_len)
+static uint8_t redraw_edit_command_menu(bool redraw, size_t menu_depth, size_t start, std::string_view line, uint8_t initial_menu_key, int max_length)
 {
     if (!redraw) {
         return initial_menu_key;
@@ -54,7 +54,7 @@ static uint8_t redraw_edit_command_menu(bool redraw, int menu_depth, int start, 
             com_key << '^' << static_cast<char>(menu_datum.key + '@');
         }
 
-        const auto str = format("| %c) %-*s %2s | ", menu_key + 'a', max_len, menu_datum.name.data(), com_key.str().data());
+        const auto str = format("| %c) %-*s %2s | ", menu_key + 'a', max_length, menu_datum.name.data(), com_key.str().data());
         term_putstr(col0, row1++, -1, TERM_WHITE, str);
         menu_key++;
     }
@@ -67,7 +67,7 @@ static uint8_t redraw_edit_command_menu(bool redraw, int menu_depth, int start, 
  * @brief Display the menu, and get a command
  * @param menu_depth エディタのメニュー階層
  */
-int do_command_menu(int menu_depth, int start)
+int do_command_menu(size_t menu_depth, size_t start)
 {
     /* Ignore lower level sub menus */
     const auto &menu_data = CommandMenuData::get_instance();

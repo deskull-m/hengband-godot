@@ -1,3 +1,5 @@
 #pragma once
 
-int do_command_menu(int menu_depth, int start);
+#include <cstddef>
+
+int do_command_menu(size_t menu_depth, size_t start);

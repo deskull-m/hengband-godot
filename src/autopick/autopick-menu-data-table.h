@@ -6,7 +6,7 @@
 
 struct CommandMenuDatum {
 public:
-    CommandMenuDatum(std::string_view name, int level, int key, int com_id)
+    CommandMenuDatum(std::string_view name, size_t level, char key, int com_id)
         : name(name)
         , depth(level)
         , key(key)
@@ -15,8 +15,8 @@ public:
     }
 
     std::string_view name = "";
-    int depth = 0; //!< メニュー階層.
-    int key = 0;
+    size_t depth = 0; //!< メニュー階層.
+    char key = 0;
     int com_id = 0;
 };
 
@@ -30,7 +30,7 @@ public:
     static CommandMenuData &get_instance();
 
     void initialize();
-    const CommandMenuDatum &get_datum(int num) const;
+    const CommandMenuDatum &get_datum(size_t num) const;
     int get_com_id(char key) const;
 
 private:
