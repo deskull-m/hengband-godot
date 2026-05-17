@@ -8,14 +8,14 @@ struct CommandMenuDatum {
 public:
     CommandMenuDatum(std::string_view name, int level, int key, int com_id)
         : name(name)
-        , level(level)
+        , depth(level)
         , key(key)
         , com_id(com_id)
     {
     }
 
     std::string_view name = "";
-    int level = 0;
+    int depth = 0; //!< メニュー階層.
     int key = 0;
     int com_id = 0;
 };
