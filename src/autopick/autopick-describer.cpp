@@ -269,23 +269,24 @@ static void describe_autpick_jp(char *buff, const autopick_type &entry, autopick
 
 void describe_autopick_en(char *buff, const autopick_type &entry, autopick_describer *describer)
 {
-    std::vector<std::string_view> before_strings;
+    std::vector<std::string> before_strings;
     before_strings.reserve(20);
-    concptr after_str[20]{};
-    concptr which_str[20]{};
-    concptr whose_str[20]{};
-    concptr whose_arg_str[20]{};
-    char arg_str[2][24]{};
-    int after_n = 0, which_n = 0, whose_n = 0, arg_n = 0;
+    std::vector<std::string> after_strings;
+    after_strings.reserve(20);
+    std::vector<std::string> which_strings;
+    which_strings.reserve(20);
+    std::vector<std::string> whose_strings;
+    whose_strings.reserve(20);
+    std::vector<std::string> whose_arg_strings;
+    whose_arg_strings.reserve(20);
     if (entry.has(FLG_COLLECTING)) {
-        which_str[which_n++] = "can be absorbed into an existing inventory list slot";
+        which_strings.emplace_back("can be absorbed into an existing inventory list slot");
     }
 
     if (entry.has(FLG_UNAWARE)) {
         before_strings.emplace_back("unidentified");
-        whose_str[whose_n] = "basic abilities are not known";
-        whose_arg_str[whose_n] = "";
-        ++whose_n;
+        whose_strings.emplace_back("basic abilities are not known");
+        whose_arg_strings.emplace_back("");
     }
 
     if (entry.has(FLG_UNIDENTIFIED)) {
@@ -302,17 +303,17 @@ void describe_autopick_en(char *buff, const autopick_type &entry, autopick_descr
 
     if (entry.has(FLG_RARE)) {
         before_strings.emplace_back("very rare");
-        after_str[after_n++] = "such as Dragon armor, Blades of Chaos, etc.";
+        after_strings.emplace_back("such as Dragon armor, Blades of Chaos, etc.");
     }
 
     if (entry.has(FLG_COMMON)) {
         before_strings.emplace_back("relatively common");
-        after_str[after_n++] = "compared to very rare Dragon armor, Blades of Chaos, etc.";
+        after_strings.emplace_back("compared to very rare Dragon armor, Blades of Chaos, etc.");
     }
 
     if (entry.has(FLG_WORTHLESS)) {
         before_strings.emplace_back("worthless");
-        which_str[which_n++] = "can not be sold at stores";
+        which_strings.emplace_back("can not be sold at stores");
     }
 
     if (entry.has(FLG_ARTIFACT)) {
@@ -324,58 +325,43 @@ void describe_autopick_en(char *buff, const autopick_type &entry, autopick_descr
     }
 
     if (entry.has(FLG_GOOD)) {
-        which_str[which_n++] = "are of good quality";
+        which_strings.emplace_back("are of good quality");
     }
 
     if (entry.has(FLG_NAMELESS)) {
-        which_str[which_n++] = "are neither ego items nor artifacts";
+        which_strings.emplace_back("are neither ego items nor artifacts");
     }
 
     if (entry.has(FLG_AVERAGE)) {
-        which_str[which_n++] = "are of average quality";
+        which_strings.emplace_back("are of average quality");
     }
 
     if (entry.has(FLG_BOOSTED)) {
         describer->body_str = "weapons";
-        whose_str[whose_n] = "damage dice is bigger than normal";
-        whose_arg_str[whose_n] = "";
-        ++whose_n;
+        whose_strings.emplace_back("damage dice is bigger than normal");
+        whose_arg_strings.emplace_back("");
     }
 
     if (entry.has(FLG_MORE_DICE)) {
         describer->body_str = "weapons";
-        whose_str[whose_n] = "maximum damage from dice is bigger than ";
-        if (arg_n < (int)(sizeof(arg_str) / sizeof(arg_str[0]))) {
-            snprintf(arg_str[arg_n], sizeof(arg_str[arg_n]), "%d", entry.dice);
-            whose_arg_str[whose_n] = arg_str[arg_n];
-            ++arg_n;
-        } else {
-            whose_arg_str[whose_n] = "garbled";
-        }
-        ++whose_n;
+        whose_strings.emplace_back("maximum damage from dice is bigger than ");
+        whose_arg_strings.emplace_back(std::to_string(entry.dice));
     }
 
     if (entry.has(FLG_MORE_BONUS)) {
-        whose_str[whose_n] = "magical bonuses are bigger than (+";
-        if (arg_n < (int)(sizeof(arg_str) / sizeof(arg_str[0]))) {
-            snprintf(arg_str[arg_n], sizeof(arg_str[arg_n]), "%d)", entry.bonus);
-            whose_arg_str[whose_n] = arg_str[arg_n];
-            ++arg_n;
-        } else {
-            whose_arg_str[whose_n] = "garbled)";
-        }
-        ++whose_n;
+        whose_strings.emplace_back("magical bonuses are bigger than (+");
+        whose_arg_strings.emplace_back(std::to_string(entry.bonus) + ")");
     }
 
     if (entry.has(FLG_WANTED)) {
         describer->body_str = "corpses or skeletons";
-        which_str[which_n++] = "are wanted at the Hunter's Office";
+        which_strings.emplace_back("are wanted at the Hunter's Office");
     }
 
     if (entry.has(FLG_HUMAN)) {
         before_strings.emplace_back("humanoid");
         describer->body_str = "corpses or skeletons";
-        which_str[which_n++] = "can be used for Daemon magic";
+        which_strings.emplace_back("can be used for Daemon magic");
     }
 
     if (entry.has(FLG_UNIQUE)) {
@@ -385,17 +371,17 @@ void describe_autopick_en(char *buff, const autopick_type &entry, autopick_descr
 
     if (entry.has(FLG_UNREADABLE)) {
         describer->body_str = "spellbooks";
-        after_str[after_n++] = "of different realms from yours";
+        after_strings.emplace_back("of different realms from yours");
     }
 
     if (entry.has(FLG_REALM1)) {
         describer->body_str = "spellbooks";
-        after_str[after_n++] = "of your first realm";
+        after_strings.emplace_back("of your first realm");
     }
 
     if (entry.has(FLG_REALM2)) {
         describer->body_str = "spellbooks";
-        after_str[after_n++] = "of your second realm";
+        after_strings.emplace_back("of your second realm");
     }
 
     if (entry.has(FLG_FIRST)) {
@@ -465,11 +451,10 @@ void describe_autopick_en(char *buff, const autopick_type &entry, autopick_descr
         if (*describer->str == '^') {
             describer->str++;
             describer->top = true;
-            whose_str[whose_n] = "names begin with \"";
-            whose_arg_str[whose_n] = "";
-            ++whose_n;
+            whose_strings.emplace_back("names begin with \"");
+            whose_arg_strings.emplace_back("");
         } else {
-            which_str[which_n++] = "have \"";
+            which_strings.emplace_back("have \"");
         }
     }
 
@@ -505,20 +490,20 @@ void describe_autopick_en(char *buff, const autopick_type &entry, autopick_descr
     }
 
     strcat(buff, describer->body_str);
-    for (int i = 0; i < after_n && after_str[i]; i++) {
+    for (const auto &after_string : after_strings) {
         strcat(buff, " ");
-        strcat(buff, after_str[i]);
+        strcat(buff, after_string.data());
     }
 
-    for (int i = 0; i < whose_n && whose_str[i]; i++) {
+    for (size_t i = 0; i < whose_strings.size(); i++) {
         if (i == 0) {
             strcat(buff, " whose ");
         } else {
             strcat(buff, ", and ");
         }
 
-        strcat(buff, whose_str[i]);
-        strcat(buff, whose_arg_str[i]);
+        strcat(buff, whose_strings[i].data());
+        strcat(buff, whose_arg_strings[i].data());
     }
 
     if (*describer->str && describer->top) {
@@ -526,18 +511,18 @@ void describe_autopick_en(char *buff, const autopick_type &entry, autopick_descr
         strcat(buff, "\"");
     }
 
-    if (whose_n && which_n) {
+    if (!whose_strings.empty() && !which_strings.empty()) {
         strcat(buff, ", and ");
     }
 
-    for (int i = 0; i < which_n && which_str[i]; i++) {
+    for (size_t i = 0; i < which_strings.size(); i++) {
         if (i == 0) {
             strcat(buff, " which ");
         } else {
             strcat(buff, ", and ");
         }
 
-        strcat(buff, which_str[i]);
+        strcat(buff, which_strings[i].data());
     }
 
     if (*describer->str && !describer->top) {
