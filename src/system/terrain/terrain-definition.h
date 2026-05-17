@@ -7,10 +7,13 @@
 #include "system/enums/terrain/terrain-characteristics.h"
 #include "system/enums/terrain/terrain-conversion-type.h"
 #include "system/enums/terrain/trap.h"
+#include "util/dice.h"
 #include "util/flag-group.h"
 #include "view/display-symbol.h"
 #include <cstdint>
 #include <map>
+#include <string>
+#include <vector>
 
 /* Number of feats we change to (Excluding default). Used in TerrainDefinitions.jsonc. */
 constexpr auto MAX_FEAT_STATES = 8;
@@ -29,6 +32,14 @@ enum class TerrainAction {
     NO_DROP = 2,
     CRASH_GLASS = 3,
     MAX,
+};
+
+class TerrainGenerationChange {
+public:
+    TerrainGenerationChange() = default;
+    std::string result_tag{}; /*!< 生成時の変化先地形タグ */
+    FEAT_IDX result{}; /*!< 生成時の変化先地形ID */
+    int probability{}; /*!< 変化確率(%) */
 };
 
 /*!
@@ -75,6 +86,8 @@ public:
     uint8_t door_power{}; /*!< 扉の強度 */
     uint8_t trap_power{}; /*!< 罠の解除難易度 */
     uint8_t tunnel_power{}; /*!< トンネル掘削難易度 */
+    Dice gold_drop{}; /*!< 財宝地形から生成する財宝数 */
+    std::vector<TerrainGenerationChange> generation_changes; /*!< 生成時の変化候補 */
     std::map<int, DisplaySymbol> symbol_definitions; //!< デフォルトの地形シンボル (色/文字).
     std::map<int, DisplaySymbol> symbol_configs; //!< 設定変更後の地形シンボル (色/文字).
 

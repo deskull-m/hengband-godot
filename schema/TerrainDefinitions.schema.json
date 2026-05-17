@@ -291,6 +291,32 @@
             },
             "additionalProperties": false
           },
+          "generation": {
+            "type": ["object", "null"],
+            "required": ["changes"],
+            "properties": {
+              "changes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["terrain", "probability"],
+                  "properties": {
+                    "terrain": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "probability": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 100
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          },
           "interactions": {
             "type": "object",
             "description": "特定行動後の地形変化定義",
@@ -309,7 +335,7 @@
               },
               "DROP_GOLD": {
                 "type": "string",
-                "pattern": "^1d1$"
+                "pattern": "^[1-9][0-9]*d[1-9][0-9]*$"
               },
               "ENSECRET": {
                 "type": "string"

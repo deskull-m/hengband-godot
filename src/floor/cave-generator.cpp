@@ -3,6 +3,7 @@
 #include "dungeon/quest-monster-placer.h"
 #include "floor/dungeon-tunnel-util.h"
 #include "floor/floor-allocation-types.h"
+#include "floor/floor-generator.h"
 #include "floor/floor-streams.h"
 #include "floor/geometry.h"
 #include "floor/object-allocator.h"
@@ -385,6 +386,7 @@ tl::optional<std::string> cave_gen(PlayerType *player_ptr)
 
     make_aqua_streams(player_ptr, &dd, dungeon);
     make_perm_walls(player_ptr);
+    apply_terrain_generation_changes(floor);
     if (!check_place_necessary_objects(player_ptr, &dd)) {
         return dd.why;
     }
