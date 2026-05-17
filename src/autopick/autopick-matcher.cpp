@@ -10,7 +10,6 @@
 #include "autopick/autopick-util.h"
 #include "inventory/inventory-slot-types.h"
 #include "object-enchant/item-feeling.h"
-#include "object-enchant/special-object-flags.h"
 #include "object-hook/hook-armor.h"
 #include "object-hook/hook-weapon.h"
 #include "object/object-info.h"
@@ -21,7 +20,7 @@
 #include "player/player-realm.h"
 #include "system/baseitem/baseitem-definition.h"
 #include "system/floor/floor-info.h"
-#include "system/item-entity.h"
+#include "system/item/item-entity.h"
 #include "system/monrace/monrace-definition.h"
 #include "system/player-type-definition.h"
 #include "util/string-processor.h"
@@ -132,7 +131,7 @@ bool is_autopick_match(PlayerType *player_ptr, const ItemEntity *o_ptr, const au
         return false;
     }
 
-    if (entry.has(FLG_UNIDENTIFIED) && (o_ptr->is_known() || (o_ptr->ident & IDENT_SENSE))) {
+    if (entry.has(FLG_UNIDENTIFIED) && (o_ptr->is_known() || o_ptr->has_identification_flag(IdentificationFlag::SENSE))) {
         return false;
     }
 
@@ -195,7 +194,7 @@ bool is_autopick_match(PlayerType *player_ptr, const ItemEntity *o_ptr, const au
         if (!o_ptr->is_ego()) {
             return false;
         }
-        if (!o_ptr->is_known() && !((o_ptr->ident & IDENT_SENSE) && o_ptr->feeling == FEEL_EXCELLENT)) {
+        if (!o_ptr->is_known() && !(o_ptr->has_identification_flag(IdentificationFlag::SENSE) && o_ptr->feeling == FEEL_EXCELLENT)) {
             return false;
         }
     }
@@ -212,7 +211,7 @@ bool is_autopick_match(PlayerType *player_ptr, const ItemEntity *o_ptr, const au
             if (o_ptr->to_a <= 0 && (o_ptr->to_h + o_ptr->to_d) <= 0) {
                 return false;
             }
-        } else if (o_ptr->ident & IDENT_SENSE) {
+        } else if (o_ptr->has_identification_flag(IdentificationFlag::SENSE)) {
             switch (o_ptr->feeling) {
             case FEEL_GOOD:
                 break;
@@ -233,7 +232,7 @@ bool is_autopick_match(PlayerType *player_ptr, const ItemEntity *o_ptr, const au
             if (!o_ptr->is_nameless()) {
                 return false;
             }
-        } else if (o_ptr->ident & IDENT_SENSE) {
+        } else if (o_ptr->has_identification_flag(IdentificationFlag::SENSE)) {
             switch (o_ptr->feeling) {
             case FEEL_AVERAGE:
             case FEEL_GOOD:
@@ -265,7 +264,7 @@ bool is_autopick_match(PlayerType *player_ptr, const ItemEntity *o_ptr, const au
             if (o_ptr->to_a > 0 || (o_ptr->to_h + o_ptr->to_d) > 0) {
                 return false;
             }
-        } else if (o_ptr->ident & IDENT_SENSE) {
+        } else if (o_ptr->has_identification_flag(IdentificationFlag::SENSE)) {
             switch (o_ptr->feeling) {
             case FEEL_AVERAGE:
                 break;

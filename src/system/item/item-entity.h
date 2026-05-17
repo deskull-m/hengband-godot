@@ -13,6 +13,7 @@
 #include "object/object-mark-types.h"
 #include "system/angband.h"
 #include "system/baseitem/baseitem-key.h"
+#include "system/item/identification-flags.h"
 #include "system/system-variables.h"
 #include "util/dice.h"
 #include "util/flag-group.h"
@@ -73,7 +74,6 @@ public:
 
     Dice damage_dice{}; /*!< Damage dice */
     TIME_EFFECT timeout{}; /*!< Timeout Counter */
-    byte ident{}; /*!< Special flags  */
     EnumClassFlagGroup<OmType> marked{}; /*!< Object is marked */
     tl::optional<std::string> inscription{}; /*!< Inscription */
     tl::optional<std::string> randart_name{}; /*!< Artifact name (random artifacts) */
@@ -185,11 +185,21 @@ public:
     bool try_become_artifact(int dungeon_level);
     void absorb(ItemEntity &other);
     void set_fixed_artifact_generated(bool new_state) const;
+    void set_identification_flag(IdentificationFlag flag);
+    void reset_identification_flag(IdentificationFlag flag);
+    void set_identification_flags(const EnumClassFlagGroup<IdentificationFlag> &flags);
+    void reset_identification_flags(const EnumClassFlagGroup<IdentificationFlag> &flags);
+    bool has_identification_flag(IdentificationFlag flag) const;
+    bool has_not_identification_flag(IdentificationFlag flag) const;
+    bool any_identification_flag() const;
+    const EnumClassFlagGroup<IdentificationFlag> &get_special_flags() const; //!< セーブとデバッグ専用.
+    void load_identification_flags(const EnumClassFlagGroup<IdentificationFlag> &flags); //!< ロード専用.
 
 private:
     ItemEntity(const ItemEntity &) = default;
     ItemEntity &operator=(const ItemEntity &) = default;
 
+    EnumClassFlagGroup<IdentificationFlag> identification_flags;
     int get_baseitem_price() const;
     int calc_figurine_value() const;
     int calc_capture_value() const;

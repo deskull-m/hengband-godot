@@ -2145,9 +2145,6 @@
     <ClCompile Include="..\..\src\view\display-scores.cpp">
       <Filter>view</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\system\item-entity.cpp">
-      <Filter>system</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\object\object-index-list.cpp">
       <Filter>object</Filter>
     </ClCompile>
@@ -2576,6 +2573,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\system\artifact\artifact-service.cpp">
       <Filter>system\artifact</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\system\item\item-entity.cpp">
+      <Filter>system\item</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -3446,8 +3446,8 @@
     <ClInclude Include="..\..\src\object-enchant\old-ego-extra-values.h">
       <Filter>object-enchant</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\object-enchant\special-object-flags.h">
-      <Filter>object-enchant</Filter>
+    <ClInclude Include="..\..\src\system\item\identification-flags.h">
+      <Filter>system\item</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\object-enchant\trc-types.h">
       <Filter>object-enchant</Filter>
@@ -3754,9 +3754,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\core\speed-table.h">
       <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\system\item-entity.h">
-      <Filter>system</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\monster\monster-util.h">
       <Filter>monster</Filter>
@@ -5595,6 +5592,9 @@
     <ClInclude Include="..\..\src\system\artifact\artifact-service.h">
       <Filter>system\artifact</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\system\item\item-entity.h">
+      <Filter>system\item</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\wall.bmp" />
@@ -5897,6 +5897,9 @@
     </Filter>
     <Filter Include="system\artifact">
       <UniqueIdentifier>{58714fb7-9c67-4cd4-b69f-a5b0d7d7964f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="system\item">
+      <UniqueIdentifier>{f7624169-a38b-4935-92a4-9334ddd4c76a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
