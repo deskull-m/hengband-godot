@@ -14,6 +14,7 @@
 #include "util/int-char-converter.h"
 #include "util/string-processor.h"
 #include <algorithm>
+#include <fmt/format.h>
 
 /*!
  * @brief 自動拾いエディタの画面を再描画する
@@ -54,7 +55,7 @@ static uint8_t redraw_edit_command_menu(bool redraw, size_t menu_depth, size_t s
             com_key << '^' << static_cast<char>(menu_datum.key + '@');
         }
 
-        const auto str = format("| %c) %-*s %2s | ", menu_key + 'a', max_length, menu_datum.name.data(), com_key.str().data());
+        const auto str = fmt::format("| {}) {:<{}} {:2} | ", static_cast<char>(menu_key + 'a'), fmt::bytes(menu_datum.name), max_length, com_key.str());
         term_putstr(col0, row1++, -1, TERM_WHITE, str);
         menu_key++;
     }
