@@ -23,7 +23,7 @@ struct autopick_describer {
 };
 
 #if JP
-static std::string describe_autpick_jp(const autopick_type &entry, autopick_describer &describer)
+static std::string describe_autopick_jp(const autopick_type &entry, autopick_describer &describer)
 {
     std::vector<std::string> before_strings;
     before_strings.reserve(100);
@@ -563,7 +563,7 @@ std::string describe_autopick(const autopick_type &entry)
     describer.top = false;
     describer.body_str = _("アイテム", "items");
 #ifdef JP
-    return describe_autpick_jp(entry, describer);
+    return describe_autopick_jp(entry, describer);
 #else
     return describe_autopick_en(entry, describer);
 #endif
