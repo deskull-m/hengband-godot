@@ -110,7 +110,7 @@ bool autopick_autoregister(PlayerType *player_ptr, const ItemEntity *o_ptr)
     autopick_type an_entry, *entry = &an_entry;
     int autopick_registered = find_autopick_list(player_ptr, o_ptr);
     if (autopick_registered != -1) {
-        concptr what;
+        std::string_view what;
         const auto &act = autopick_list[autopick_registered].action;
         if (act.has(AutopickMethod::AUTOPICK)) {
             what = _("自動で拾う", "auto-pickup");
@@ -122,7 +122,7 @@ bool autopick_autoregister(PlayerType *player_ptr, const ItemEntity *o_ptr)
             what = _("確認して拾う", "query auto-pickup");
         }
 
-        msg_format(_("そのアイテムは既に%sように設定されています。", "The object is already registered to %s."), what);
+        msg_print(_("そのアイテムは既に{}ように設定されています。", "The object is already registered to {}."), what);
         return false;
     }
 

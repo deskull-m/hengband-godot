@@ -9,18 +9,17 @@
 #include "autopick/autopick-flags-table.h"
 #include "autopick/autopick-methods-table.h"
 #include "autopick/autopick-util.h"
-#include "system/angband.h"
 #include "util/string-processor.h"
 #include <sstream>
 #include <string>
 #include <vector>
 
 struct autopick_describer {
-    concptr str;
+    std::string name;
     EnumClassFlagGroup<AutopickMethod> act;
-    concptr insc;
+    std::string inscription;
     bool top;
-    concptr body_str;
+    std::string body_str;
 };
 
 #if JP
@@ -209,14 +208,14 @@ static std::string describe_autpick_jp(const autopick_type &entry, autopick_desc
 
     ss << describer.body_str;
 
-    if (*describer.str) {
-        if (*describer.str == '^') {
-            describer.str++;
+    if (!describer.name.empty()) {
+        if (describer.name.starts_with('^')) {
+            describer.name = describer.name.substr(1);
             describer.top = true;
         }
 
         ss << "で、名前が「";
-        ss << describer.str;
+        ss << describer.name;
         if (describer.top) {
             ss << "」で始まるもの";
         } else {
@@ -224,16 +223,16 @@ static std::string describe_autpick_jp(const autopick_type &entry, autopick_desc
         }
     }
 
-    if (describer.insc) {
-        ss << "に「" << describer.insc << "」";
+    if (!describer.inscription.empty()) {
+        ss << "に「" << describer.inscription << "」";
 
-        if (str_find(describer.insc, "%%all")) {
+        if (str_find(describer.inscription, "%%all")) {
             ss << "(%%allは全能力を表す英字の記号で置換)";
-        } else if (str_find(describer.insc, "%all")) {
+        } else if (str_find(describer.inscription, "%all")) {
             ss << "(%allは全能力を表す記号で置換)";
-        } else if (str_find(describer.insc, "%%")) {
+        } else if (str_find(describer.inscription, "%%")) {
             ss << "(%%は追加能力を表す英字の記号で置換)";
-        } else if (str_find(describer.insc, "%")) {
+        } else if (str_find(describer.inscription, "%")) {
             ss << "(%は追加能力を表す記号で置換)";
         }
 
@@ -448,9 +447,9 @@ std::string describe_autopick_en(const autopick_type &entry, autopick_describer 
         describer.body_str = "boots";
     }
 
-    if (*describer.str) {
-        if (*describer.str == '^') {
-            describer.str++;
+    if (!describer.name.empty()) {
+        if (describer.name.starts_with('^')) {
+            describer.name = describer.name.substr(1);
             describer.top = true;
             whose_strings.emplace_back("names begin with \"");
             whose_arg_strings.emplace_back("");
@@ -470,13 +469,13 @@ std::string describe_autopick_en(const autopick_type &entry, autopick_describer 
         ss << "Pickup ";
     }
 
-    if (describer.insc) {
-        const auto inscriptions = str_separate(describer.insc, 80);
+    if (!describer.inscription.empty()) {
+        const auto inscriptions = str_separate(describer.inscription, 80);
         ss << "and inscribe \"" << inscriptions[0] << "\"";
 
-        if (str_find(describer.insc, "%all")) {
+        if (str_find(describer.inscription, "%all")) {
             ss << ", replacing %all with code string representing all abilities,";
-        } else if (str_find(describer.insc, "%")) {
+        } else if (str_find(describer.inscription, "%")) {
             ss << ", replacing % with code string representing extra random abilities,";
         }
 
@@ -509,8 +508,8 @@ std::string describe_autopick_en(const autopick_type &entry, autopick_describer 
         ss << whose_arg_strings[i];
     }
 
-    if (*describer.str && describer.top) {
-        ss << describer.str;
+    if (!describer.name.empty() && describer.top) {
+        ss << describer.name;
         ss << "\"";
     }
 
@@ -528,8 +527,8 @@ std::string describe_autopick_en(const autopick_type &entry, autopick_describer 
         ss << which_strings[i];
     }
 
-    if (*describer.str && !describer.top) {
-        const auto inscriptions = str_separate(describer.str, 80);
+    if (!describer.name.empty() && !describer.top) {
+        const auto inscriptions = str_separate(describer.name, 80);
         ss << inscriptions[0];
         ss << "\" as part of their names";
     }
@@ -557,11 +556,10 @@ std::string describe_autopick_en(const autopick_type &entry, autopick_describer 
  */
 std::string describe_autopick(const autopick_type &entry)
 {
-    //! @note autopick_describer::str は non-nullable、autopick_describer::insc は nullable という制約がある
     autopick_describer describer{};
-    describer.str = entry.name.data();
+    describer.name = entry.name;
     describer.act = entry.action;
-    describer.insc = entry.insc.empty() ? nullptr : entry.insc.data();
+    describer.inscription = entry.insc;
     describer.top = false;
     describer.body_str = _("アイテム", "items");
 #ifdef JP
