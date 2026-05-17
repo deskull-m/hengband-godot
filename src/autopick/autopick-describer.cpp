@@ -11,6 +11,7 @@
 #include "autopick/autopick-util.h"
 #include "system/angband.h"
 #include "util/string-processor.h"
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -23,7 +24,7 @@ struct autopick_describer {
 };
 
 #if JP
-static void describe_autpick_jp(char *buff, const autopick_type &entry, autopick_describer *describer)
+static std::string describe_autpick_jp(const autopick_type &entry, autopick_describer &describer)
 {
     std::vector<std::string> before_strings;
     before_strings.reserve(100);
@@ -49,11 +50,11 @@ static void describe_autpick_jp(char *buff, const autopick_type &entry, autopick
 
     if (entry.has(FLG_BOOSTED)) {
         before_strings.emplace_back("ダメージダイスが通常より大きい");
-        describer->body_str = "武器";
+        describer.body_str = "武器";
     }
 
     if (entry.has(FLG_MORE_DICE)) {
-        describer->body_str = "武器";
+        describer.body_str = "武器";
         before_strings.emplace_back("ダメージダイスの最大値が");
         before_strings.emplace_back(std::to_string(entry.dice));
         before_strings.emplace_back("以上の");
@@ -71,203 +72,203 @@ static void describe_autpick_jp(char *buff, const autopick_type &entry, autopick
 
     if (entry.has(FLG_ARTIFACT)) {
         before_strings.emplace_back("アーティファクトの");
-        describer->body_str = "装備";
+        describer.body_str = "装備";
     }
 
     if (entry.has(FLG_EGO)) {
         before_strings.emplace_back("エゴアイテムの");
-        describer->body_str = "装備";
+        describer.body_str = "装備";
     }
 
     if (entry.has(FLG_GOOD)) {
         before_strings.emplace_back("上質の");
-        describer->body_str = "装備";
+        describer.body_str = "装備";
     }
 
     if (entry.has(FLG_NAMELESS)) {
         before_strings.emplace_back("エゴでもアーティファクトでもない");
-        describer->body_str = "装備";
+        describer.body_str = "装備";
     }
 
     if (entry.has(FLG_AVERAGE)) {
         before_strings.emplace_back("並の");
-        describer->body_str = "装備";
+        describer.body_str = "装備";
     }
 
     if (entry.has(FLG_RARE)) {
         before_strings.emplace_back("ドラゴン装備やカオス・ブレード等を含む珍しい");
-        describer->body_str = "装備";
+        describer.body_str = "装備";
     }
 
     if (entry.has(FLG_COMMON)) {
         before_strings.emplace_back("ありふれた(ドラゴン装備やカオス・ブレード等の珍しい物ではない)");
-        describer->body_str = "装備";
+        describer.body_str = "装備";
     }
 
     if (entry.has(FLG_WANTED)) {
         before_strings.emplace_back("ハンター事務所で賞金首とされている");
-        describer->body_str = "死体や骨";
+        describer.body_str = "死体や骨";
     }
 
     if (entry.has(FLG_HUMAN)) {
         before_strings.emplace_back("悪魔魔法で使うための人間やヒューマノイドの");
-        describer->body_str = "死体や骨";
+        describer.body_str = "死体や骨";
     }
 
     if (entry.has(FLG_UNIQUE)) {
         before_strings.emplace_back("ユニークモンスターの");
-        describer->body_str = "死体や骨";
+        describer.body_str = "死体や骨";
     }
 
     if (entry.has(FLG_UNREADABLE)) {
         before_strings.emplace_back("あなたが読めない領域の");
-        describer->body_str = "魔法書";
+        describer.body_str = "魔法書";
     }
 
     if (entry.has(FLG_REALM1)) {
         before_strings.emplace_back("第一領域の");
-        describer->body_str = "魔法書";
+        describer.body_str = "魔法書";
     }
 
     if (entry.has(FLG_REALM2)) {
         before_strings.emplace_back("第二領域の");
-        describer->body_str = "魔法書";
+        describer.body_str = "魔法書";
     }
 
     if (entry.has(FLG_FIRST)) {
         before_strings.emplace_back("全4冊の内の1冊目の");
-        describer->body_str = "魔法書";
+        describer.body_str = "魔法書";
     }
 
     if (entry.has(FLG_SECOND)) {
         before_strings.emplace_back("全4冊の内の2冊目の");
-        describer->body_str = "魔法書";
+        describer.body_str = "魔法書";
     }
 
     if (entry.has(FLG_THIRD)) {
         before_strings.emplace_back("全4冊の内の3冊目の");
-        describer->body_str = "魔法書";
+        describer.body_str = "魔法書";
     }
 
     if (entry.has(FLG_FOURTH)) {
         before_strings.emplace_back("全4冊の内の4冊目の");
-        describer->body_str = "魔法書";
+        describer.body_str = "魔法書";
     }
 
     if (entry.has(FLG_ITEMS)) {
         ;
     } /* Nothing to do */
     else if (entry.has(FLG_WEAPONS)) {
-        describer->body_str = "武器";
+        describer.body_str = "武器";
     } else if (entry.has(FLG_FAVORITE_WEAPONS)) {
-        describer->body_str = "得意武器";
+        describer.body_str = "得意武器";
     } else if (entry.has(FLG_ARMORS)) {
-        describer->body_str = "防具";
+        describer.body_str = "防具";
     } else if (entry.has(FLG_MISSILES)) {
-        describer->body_str = "弾や矢やクロスボウの矢";
+        describer.body_str = "弾や矢やクロスボウの矢";
     } else if (entry.has(FLG_DEVICES)) {
-        describer->body_str = "巻物や魔法棒や杖やロッド";
+        describer.body_str = "巻物や魔法棒や杖やロッド";
     } else if (entry.has(FLG_LIGHTS)) {
-        describer->body_str = "光源用のアイテム";
+        describer.body_str = "光源用のアイテム";
     } else if (entry.has(FLG_JUNKS)) {
-        describer->body_str = "折れた棒等のガラクタ";
+        describer.body_str = "折れた棒等のガラクタ";
     } else if (entry.has(FLG_CORPSES)) {
-        describer->body_str = "死体や骨";
+        describer.body_str = "死体や骨";
     } else if (entry.has(FLG_SPELLBOOKS)) {
-        describer->body_str = "魔法書";
+        describer.body_str = "魔法書";
     } else if (entry.has(FLG_HAFTED)) {
-        describer->body_str = "鈍器";
+        describer.body_str = "鈍器";
     } else if (entry.has(FLG_SHIELDS)) {
-        describer->body_str = "盾";
+        describer.body_str = "盾";
     } else if (entry.has(FLG_BOWS)) {
-        describer->body_str = "スリングや弓やクロスボウ";
+        describer.body_str = "スリングや弓やクロスボウ";
     } else if (entry.has(FLG_RINGS)) {
-        describer->body_str = "指輪";
+        describer.body_str = "指輪";
     } else if (entry.has(FLG_AMULETS)) {
-        describer->body_str = "アミュレット";
+        describer.body_str = "アミュレット";
     } else if (entry.has(FLG_SUITS)) {
-        describer->body_str = "鎧";
+        describer.body_str = "鎧";
     } else if (entry.has(FLG_CLOAKS)) {
-        describer->body_str = "クローク";
+        describer.body_str = "クローク";
     } else if (entry.has(FLG_HELMS)) {
-        describer->body_str = "ヘルメットや冠";
+        describer.body_str = "ヘルメットや冠";
     } else if (entry.has(FLG_GLOVES)) {
-        describer->body_str = "籠手";
+        describer.body_str = "籠手";
     } else if (entry.has(FLG_BOOTS)) {
-        describer->body_str = "ブーツ";
+        describer.body_str = "ブーツ";
     }
 
-    *buff = '\0';
+    std::stringstream ss;
     if (before_strings.empty()) {
-        strcat(buff, "全ての");
+        ss << "全ての";
     } else {
         for (const auto &before_string : before_strings) {
-            strcat(buff, before_string.data());
+            ss << before_string;
         }
     }
 
-    strcat(buff, describer->body_str);
+    ss << describer.body_str;
 
-    if (*describer->str) {
-        if (*describer->str == '^') {
-            describer->str++;
-            describer->top = true;
+    if (*describer.str) {
+        if (*describer.str == '^') {
+            describer.str++;
+            describer.top = true;
         }
 
-        strcat(buff, "で、名前が「");
-        angband_strcat(buff, describer->str, (MAX_NLEN - MAX_INSCRIPTION));
-        if (describer->top) {
-            strcat(buff, "」で始まるもの");
+        ss << "で、名前が「";
+        ss << describer.str;
+        if (describer.top) {
+            ss << "」で始まるもの";
         } else {
-            strcat(buff, "」を含むもの");
+            ss << "」を含むもの";
         }
     }
 
-    if (describer->insc) {
-        char tmp[MAX_INSCRIPTION + 1] = "";
-        angband_strcat(tmp, describer->insc, MAX_INSCRIPTION);
-        angband_strcat(buff, format("に「%s」", tmp), MAX_INSCRIPTION + 6);
+    if (describer.insc) {
+        ss << "に「" << describer.insc << "」";
 
-        if (str_find(describer->insc, "%%all")) {
-            strcat(buff, "(%%allは全能力を表す英字の記号で置換)");
-        } else if (str_find(describer->insc, "%all")) {
-            strcat(buff, "(%allは全能力を表す記号で置換)");
-        } else if (str_find(describer->insc, "%%")) {
-            strcat(buff, "(%%は追加能力を表す英字の記号で置換)");
-        } else if (str_find(describer->insc, "%")) {
-            strcat(buff, "(%は追加能力を表す記号で置換)");
+        if (str_find(describer.insc, "%%all")) {
+            ss << "(%%allは全能力を表す英字の記号で置換)";
+        } else if (str_find(describer.insc, "%all")) {
+            ss << "(%allは全能力を表す記号で置換)";
+        } else if (str_find(describer.insc, "%%")) {
+            ss << "(%%は追加能力を表す英字の記号で置換)";
+        } else if (str_find(describer.insc, "%")) {
+            ss << "(%は追加能力を表す記号で置換)";
         }
 
-        strcat(buff, "と刻んで");
+        ss << "と刻んで";
     } else {
-        strcat(buff, "を");
+        ss << "を";
     }
 
-    if (describer->act.has(AutopickMethod::NOT_AUTOPICK)) {
-        strcat(buff, "放置する。");
-    } else if (describer->act.has(AutopickMethod::AUTODESTROY)) {
-        strcat(buff, "破壊する。");
-    } else if (describer->act.has(AutopickMethod::QUERY_AUTOPICK)) {
-        strcat(buff, "確認の後に拾う。");
+    if (describer.act.has(AutopickMethod::NOT_AUTOPICK)) {
+        ss << "放置する。";
+    } else if (describer.act.has(AutopickMethod::AUTODESTROY)) {
+        ss << "破壊する。";
+    } else if (describer.act.has(AutopickMethod::QUERY_AUTOPICK)) {
+        ss << "確認の後に拾う。";
     } else {
-        strcat(buff, "拾う。");
+        ss << "拾う。";
     }
 
-    if (describer->act.has(AutopickMethod::DISPLAY)) {
-        if (describer->act.has(AutopickMethod::NOT_AUTOPICK)) {
-            strcat(buff, "全体マップ('M')で'N'を押したときに表示する。");
-        } else if (describer->act.has(AutopickMethod::AUTODESTROY)) {
-            strcat(buff, "全体マップ('M')で'K'を押したときに表示する。");
+    if (describer.act.has(AutopickMethod::DISPLAY)) {
+        if (describer.act.has(AutopickMethod::NOT_AUTOPICK)) {
+            ss << "全体マップ('M')で'N'を押したときに表示する。";
+        } else if (describer.act.has(AutopickMethod::AUTODESTROY)) {
+            ss << "全体マップ('M')で'K'を押したときに表示する。";
         } else {
-            strcat(buff, "全体マップ('M')で'M'を押したときに表示する。");
+            ss << "全体マップ('M')で'M'を押したときに表示する。";
         }
     } else {
-        strcat(buff, "全体マップには表示しない。");
+        ss << "全体マップには表示しない。";
     }
+
+    return ss.str();
 }
 #else
 
-void describe_autopick_en(char *buff, const autopick_type &entry, autopick_describer *describer)
+std::string describe_autopick_en(const autopick_type &entry, autopick_describer &describer)
 {
     std::vector<std::string> before_strings;
     before_strings.reserve(20);
@@ -337,13 +338,13 @@ void describe_autopick_en(char *buff, const autopick_type &entry, autopick_descr
     }
 
     if (entry.has(FLG_BOOSTED)) {
-        describer->body_str = "weapons";
+        describer.body_str = "weapons";
         whose_strings.emplace_back("damage dice is bigger than normal");
         whose_arg_strings.emplace_back("");
     }
 
     if (entry.has(FLG_MORE_DICE)) {
-        describer->body_str = "weapons";
+        describer.body_str = "weapons";
         whose_strings.emplace_back("maximum damage from dice is bigger than ");
         whose_arg_strings.emplace_back(std::to_string(entry.dice));
     }
@@ -354,103 +355,103 @@ void describe_autopick_en(char *buff, const autopick_type &entry, autopick_descr
     }
 
     if (entry.has(FLG_WANTED)) {
-        describer->body_str = "corpses or skeletons";
+        describer.body_str = "corpses or skeletons";
         which_strings.emplace_back("are wanted at the Hunter's Office");
     }
 
     if (entry.has(FLG_HUMAN)) {
         before_strings.emplace_back("humanoid");
-        describer->body_str = "corpses or skeletons";
+        describer.body_str = "corpses or skeletons";
         which_strings.emplace_back("can be used for Daemon magic");
     }
 
     if (entry.has(FLG_UNIQUE)) {
         before_strings.emplace_back("unique monsters'");
-        describer->body_str = "corpses or skeletons";
+        describer.body_str = "corpses or skeletons";
     }
 
     if (entry.has(FLG_UNREADABLE)) {
-        describer->body_str = "spellbooks";
+        describer.body_str = "spellbooks";
         after_strings.emplace_back("of different realms from yours");
     }
 
     if (entry.has(FLG_REALM1)) {
-        describer->body_str = "spellbooks";
+        describer.body_str = "spellbooks";
         after_strings.emplace_back("of your first realm");
     }
 
     if (entry.has(FLG_REALM2)) {
-        describer->body_str = "spellbooks";
+        describer.body_str = "spellbooks";
         after_strings.emplace_back("of your second realm");
     }
 
     if (entry.has(FLG_FIRST)) {
         before_strings.emplace_back("first one of four");
-        describer->body_str = "spellbooks";
+        describer.body_str = "spellbooks";
     }
 
     if (entry.has(FLG_SECOND)) {
         before_strings.emplace_back("second one of four");
-        describer->body_str = "spellbooks";
+        describer.body_str = "spellbooks";
     }
 
     if (entry.has(FLG_THIRD)) {
         before_strings.emplace_back("third one of four");
-        describer->body_str = "spellbooks";
+        describer.body_str = "spellbooks";
     }
 
     if (entry.has(FLG_FOURTH)) {
         before_strings.emplace_back("fourth one of four");
-        describer->body_str = "spellbooks";
+        describer.body_str = "spellbooks";
     }
 
     if (entry.has(FLG_ITEMS)) {
         ;
     } /* Nothing to do */
     else if (entry.has(FLG_WEAPONS)) {
-        describer->body_str = "weapons";
+        describer.body_str = "weapons";
     } else if (entry.has(FLG_FAVORITE_WEAPONS)) {
-        describer->body_str = "favorite weapons";
+        describer.body_str = "favorite weapons";
     } else if (entry.has(FLG_ARMORS)) {
-        describer->body_str = "pieces of armor";
+        describer.body_str = "pieces of armor";
     } else if (entry.has(FLG_MISSILES)) {
-        describer->body_str = "shots, arrows or crossbow bolts";
+        describer.body_str = "shots, arrows or crossbow bolts";
     } else if (entry.has(FLG_DEVICES)) {
-        describer->body_str = "scrolls, wands, staffs or rods";
+        describer.body_str = "scrolls, wands, staffs or rods";
     } else if (entry.has(FLG_LIGHTS)) {
-        describer->body_str = "light sources";
+        describer.body_str = "light sources";
     } else if (entry.has(FLG_JUNKS)) {
-        describer->body_str = "pieces of junk such as broken sticks";
+        describer.body_str = "pieces of junk such as broken sticks";
     } else if (entry.has(FLG_CORPSES)) {
-        describer->body_str = "corpses or skeletons";
+        describer.body_str = "corpses or skeletons";
     } else if (entry.has(FLG_SPELLBOOKS)) {
-        describer->body_str = "spellbooks";
+        describer.body_str = "spellbooks";
     } else if (entry.has(FLG_HAFTED)) {
-        describer->body_str = "hafted weapons";
+        describer.body_str = "hafted weapons";
     } else if (entry.has(FLG_SHIELDS)) {
-        describer->body_str = "shields";
+        describer.body_str = "shields";
     } else if (entry.has(FLG_BOWS)) {
-        describer->body_str = "slings, bows or crossbows";
+        describer.body_str = "slings, bows or crossbows";
     } else if (entry.has(FLG_RINGS)) {
-        describer->body_str = "rings";
+        describer.body_str = "rings";
     } else if (entry.has(FLG_AMULETS)) {
-        describer->body_str = "amulets";
+        describer.body_str = "amulets";
     } else if (entry.has(FLG_SUITS)) {
-        describer->body_str = "pieces of body armor";
+        describer.body_str = "pieces of body armor";
     } else if (entry.has(FLG_CLOAKS)) {
-        describer->body_str = "cloaks";
+        describer.body_str = "cloaks";
     } else if (entry.has(FLG_HELMS)) {
-        describer->body_str = "helms or crowns";
+        describer.body_str = "helms or crowns";
     } else if (entry.has(FLG_GLOVES)) {
-        describer->body_str = "gloves";
+        describer.body_str = "gloves";
     } else if (entry.has(FLG_BOOTS)) {
-        describer->body_str = "boots";
+        describer.body_str = "boots";
     }
 
-    if (*describer->str) {
-        if (*describer->str == '^') {
-            describer->str++;
-            describer->top = true;
+    if (*describer.str) {
+        if (*describer.str == '^') {
+            describer.str++;
+            describer.top = true;
             whose_strings.emplace_back("names begin with \"");
             whose_arg_strings.emplace_back("");
         } else {
@@ -458,98 +459,103 @@ void describe_autopick_en(char *buff, const autopick_type &entry, autopick_descr
         }
     }
 
-    if (describer->act.has(AutopickMethod::NOT_AUTOPICK)) {
-        strcpy(buff, "Leave on floor ");
-    } else if (describer->act.has(AutopickMethod::AUTODESTROY)) {
-        strcpy(buff, "Destroy ");
-    } else if (describer->act.has(AutopickMethod::QUERY_AUTOPICK)) {
-        strcpy(buff, "Ask to pick up ");
+    std::stringstream ss;
+    if (describer.act.has(AutopickMethod::NOT_AUTOPICK)) {
+        ss << "Leave on floor ";
+    } else if (describer.act.has(AutopickMethod::AUTODESTROY)) {
+        ss << "Destroy ";
+    } else if (describer.act.has(AutopickMethod::QUERY_AUTOPICK)) {
+        ss << "Ask to pick up ";
     } else {
-        strcpy(buff, "Pickup ");
+        ss << "Pickup ";
     }
 
-    if (describer->insc) {
-        strncat(buff, format("and inscribe \"%s\"", describer->insc).data(), 80);
+    if (describer.insc) {
+        const auto inscriptions = str_separate(describer.insc, 80);
+        ss << "and inscribe \"" << inscriptions[0] << "\"";
 
-        if (str_find(describer->insc, "%all")) {
-            strcat(buff, ", replacing %all with code string representing all abilities,");
-        } else if (str_find(describer->insc, "%")) {
-            strcat(buff, ", replacing % with code string representing extra random abilities,");
+        if (str_find(describer.insc, "%all")) {
+            ss << ", replacing %all with code string representing all abilities,";
+        } else if (str_find(describer.insc, "%")) {
+            ss << ", replacing % with code string representing extra random abilities,";
         }
 
-        strcat(buff, " on ");
+        ss << " on ";
     }
 
     if (before_strings.empty()) {
-        strcat(buff, "all ");
+        ss << "all ";
     } else {
         for (const auto &before_string : before_strings) {
-            strcat(buff, before_string.data());
-            strcat(buff, " ");
+            ss << before_string;
+            ss << " ";
         }
     }
 
-    strcat(buff, describer->body_str);
+    ss << describer.body_str;
     for (const auto &after_string : after_strings) {
-        strcat(buff, " ");
-        strcat(buff, after_string.data());
+        ss << " ";
+        ss << after_string;
     }
 
     for (size_t i = 0; i < whose_strings.size(); i++) {
         if (i == 0) {
-            strcat(buff, " whose ");
+            ss << " whose ";
         } else {
-            strcat(buff, ", and ");
+            ss << ", and ";
         }
 
-        strcat(buff, whose_strings[i].data());
-        strcat(buff, whose_arg_strings[i].data());
+        ss << whose_strings[i];
+        ss << whose_arg_strings[i];
     }
 
-    if (*describer->str && describer->top) {
-        strcat(buff, describer->str);
-        strcat(buff, "\"");
+    if (*describer.str && describer.top) {
+        ss << describer.str;
+        ss << "\"";
     }
 
     if (!whose_strings.empty() && !which_strings.empty()) {
-        strcat(buff, ", and ");
+        ss << ", and ";
     }
 
     for (size_t i = 0; i < which_strings.size(); i++) {
         if (i == 0) {
-            strcat(buff, " which ");
+            ss << " which ";
         } else {
-            strcat(buff, ", and ");
+            ss << ", and ";
         }
 
-        strcat(buff, which_strings[i].data());
+        ss << which_strings[i];
     }
 
-    if (*describer->str && !describer->top) {
-        strncat(buff, describer->str, 80);
-        strcat(buff, "\" as part of their names");
+    if (*describer.str && !describer.top) {
+        const auto inscriptions = str_separate(describer.str, 80);
+        ss << inscriptions[0];
+        ss << "\" as part of their names";
     }
 
-    strcat(buff, ".");
+    ss << ".";
 
-    if (describer->act.has(AutopickMethod::DISPLAY)) {
-        if (describer->act.has(AutopickMethod::NOT_AUTOPICK)) {
-            strcat(buff, "  Display these items when you press the N key in the full 'M'ap.");
-        } else if (describer->act.has(AutopickMethod::AUTODESTROY)) {
-            strcat(buff, "  Display these items when you press the K key in the full 'M'ap.");
+    if (describer.act.has(AutopickMethod::DISPLAY)) {
+        if (describer.act.has(AutopickMethod::NOT_AUTOPICK)) {
+            ss << "  Display these items when you press the N key in the full 'M'ap.";
+        } else if (describer.act.has(AutopickMethod::AUTODESTROY)) {
+            ss << "  Display these items when you press the K key in the full 'M'ap.";
         } else {
-            strcat(buff, "  Display these items when you press the M key in the full 'M'ap.");
+            ss << "  Display these items when you press the M key in the full 'M'ap.";
         }
     } else {
-        strcat(buff, " Not displayed in the full map.");
+        ss << " Not displayed in the full map.";
     }
+
+    return ss.str();
 }
 #endif
 
 /*!
  * @brief Describe which kind of object is Auto-picked/destroyed
  */
-void describe_autopick(char *buff, const autopick_type &entry)
+std::string describe_autopick(const autopick_type &entry)
 {
     //! @note autopick_describer::str は non-nullable、autopick_describer::insc は nullable という制約がある
     autopick_describer describer{};
@@ -559,8 +565,8 @@ void describe_autopick(char *buff, const autopick_type &entry)
     describer.top = false;
     describer.body_str = _("アイテム", "items");
 #ifdef JP
-    describe_autpick_jp(buff, entry, &describer);
+    return describe_autpick_jp(entry, describer);
 #else
-    describe_autopick_en(buff, entry, &describer);
+    return describe_autopick_en(entry, describer);
 #endif
 }
