@@ -49,10 +49,10 @@ static uint8_t redraw_edit_command_menu(bool redraw, size_t menu_depth, size_t s
         }
 
         std::stringstream com_key;
-        if (menu_datum.com_id == -1) {
+        if (!menu_datum.com_id) {
             com_key << _("▼", ">");
-        } else if (menu_datum.key != -1) {
-            com_key << '^' << static_cast<char>(menu_datum.key + '@');
+        } else if (menu_datum.key) {
+            com_key << '^' << static_cast<char>(*menu_datum.key + '@');
         }
 
         const auto str = fmt::format("| {}) {:<{}} {:2} | ", static_cast<char>(menu_key + 'a'), fmt::bytes(menu_datum.name), max_length, com_key.str());
@@ -138,7 +138,7 @@ int do_command_menu(size_t menu_depth, size_t start)
             continue;
         }
 
-        com_id = menu_data.get_datum(menu_id).com_id;
+        com_id = menu_data.get_datum(menu_id).com_id.value_or(-1);
         if (com_id > 0) {
             return com_id;
         }

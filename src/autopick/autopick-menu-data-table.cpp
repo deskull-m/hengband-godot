@@ -89,7 +89,6 @@
 #define MN_NOUN _("名詞の選択", "Keywords (noun)")
 
 constexpr char DELETE = 0x7F;
-constexpr char NO_MORE_DEPTH = -1;
 
 CommandMenuData CommandMenuData::instance{};
 
@@ -100,13 +99,17 @@ CommandMenuData &CommandMenuData::get_instance()
 
 void CommandMenuData::initialize()
 {
+    if (!this->menu_data.empty()) {
+        return;
+    }
+
     this->menu_data.reserve(100);
-    this->menu_data.emplace_back(MN_HELP, 0, NO_MORE_DEPTH, EC_HELP);
+    this->menu_data.emplace_back(MN_HELP, 0, tl::nullopt, EC_HELP);
     this->menu_data.emplace_back(MN_QUIT, 0, KTRL('q'), EC_QUIT);
     this->menu_data.emplace_back(MN_SAVEQUIT, 0, KTRL('w'), EC_SAVEQUIT);
     this->menu_data.emplace_back(MN_REVERT, 0, KTRL('z'), EC_REVERT);
 
-    this->menu_data.emplace_back(MN_EDIT, 0, NO_MORE_DEPTH, -1);
+    this->menu_data.emplace_back(MN_EDIT, 0, tl::nullopt, tl::nullopt);
     this->menu_data.emplace_back(MN_CUT, 1, KTRL('x'), EC_CUT);
     this->menu_data.emplace_back(MN_COPY, 1, KTRL('c'), EC_COPY);
     this->menu_data.emplace_back(MN_PASTE, 1, KTRL('v'), EC_PASTE);
@@ -117,14 +120,14 @@ void CommandMenuData::initialize()
     this->menu_data.emplace_back(MN_RETURN, 1, KTRL('j'), EC_RETURN);
     this->menu_data.emplace_back(MN_RETURN, 1, KTRL('m'), EC_RETURN);
 
-    this->menu_data.emplace_back(MN_SEARCH, 0, NO_MORE_DEPTH, -1);
+    this->menu_data.emplace_back(MN_SEARCH, 0, tl::nullopt, tl::nullopt);
     this->menu_data.emplace_back(MN_SEARCH_STR, 1, KTRL('s'), EC_SEARCH_STR);
-    this->menu_data.emplace_back(MN_SEARCH_FORW, 1, NO_MORE_DEPTH, EC_SEARCH_FORW);
+    this->menu_data.emplace_back(MN_SEARCH_FORW, 1, tl::nullopt, EC_SEARCH_FORW);
     this->menu_data.emplace_back(MN_SEARCH_BACK, 1, KTRL('r'), EC_SEARCH_BACK);
     this->menu_data.emplace_back(MN_SEARCH_OBJ, 1, KTRL('y'), EC_SEARCH_OBJ);
-    this->menu_data.emplace_back(MN_SEARCH_DESTROYED, 1, NO_MORE_DEPTH, EC_SEARCH_DESTROYED);
+    this->menu_data.emplace_back(MN_SEARCH_DESTROYED, 1, tl::nullopt, EC_SEARCH_DESTROYED);
 
-    this->menu_data.emplace_back(MN_MOVE, 0, NO_MORE_DEPTH, -1);
+    this->menu_data.emplace_back(MN_MOVE, 0, tl::nullopt, tl::nullopt);
     this->menu_data.emplace_back(MN_LEFT, 1, KTRL('b'), EC_LEFT);
     this->menu_data.emplace_back(MN_DOWN, 1, KTRL('n'), EC_DOWN);
     this->menu_data.emplace_back(MN_UP, 1, KTRL('p'), EC_UP);
@@ -136,71 +139,71 @@ void CommandMenuData::initialize()
     this->menu_data.emplace_back(MN_TOP, 1, KTRL('t'), EC_TOP);
     this->menu_data.emplace_back(MN_BOTTOM, 1, KTRL('u'), EC_BOTTOM);
 
-    this->menu_data.emplace_back(MN_INSERT, 0, NO_MORE_DEPTH, -1);
+    this->menu_data.emplace_back(MN_INSERT, 0, tl::nullopt, tl::nullopt);
     this->menu_data.emplace_back(MN_INSERT_OBJECT, 1, KTRL('i'), EC_INSERT_OBJECT);
-    this->menu_data.emplace_back(MN_INSERT_DESTROYED, 1, NO_MORE_DEPTH, EC_INSERT_DESTROYED);
-    this->menu_data.emplace_back(MN_INSERT_BLOCK, 1, NO_MORE_DEPTH, EC_INSERT_BLOCK);
-    this->menu_data.emplace_back(MN_INSERT_MACRO, 1, NO_MORE_DEPTH, EC_INSERT_MACRO);
-    this->menu_data.emplace_back(MN_INSERT_KEYMAP, 1, NO_MORE_DEPTH, EC_INSERT_KEYMAP);
+    this->menu_data.emplace_back(MN_INSERT_DESTROYED, 1, tl::nullopt, EC_INSERT_DESTROYED);
+    this->menu_data.emplace_back(MN_INSERT_BLOCK, 1, tl::nullopt, EC_INSERT_BLOCK);
+    this->menu_data.emplace_back(MN_INSERT_MACRO, 1, tl::nullopt, EC_INSERT_MACRO);
+    this->menu_data.emplace_back(MN_INSERT_KEYMAP, 1, tl::nullopt, EC_INSERT_KEYMAP);
 
-    this->menu_data.emplace_back(MN_ADJECTIVE_GEN, 0, NO_MORE_DEPTH, -1);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::UNAWARE), 1, NO_MORE_DEPTH, EC_IK_UNAWARE);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::UNIDENTIFIED), 1, NO_MORE_DEPTH, EC_IK_UNIDENTIFIED);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::IDENTIFIED), 1, NO_MORE_DEPTH, EC_IK_IDENTIFIED);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::STAR_IDENTIFIED), 1, NO_MORE_DEPTH, EC_IK_STAR_IDENTIFIED);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::COLLECTING), 1, NO_MORE_DEPTH, EC_OK_COLLECTING);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::ARTIFACT), 1, NO_MORE_DEPTH, EC_OK_ARTIFACT);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::EGO), 1, NO_MORE_DEPTH, EC_OK_EGO);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::GOOD), 1, NO_MORE_DEPTH, EC_OK_GOOD);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::NAMELESS), 1, NO_MORE_DEPTH, EC_OK_NAMELESS);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::AVERAGE), 1, NO_MORE_DEPTH, EC_OK_AVERAGE);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::WORTHLESS), 1, NO_MORE_DEPTH, EC_OK_WORTHLESS);
-    this->menu_data.emplace_back(MN_RARE, 1, NO_MORE_DEPTH, EC_OK_RARE);
-    this->menu_data.emplace_back(MN_COMMON, 1, NO_MORE_DEPTH, EC_OK_COMMON);
+    this->menu_data.emplace_back(MN_ADJECTIVE_GEN, 0, tl::nullopt, tl::nullopt);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::UNAWARE), 1, tl::nullopt, EC_IK_UNAWARE);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::UNIDENTIFIED), 1, tl::nullopt, EC_IK_UNIDENTIFIED);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::IDENTIFIED), 1, tl::nullopt, EC_IK_IDENTIFIED);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::STAR_IDENTIFIED), 1, tl::nullopt, EC_IK_STAR_IDENTIFIED);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::COLLECTING), 1, tl::nullopt, EC_OK_COLLECTING);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::ARTIFACT), 1, tl::nullopt, EC_OK_ARTIFACT);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::EGO), 1, tl::nullopt, EC_OK_EGO);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::GOOD), 1, tl::nullopt, EC_OK_GOOD);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::NAMELESS), 1, tl::nullopt, EC_OK_NAMELESS);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::AVERAGE), 1, tl::nullopt, EC_OK_AVERAGE);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::WORTHLESS), 1, tl::nullopt, EC_OK_WORTHLESS);
+    this->menu_data.emplace_back(MN_RARE, 1, tl::nullopt, EC_OK_RARE);
+    this->menu_data.emplace_back(MN_COMMON, 1, tl::nullopt, EC_OK_COMMON);
 
-    this->menu_data.emplace_back(MN_ADJECTIVE_SPECIAL, 0, NO_MORE_DEPTH, -1);
-    this->menu_data.emplace_back(MN_BOOSTED, 1, NO_MORE_DEPTH, EC_OK_BOOSTED);
-    this->menu_data.emplace_back(MN_MORE_DICE, 1, NO_MORE_DEPTH, EC_OK_MORE_DICE);
-    this->menu_data.emplace_back(MN_MORE_BONUS, 1, NO_MORE_DEPTH, EC_OK_MORE_BONUS);
-    this->menu_data.emplace_back(MN_WANTED, 1, NO_MORE_DEPTH, EC_OK_WANTED);
-    this->menu_data.emplace_back(MN_UNIQUE, 1, NO_MORE_DEPTH, EC_OK_UNIQUE);
-    this->menu_data.emplace_back(MN_HUMAN, 1, NO_MORE_DEPTH, EC_OK_HUMAN);
-    this->menu_data.emplace_back(MN_UNREADABLE, 1, NO_MORE_DEPTH, EC_OK_UNREADABLE);
-    this->menu_data.emplace_back(MN_REALM1, 1, NO_MORE_DEPTH, EC_OK_REALM1);
-    this->menu_data.emplace_back(MN_REALM2, 1, NO_MORE_DEPTH, EC_OK_REALM2);
-    this->menu_data.emplace_back(MN_FIRST, 1, NO_MORE_DEPTH, EC_OK_FIRST);
-    this->menu_data.emplace_back(MN_SECOND, 1, NO_MORE_DEPTH, EC_OK_SECOND);
-    this->menu_data.emplace_back(MN_THIRD, 1, NO_MORE_DEPTH, EC_OK_THIRD);
-    this->menu_data.emplace_back(MN_FOURTH, 1, NO_MORE_DEPTH, EC_OK_FOURTH);
+    this->menu_data.emplace_back(MN_ADJECTIVE_SPECIAL, 0, tl::nullopt, tl::nullopt);
+    this->menu_data.emplace_back(MN_BOOSTED, 1, tl::nullopt, EC_OK_BOOSTED);
+    this->menu_data.emplace_back(MN_MORE_DICE, 1, tl::nullopt, EC_OK_MORE_DICE);
+    this->menu_data.emplace_back(MN_MORE_BONUS, 1, tl::nullopt, EC_OK_MORE_BONUS);
+    this->menu_data.emplace_back(MN_WANTED, 1, tl::nullopt, EC_OK_WANTED);
+    this->menu_data.emplace_back(MN_UNIQUE, 1, tl::nullopt, EC_OK_UNIQUE);
+    this->menu_data.emplace_back(MN_HUMAN, 1, tl::nullopt, EC_OK_HUMAN);
+    this->menu_data.emplace_back(MN_UNREADABLE, 1, tl::nullopt, EC_OK_UNREADABLE);
+    this->menu_data.emplace_back(MN_REALM1, 1, tl::nullopt, EC_OK_REALM1);
+    this->menu_data.emplace_back(MN_REALM2, 1, tl::nullopt, EC_OK_REALM2);
+    this->menu_data.emplace_back(MN_FIRST, 1, tl::nullopt, EC_OK_FIRST);
+    this->menu_data.emplace_back(MN_SECOND, 1, tl::nullopt, EC_OK_SECOND);
+    this->menu_data.emplace_back(MN_THIRD, 1, tl::nullopt, EC_OK_THIRD);
+    this->menu_data.emplace_back(MN_FOURTH, 1, tl::nullopt, EC_OK_FOURTH);
 
-    this->menu_data.emplace_back(MN_NOUN, 0, NO_MORE_DEPTH, -1);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::WEAPONS), 1, NO_MORE_DEPTH, EC_KK_WEAPONS);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::FAVORITE_WEAPONS), 1, NO_MORE_DEPTH, EC_KK_FAVORITE_WEAPONS);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::ARMORS), 1, NO_MORE_DEPTH, EC_KK_ARMORS);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::MISSILES), 1, NO_MORE_DEPTH, EC_KK_MISSILES);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::DEVICES), 1, NO_MORE_DEPTH, EC_KK_DEVICES);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::LIGHTS), 1, NO_MORE_DEPTH, EC_KK_LIGHTS);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::JUNKS), 1, NO_MORE_DEPTH, EC_KK_JUNKS);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::CORPSES), 1, NO_MORE_DEPTH, EC_KK_CORPSES);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::SPELLBOOKS), 1, NO_MORE_DEPTH, EC_KK_SPELLBOOKS);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::SHIELDS), 1, NO_MORE_DEPTH, EC_KK_SHIELDS);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::BOWS), 1, NO_MORE_DEPTH, EC_KK_BOWS);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::RINGS), 1, NO_MORE_DEPTH, EC_KK_RINGS);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::AMULETS), 1, NO_MORE_DEPTH, EC_KK_AMULETS);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::SUITS), 1, NO_MORE_DEPTH, EC_KK_SUITS);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::CLOAKS), 1, NO_MORE_DEPTH, EC_KK_CLOAKS);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::HELMS), 1, NO_MORE_DEPTH, EC_KK_HELMS);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::GLOVES), 1, NO_MORE_DEPTH, EC_KK_GLOVES);
-    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::BOOTS), 1, NO_MORE_DEPTH, EC_KK_BOOTS);
+    this->menu_data.emplace_back(MN_NOUN, 0, tl::nullopt, tl::nullopt);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::WEAPONS), 1, tl::nullopt, EC_KK_WEAPONS);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::FAVORITE_WEAPONS), 1, tl::nullopt, EC_KK_FAVORITE_WEAPONS);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::ARMORS), 1, tl::nullopt, EC_KK_ARMORS);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::MISSILES), 1, tl::nullopt, EC_KK_MISSILES);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::DEVICES), 1, tl::nullopt, EC_KK_DEVICES);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::LIGHTS), 1, tl::nullopt, EC_KK_LIGHTS);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::JUNKS), 1, tl::nullopt, EC_KK_JUNKS);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::CORPSES), 1, tl::nullopt, EC_KK_CORPSES);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::SPELLBOOKS), 1, tl::nullopt, EC_KK_SPELLBOOKS);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::SHIELDS), 1, tl::nullopt, EC_KK_SHIELDS);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::BOWS), 1, tl::nullopt, EC_KK_BOWS);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::RINGS), 1, tl::nullopt, EC_KK_RINGS);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::AMULETS), 1, tl::nullopt, EC_KK_AMULETS);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::SUITS), 1, tl::nullopt, EC_KK_SUITS);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::CLOAKS), 1, tl::nullopt, EC_KK_CLOAKS);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::HELMS), 1, tl::nullopt, EC_KK_HELMS);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::GLOVES), 1, tl::nullopt, EC_KK_GLOVES);
+    this->menu_data.emplace_back(autopick_keys.at(AutopickKey::BOOTS), 1, tl::nullopt, EC_KK_BOOTS);
 
-    this->menu_data.emplace_back(MN_COMMAND_LETTER, 0, NO_MORE_DEPTH, -1);
-    this->menu_data.emplace_back(MN_CL_AUTOPICK, 1, NO_MORE_DEPTH, EC_CL_AUTOPICK);
-    this->menu_data.emplace_back(MN_CL_DESTROY, 1, NO_MORE_DEPTH, EC_CL_DESTROY);
-    this->menu_data.emplace_back(MN_CL_LEAVE, 1, NO_MORE_DEPTH, EC_CL_LEAVE);
-    this->menu_data.emplace_back(MN_CL_QUERY, 1, NO_MORE_DEPTH, EC_CL_QUERY);
-    this->menu_data.emplace_back(MN_CL_NO_DISP, 1, NO_MORE_DEPTH, EC_CL_NO_DISP);
+    this->menu_data.emplace_back(MN_COMMAND_LETTER, 0, tl::nullopt, tl::nullopt);
+    this->menu_data.emplace_back(MN_CL_AUTOPICK, 1, tl::nullopt, EC_CL_AUTOPICK);
+    this->menu_data.emplace_back(MN_CL_DESTROY, 1, tl::nullopt, EC_CL_DESTROY);
+    this->menu_data.emplace_back(MN_CL_LEAVE, 1, tl::nullopt, EC_CL_LEAVE);
+    this->menu_data.emplace_back(MN_CL_QUERY, 1, tl::nullopt, EC_CL_QUERY);
+    this->menu_data.emplace_back(MN_CL_NO_DISP, 1, tl::nullopt, EC_CL_NO_DISP);
 
-    this->menu_data.emplace_back(MN_DELETE_CHAR, -1, DELETE, EC_DELETE_CHAR);
+    this->menu_data.emplace_back(MN_DELETE_CHAR, tl::nullopt, DELETE, EC_DELETE_CHAR);
 }
 
 const CommandMenuDatum &CommandMenuData::get_datum(size_t num) const
@@ -215,7 +218,7 @@ int CommandMenuData::get_com_id(char key) const
 {
     for (const auto &menu_datum : this->menu_data) {
         if (menu_datum.key == key) {
-            return menu_datum.com_id;
+            return menu_datum.com_id.value_or(-1);
         }
     }
 

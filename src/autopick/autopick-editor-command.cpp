@@ -723,6 +723,8 @@ ape_quittance do_editor_command(PlayerType *player_ptr, text_body_type *tb, int 
         toggle_keyword(tb, FLG_FOURTH);
         add_keyword(tb, FLG_SPELLBOOKS);
         break;
+    default:
+        break;
     }
 
     tb->old_com_id = com_id;

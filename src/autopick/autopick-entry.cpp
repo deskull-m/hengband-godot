@@ -333,7 +333,7 @@ void autopick_entry_from_object(PlayerType *player_ptr, autopick_type *entry, co
     bool name = true;
     entry->name.clear();
     entry->insc = o_ptr->inscription.value_or("");
-    entry->action.set({ AutopickMethod::AUTOPICK, AutopickMethod::DISPLAY });
+    entry->action = { AutopickMethod::AUTOPICK, AutopickMethod::DISPLAY };
     entry->flags[0] = entry->flags[1] = 0L;
     entry->dice = 0;
 

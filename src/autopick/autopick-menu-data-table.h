@@ -2,11 +2,12 @@
 
 #include "util/abstract-vector-wrapper.h"
 #include <string_view>
+#include <tl/optional.hpp>
 #include <vector>
 
 struct CommandMenuDatum {
 public:
-    CommandMenuDatum(std::string_view name, size_t level, char key, int com_id)
+    CommandMenuDatum(std::string_view name, tl::optional<size_t> level, tl::optional<char> key, tl::optional<int> com_id)
         : name(name)
         , depth(level)
         , key(key)
@@ -14,10 +15,10 @@ public:
     {
     }
 
-    std::string_view name = "";
-    size_t depth = 0; //!< メニュー階層.
-    char key = 0;
-    int com_id = 0;
+    std::string_view name;
+    tl::optional<size_t> depth; //!< メニュー階層.
+    tl::optional<char> key;
+    tl::optional<int> com_id;
 };
 
 class CommandMenuData : public util::AbstractVectorWrapper<CommandMenuDatum> {
