@@ -307,7 +307,6 @@ static bool reset_save_data(PlayerType *player_ptr, bool *new_game)
 {
     *new_game = true;
     player_ptr->is_dead = false;
-    AngbandWorld::get_instance().sf_lives++;
     return true;
 }
 
