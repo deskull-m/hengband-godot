@@ -9,6 +9,7 @@
 
 #include "godot-audio-manager.h"
 #include "godot-input-handler.h"
+#include "godot-map3d.h"
 #include "godot-player-status.h"
 #include "godot-term-hooks.h"
 #include "godot-terminal.h"
@@ -104,6 +105,11 @@ public:
     ///       speed, ac, name, race, class, stat_str/int/wis/dex/con/chr,
     ///       stat_top_str/int/wis/dex/con/chr
     godot::Dictionary get_player_status();
+
+    /// 3D マップ描画ノードを登録/解除する (term 0 のみ意味を持つ)
+    /// @param idx        ターミナルインデックス (通常 0)
+    /// @param map3d_obj  GodotMap3D ノード (null で解除)
+    void register_map3d(int idx, godot::Object *map3d_obj);
 
 protected:
     static void _bind_methods();

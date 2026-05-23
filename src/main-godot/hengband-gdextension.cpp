@@ -412,6 +412,19 @@ void HengbandGame::unregister_terminal(int idx)
     sub_window_roots_[idx] = nullptr;
 }
 
+void HengbandGame::register_map3d(int idx, Object *map3d_obj)
+{
+    if (idx < 0 || idx >= HENGBAND_TERM_COUNT) {
+        return;
+    }
+    auto *m3d = Object::cast_to<GodotMap3D>(map3d_obj);
+    auto &td = term_data_[idx];
+    td.map3d = m3d;
+    if (m3d) {
+        m3d->set_grid_size(td.cols, td.rows);
+    }
+}
+
 void HengbandGame::set_sub_window_size(int idx, int cols, int rows)
 {
     if (idx < 0 || idx >= HENGBAND_TERM_COUNT) {
@@ -577,6 +590,9 @@ void HengbandGame::_bind_methods()
     ClassDB::bind_method(
         D_METHOD("get_player_status"),
         &HengbandGame::get_player_status);
+    ClassDB::bind_method(
+        D_METHOD("register_map3d", "idx", "map3d_obj"),
+        &HengbandGame::register_map3d);
 
     // シグナル: ゲームターン更新時にプレイヤーステータスを通知する
     // 引数: status (Dictionary) - get_player_status() と同じキー構成
@@ -597,6 +613,7 @@ void initialize_hengband_module(ModuleInitializationLevel p_level)
     ClassDB::register_class<GodotTileLayer>();
     ClassDB::register_class<GodotInputHandler>();
     ClassDB::register_class<GodotAudioManager>();
+    ClassDB::register_class<GodotMap3D>();
     ClassDB::register_class<HengbandGame>();
 }
 

@@ -94,6 +94,9 @@ func _ready() -> void:
 	if status_panel and status_panel.has_method("connect_to_game"):
 		status_panel.connect_to_game(game)
 
+	# 起動時にマップ 3D 表示設定を適用する (Phase 1)
+	_apply_map3d_state.call_deferred()
+
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		_save_layout_config()
@@ -219,6 +222,9 @@ func _setup_config_ui() -> void:
 	bigtile_check.button_pressed = GameState.use_bigtile
 	bigtile_check.disabled = (GameState.tile_mode == 0)
 
+	var map3d_check: CheckBox = $ConfigLayer/ConfigPanel/PanelVBox/Map3DRow/Map3DCheck
+	map3d_check.button_pressed = GameState.map_3d_enabled
+
 	# 現在のフォント名にマッチするプリセットを選択（なければ "カスタム"）
 	var idx := FONT_PRESETS.find(GameState.font_name)
 	if idx < 0:
@@ -235,6 +241,7 @@ func _setup_config_ui() -> void:
 	spin.value_changed.connect(_on_font_size_changed)
 	tile_option.item_selected.connect(_on_tile_option_selected)
 	bigtile_check.toggled.connect(_on_bigtile_check_toggled)
+	map3d_check.toggled.connect(_on_map3d_check_toggled)
 	$ConfigLayer/ConfigPanel/PanelVBox/ButtonRow/ApplyButton.pressed.connect(_on_apply_config)
 	$ConfigLayer/ConfigPanel/PanelVBox/ButtonRow/CloseButton.pressed.connect(_on_close_config)
 
@@ -287,6 +294,20 @@ func _on_bigtile_check_toggled(toggled: bool) -> void:
 	$HengbandGame.set_bigtile_enabled(toggled)
 	if $HengbandGame.is_game_started():
 		$HengbandGame/InputHandler.inject_key(0x12)  # Ctrl+R: 再描画で bigtile 反映
+
+## マップ 3D 表示 ON/OFF (Phase 1: 全ペインの map_3d_enabled を更新)
+func _on_map3d_check_toggled(toggled: bool) -> void:
+	GameState.map_3d_enabled = toggled
+	_apply_map3d_state()
+	if toggled and $HengbandGame.is_game_started():
+		# 再描画してメッシュにデータを流し込む
+		$HengbandGame/InputHandler.inject_key(0x12)  # Ctrl+R
+
+## GameState.map_3d_enabled をメインペインに反映する
+func _apply_map3d_state() -> void:
+	for pane in get_tree().get_nodes_in_group("terminal_panes"):
+		if pane.terminal_index == 0 and pane.has_method("set_map_3d_enabled"):
+			pane.set_map_3d_enabled(GameState.map_3d_enabled)
 
 ## UI の現在値を選択ペインに反映してフォントを即時適用する（保存はしない）
 func _apply_config_live() -> void:

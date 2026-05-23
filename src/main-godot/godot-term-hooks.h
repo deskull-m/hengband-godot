@@ -24,6 +24,7 @@ namespace hengband_godot {
 class GodotTerminal;
 class GodotTileLayer;
 class GodotInputHandler;
+class GodotMap3D;
 } // namespace hengband_godot
 
 /*!
@@ -35,6 +36,7 @@ struct term_data_godot {
     term_type t{};
     hengband_godot::GodotTerminal *terminal{ nullptr }; ///< テキスト描画ノード
     hengband_godot::GodotTileLayer *tile_layer{ nullptr }; ///< タイル描画ノード
+    hengband_godot::GodotMap3D *map3d{ nullptr }; ///< 3D マップ描画ノード (term 0 のみ)
     int cols{ 80 };
     int rows{ 24 };
     int cell_w{ 8 };
@@ -94,4 +96,10 @@ inline hengband_godot::GodotTerminal *get_terminal(term_type *t)
 inline hengband_godot::GodotTileLayer *get_tile_layer(term_type *t)
 {
     return reinterpret_cast<term_data_godot *>(t->data)->tile_layer;
+}
+
+/// ターミナルデータから GodotMap3D ポインタを取得するヘルパー (term 0 のみ非 null)
+inline hengband_godot::GodotMap3D *get_map3d(term_type *t)
+{
+    return reinterpret_cast<term_data_godot *>(t->data)->map3d;
 }

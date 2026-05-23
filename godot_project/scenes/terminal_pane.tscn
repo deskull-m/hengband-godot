@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3 uid="uid://terminal_pane"]
+[gd_scene load_steps=4 format=3 uid="uid://terminal_pane"]
 
 [ext_resource type="Script" path="res://scripts/terminal_pane.gd" id="1_pane"]
+[ext_resource type="PackedScene" uid="uid://map3d_overlay" path="res://scenes/map3d_overlay.tscn" id="2_map3d"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pane"]
 bg_color = Color(0, 0, 0, 1)
@@ -78,3 +79,15 @@ z_index = 0
 
 [node name="Terminal" type="GodotTerminal" parent="PaneVBox/SubViewportContainer/SubViewport/TerminalContainer"]
 z_index = 1
+
+; --- 3D マップオーバーレイ (Phase 1) ---
+; 端末描画 (Node2D ベース) とは別パイプラインで描画するため
+; SubViewport 直下の Control として配置し、map_3d_enabled 切替時のみ visible にする。
+; サイズと位置は terminal_pane.gd の fit_subviewport() が制御する。
+
+[node name="Map3DOverlay" parent="PaneVBox/SubViewportContainer/SubViewport" instance=ExtResource("2_map3d")]
+visible = false
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 640.0
+offset_bottom = 400.0

@@ -18,6 +18,9 @@ var tile_mode: int = 0
 ## タイルを2倍幅で表示するかどうか
 var use_bigtile: bool = false
 
+## メインペインのマップ領域を Minecraft 風 3D 表示にするかどうか (Phase 1 スパイク)
+var map_3d_enabled: bool = false
+
 ## ウィンドウ配置 (size が 0,0 = 未保存、OS デフォルトを使用)
 var window_rect: Rect2i = Rect2i(0, 0, 0, 0)
 
@@ -47,6 +50,7 @@ func save_config() -> void:
 	cfg.set_value("display", "font_size", font_size)
 	cfg.set_value("display", "tile_mode", tile_mode)
 	cfg.set_value("display", "use_bigtile", use_bigtile)
+	cfg.set_value("display", "map_3d_enabled", map_3d_enabled)
 	cfg.set_value("window", "x", window_rect.position.x)
 	cfg.set_value("window", "y", window_rect.position.y)
 	cfg.set_value("window", "w", window_rect.size.x)
@@ -67,6 +71,7 @@ func load_config() -> void:
 	var old_use_tiles: bool = cfg.get_value("display", "use_tiles", false)
 	tile_mode = cfg.get_value("display", "tile_mode", 1 if old_use_tiles else 0)
 	use_bigtile = cfg.get_value("display", "use_bigtile", use_bigtile)
+	map_3d_enabled = cfg.get_value("display", "map_3d_enabled", map_3d_enabled)
 	var wx: int = cfg.get_value("window", "x", 0)
 	var wy: int = cfg.get_value("window", "y", 0)
 	var ww: int = cfg.get_value("window", "w", 0)
