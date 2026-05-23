@@ -177,8 +177,9 @@ static bool wr_savefile_new(PlayerType *player_ptr)
     }
 
     wr_u32b(InnerGameData::get_instance().get_total_play_time());
-    wr_FlagGroup(world.sf_winner, wr_byte);
-    wr_FlagGroup(world.sf_retired, wr_byte);
+    const auto &igd = InnerGameData::get_instance();
+    wr_FlagGroup(igd.get_won_classes(), wr_byte);
+    wr_FlagGroup(igd.get_retired_classes(), wr_byte);
 
     wr_player(player_ptr);
     tmp16u = PY_MAX_LEVEL;

@@ -104,8 +104,13 @@ static void rd_winner_class()
         return;
     }
 
-    rd_FlagGroup(AngbandWorld::get_instance().sf_winner, rd_byte);
-    rd_FlagGroup(AngbandWorld::get_instance().sf_retired, rd_byte);
+    auto &igd = InnerGameData::get_instance();
+    EnumClassFlagGroup<PlayerClassType> winner_classes{};
+    rd_FlagGroup(winner_classes, rd_byte);
+    igd.set_won_classes(winner_classes);
+    EnumClassFlagGroup<PlayerClassType> retired_classes{};
+    rd_FlagGroup(retired_classes, rd_byte);
+    igd.set_retired_classes(retired_classes);
 }
 
 static void load_player_world(PlayerType *player_ptr)

@@ -103,10 +103,10 @@ static void dump_yourself(PlayerType *player_ptr, FILE *fff)
  */
 static void dump_winner_classes(FILE *fff)
 {
-    const auto &world = AngbandWorld::get_instance();
-    const int n = world.sf_winner.count();
-    concptr ss = n > 1 ? _("", "s") : "";
-    fprintf(fff, _("*勝利*済みの職業%s : %d\n", "Class of *Winner%s* : %d\n"), ss, n);
+    const auto &igd = InnerGameData::get_instance();
+    const int n = igd.get_won_classes_count();
+    std::string ss = n > 1 ? _("", "s") : "";
+    fprintf(fff, _("*勝利*済みの職業%s : %d\n", "Class of *Winner%s* : %d\n"), ss.data(), n);
     if (n == 0) {
         return;
     }
@@ -116,13 +116,13 @@ static void dump_winner_classes(FILE *fff)
     std::string l = "";
     for (int c = 0; c < PLAYER_CLASS_TYPE_MAX; c++) {
         const auto pclass_enum = i2enum<PlayerClassType>(c);
-        if (world.sf_winner.has_not(pclass_enum)) {
+        if (igd.has_not_won_class(pclass_enum)) {
             continue;
         }
 
         auto &player_class = class_info.at(i2enum<PlayerClassType>(c));
         std::string t = player_class.title.string();
-        if (world.sf_retired.has_not(pclass_enum)) {
+        if (igd.has_not_retired_class(pclass_enum)) {
             t = "(" + t + ")";
         }
 
