@@ -9,6 +9,7 @@
 
 #include "godot-audio-manager.h"
 #include "godot-input-handler.h"
+#include "godot-map3d.h"
 #include "godot-term-hooks.h"
 #include "godot-terminal.h"
 #include "godot-tile-layer.h"
@@ -96,6 +97,11 @@ public:
     /// 登録済みターミナルの参照を解除する（ペインクローズ時に呼ぶ）
     /// idx=0 は無視する
     void unregister_terminal(int idx);
+
+    /// 3D マップ描画ノードを登録/解除する (term 0 のみ意味を持つ)
+    /// @param idx        ターミナルインデックス (通常 0)
+    /// @param map3d_obj  GodotMap3D ノード (null で解除)
+    void register_map3d(int idx, godot::Object *map3d_obj);
 
 protected:
     static void _bind_methods();
