@@ -35,6 +35,7 @@
 #include "system/floor/town-info.h"
 #include "system/floor/town-list.h"
 #include "system/floor/wilderness-grid.h"
+#include "system/inner-game-data.h"
 #include "system/monrace/monrace-list.h"
 #include "system/player-type-definition.h"
 #include "util/angband-files.h"
@@ -175,7 +176,7 @@ static bool wr_savefile_new(PlayerType *player_ptr)
         wr_s16b(floor_id ? *floor_id : 0);
     }
 
-    wr_u32b(world.sf_play_time);
+    wr_u32b(InnerGameData::get_instance().get_total_play_time());
     wr_FlagGroup(world.sf_winner, wr_byte);
     wr_FlagGroup(world.sf_retired, wr_byte);
 

@@ -43,6 +43,7 @@
 #include "system/angband-exceptions.h"
 #include "system/angband-system.h"
 #include "system/angband-version.h"
+#include "system/inner-game-data.h"
 #include "system/player-type-definition.h"
 #include "system/system-variables.h"
 #include "util/angband-files.h"
@@ -91,7 +92,7 @@ static void rd_total_play_time()
         return;
     }
 
-    AngbandWorld::get_instance().sf_play_time = rd_u32b();
+    InnerGameData::get_instance().set_total_play_time(rd_u32b());
 }
 
 /*!

@@ -68,3 +68,18 @@ int InnerGameData::get_real_turns(int turns) const
         return turns;
     }
 }
+
+uint32_t InnerGameData::get_total_play_time() const
+{
+    return this->total_play_time;
+}
+
+void InnerGameData::set_total_play_time(uint32_t time)
+{
+    this->total_play_time = time;
+}
+
+void InnerGameData::add_play_time(uint32_t time)
+{
+    this->total_play_time += time;
+}
