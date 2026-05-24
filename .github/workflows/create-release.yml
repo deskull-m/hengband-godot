@@ -11,7 +11,7 @@ on:
 jobs:
   publish-release-page:
     name: Publish Release Page
-    runs-on: windows-2022
+    runs-on: windows-2025-vs2026
     steps:
       - uses: actions/checkout@v3
         with:
