@@ -233,19 +233,8 @@ void GodotMap3D::update_text(int x, int y, int n, uint8_t color, const char *str
                 ++p;
             }
             auto &cell = grid_[cell_idx(col, y)];
-            // 既存のプレイヤーセルが上書きされた場合は未確定状態に戻す
-            if (cell.ch == U'@' && cp != U'@'
-                && col == player_x_ && y == player_y_) {
-                player_x_ = -1;
-                player_y_ = -1;
-            }
             cell.ch = cp;
             cell.color = color;
-            // プレイヤー位置を即座に追跡 (メッシュ再構築待ちにしない)
-            if (cp == U'@' && col >= origin_col_ && y >= origin_row_) {
-                player_x_ = col;
-                player_y_ = y;
-            }
             ++col;
         }
     }
@@ -260,12 +249,7 @@ void GodotMap3D::wipe_cells(int x, int y, int n)
     {
         std::lock_guard<std::mutex> lock(grid_mutex_);
         for (int i = 0; i < n && (x + i) < cols_; ++i) {
-            const int cx = x + i;
-            auto &cell = grid_[cell_idx(cx, y)];
-            if (cell.ch == U'@' && cx == player_x_ && y == player_y_) {
-                player_x_ = -1;
-                player_y_ = -1;
-            }
+            auto &cell = grid_[cell_idx(x + i, y)];
             cell.ch = U' ';
             cell.color = 0;
         }
@@ -281,10 +265,19 @@ void GodotMap3D::clear_all()
             c.ch = U' ';
             c.color = 0;
         }
-        player_x_ = -1;
-        player_y_ = -1;
+        // player_x_ / player_y_ はクリアしない: term_hooks 側の
+        // set_player_screen_position が常に最新値を保持しているため。
     }
     dirty_.store(true);
+}
+
+void GodotMap3D::set_player_screen_position(int sx, int sy)
+{
+    // term_hooks のゲームスレッドから呼ばれる。grid_mutex_ で
+    // player_x_ / player_y_ を保護しつつ更新する。
+    std::lock_guard<std::mutex> lock(grid_mutex_);
+    player_x_ = sx;
+    player_y_ = sy;
 }
 
 Vector3 GodotMap3D::get_player_world_position() const
@@ -376,6 +369,8 @@ void GodotMap3D::_bind_methods()
     ClassDB::bind_method(D_METHOD("clear_all"), &GodotMap3D::clear_all);
     ClassDB::bind_method(D_METHOD("set_active", "active"), &GodotMap3D::set_active);
     ClassDB::bind_method(D_METHOD("is_active"), &GodotMap3D::is_active);
+    ClassDB::bind_method(D_METHOD("set_player_screen_position", "sx", "sy"),
+        &GodotMap3D::set_player_screen_position);
     ClassDB::bind_method(D_METHOD("get_player_world_position"),
         &GodotMap3D::get_player_world_position);
     ClassDB::bind_method(D_METHOD("has_player"), &GodotMap3D::has_player);

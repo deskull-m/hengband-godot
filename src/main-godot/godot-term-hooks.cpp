@@ -15,9 +15,12 @@
 #include "game-option/runtime-arguments.h"
 #include "game-option/special-options.h"
 #include "locale/japanese.h"
+#include "system/enums/terrain/terrain-characteristics.h"
 #include "system/floor/floor-info.h"
+#include "system/grid-type-definition.h"
 #include "system/player-type-definition.h"
 #include "system/system-variables.h"
+#include "system/terrain/terrain-definition.h"
 #include "target/target-checker.h"
 #include "term/gameterm.h"
 #include "term/z-term.h"
@@ -171,6 +174,16 @@ errr term_xtra_godot(int n, int v)
         if (game_term == term_screen) {
             player_status_push(p_ptr);
         }
+        // 3D マップ: プレイヤー画面座標を p_ptr から直接更新する。
+        // '@' 文字検出に頼ると tile モードでは player を捕捉できないため、
+        // ゲームスレッドから panel_* と p_ptr->x/y を使って計算する。
+        if (auto *m3d = get_map3d(game_term)) {
+            if (p_ptr && p_ptr->current_floor_ptr) {
+                const int sx = static_cast<int>(p_ptr->x) - static_cast<int>(panel_col_min) + 13;
+                const int sy = static_cast<int>(p_ptr->y) - static_cast<int>(panel_row_min) + 1;
+                m3d->set_player_screen_position(sx, sy);
+            }
+        }
         return 0;
     }
     case TERM_XTRA_SHAPE:
@@ -283,6 +296,42 @@ errr term_pict_godot(TERM_LEN x, TERM_LEN y, int n,
     tiles->draw_tiles(x, y, n,
         reinterpret_cast<const uint8_t *>(ap), cp,
         reinterpret_cast<const uint8_t *>(tap), tcp);
+
+    // 3D マップ: pict_hook で描かれた領域は floor.grid_array から
+    // 地形種別を引いて map3d のテキストグリッドを直接更新する。
+    // (これで tile モードでもダンジョンが 3D に反映される)
+    if (auto *m3d = get_map3d(game_term)) {
+        if (p_ptr && p_ptr->current_floor_ptr) {
+            const auto &floor = *p_ptr->current_floor_ptr;
+            for (int i = 0; i < n; ++i) {
+                const int sx = x + i;
+                const int sy = y;
+                // 画面座標 → ダンジョン座標
+                const int dy = sy + static_cast<int>(panel_row_min) - 1;
+                const int dx = sx + static_cast<int>(panel_col_min) - 13;
+                if (dy < 0 || dx < 0
+                    || dy >= floor.height || dx >= floor.width) {
+                    continue;
+                }
+                const auto &g = floor.grid_array[dy][dx];
+                // 壁/床の二択を地形フラグから推定する。
+                // Phase 1 簡易: feat の get_terrain() で wall/can_pass を判定。
+                const auto &terrain = g.get_terrain();
+                char ch = '.'; // 既定は床
+                if (terrain.flags.has(TerrainCharacteristics::WALL)) {
+                    ch = '#';
+                } else if (terrain.flags.has(TerrainCharacteristics::DOOR)) {
+                    ch = '+';
+                } else if (terrain.flags.has(TerrainCharacteristics::LESS)) {
+                    ch = '<';
+                } else if (terrain.flags.has(TerrainCharacteristics::MORE)) {
+                    ch = '>';
+                }
+                const char buf[2] = { ch, 0 };
+                m3d->update_text(sx, sy, 1, 0, buf);
+            }
+        }
+    }
     return 0;
 }
 
