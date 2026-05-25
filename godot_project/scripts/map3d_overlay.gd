@@ -62,12 +62,6 @@ func _aim_camera_at(camera: Camera3D, target: Vector3) -> void:
 func resize_viewport(_px_size: Vector2i) -> void:
 	pass
 
-## 親ペインから呼ばれる: マップ矩形の原点を 3D マップノードに反映する
-func set_map_origin(col: int, row: int) -> void:
-	var map3d: GodotMap3D = $SubViewport/Map3D as GodotMap3D
-	if map3d:
-		map3d.set_map_origin(col, row)
-
 ## 親ペインから呼ばれる: 3D マップノードを取得する (HengbandGame.register_map3d 用)
 func get_map3d_node() -> Node:
 	return $SubViewport/Map3D

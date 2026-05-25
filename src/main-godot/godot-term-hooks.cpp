@@ -78,9 +78,7 @@ void term_resize_hook_godot()
     if (td->tile_layer) {
         td->tile_layer->set_grid_size(new_cols, new_rows);
     }
-    if (td->map3d) {
-        td->map3d->set_grid_size(new_cols, new_rows);
-    }
+    // map3d はターミナルサイズに依存しない (フロアスナップショット駆動)
 }
 
 // ---------------------------------------------------------------------------
@@ -102,10 +100,6 @@ errr term_text_godot(int x, int y, int n, TERM_COLOR a, concptr s)
     const char *str = s;
 #endif
     term->draw_text(x, y, n, static_cast<uint8_t>(a), str);
-    // 3D マップノード (term 0 のみ) にも転送する
-    if (auto *m3d = get_map3d(game_term)) {
-        m3d->update_text(x, y, n, static_cast<uint8_t>(a), str);
-    }
     return 0;
 }
 
@@ -119,9 +113,6 @@ errr term_wipe_godot(int x, int y, int n)
         return 1;
     }
     term->wipe_cells(x, y, n);
-    if (auto *m3d = get_map3d(game_term)) {
-        m3d->wipe_cells(x, y, n);
-    }
     return 0;
 }
 
@@ -153,9 +144,8 @@ errr term_xtra_godot(int n, int v)
         if (tiles) {
             tiles->clear_all();
         }
-        if (auto *m3d = get_map3d(game_term)) {
-            m3d->clear_all();
-        }
+        // 3D マップは TERM_XTRA_FRESH 時にフロアスナップショットで再構築されるため
+        // ここで明示的にクリアする必要はない (set_active(false) で破棄される)
         return 0;
     }
     case TERM_XTRA_FRESH:
@@ -169,14 +159,40 @@ errr term_xtra_godot(int n, int v)
         if (tiles) {
             tiles->call_deferred("queue_redraw");
         }
-        // 3D マップ: プレイヤー画面座標を p_ptr から直接更新する。
-        // '@' 文字検出に頼ると tile モードでは player を捕捉できないため、
-        // ゲームスレッドから panel_* と p_ptr->x/y を使って計算する。
+        // 3D マップ: フロア全体のスナップショットを生成して送る。
+        // ターミナルパネルの可視範囲に縛られない、ダンジョン全体表示用。
         if (auto *m3d = get_map3d(game_term)) {
             if (p_ptr && p_ptr->current_floor_ptr) {
-                const int sx = static_cast<int>(p_ptr->x) - static_cast<int>(panel_col_min) + 13;
-                const int sy = static_cast<int>(p_ptr->y) - static_cast<int>(panel_row_min) + 1;
-                m3d->set_player_screen_position(sx, sy);
+                const auto &floor = *p_ptr->current_floor_ptr;
+                const int w = static_cast<int>(floor.width);
+                const int h = static_cast<int>(floor.height);
+                // 上限を設けて暴走防止 (Hengband の最大は概ね 198×66 = 13068)
+                if (w > 0 && h > 0 && (static_cast<long long>(w) * h) < 100000LL) {
+                    std::vector<uint8_t> kinds(static_cast<size_t>(w) * h, 0);
+                    for (int dy = 0; dy < h; ++dy) {
+                        for (int dx = 0; dx < w; ++dx) {
+                            const auto &g = floor.grid_array[dy][dx];
+                            // プレイヤーがまだ知らないセルは描画しない
+                            if (!g.is_mark() && !g.is_view()) {
+                                continue;
+                            }
+                            const auto &terrain = g.get_terrain();
+                            uint8_t kind = M3D_FLOOR; // 既定は床
+                            if (terrain.flags.has(TerrainCharacteristics::WALL)) {
+                                kind = M3D_WALL;
+                            } else if (terrain.flags.has(TerrainCharacteristics::DOOR)) {
+                                kind = M3D_DOOR_CLOSED;
+                            } else if (terrain.flags.has(TerrainCharacteristics::LESS)) {
+                                kind = M3D_STAIR_UP;
+                            } else if (terrain.flags.has(TerrainCharacteristics::MORE)) {
+                                kind = M3D_STAIR_DOWN;
+                            }
+                            kinds[dy * w + dx] = kind;
+                        }
+                    }
+                    m3d->set_floor_snapshot(w, h, kinds.data(),
+                        static_cast<int>(p_ptr->x), static_cast<int>(p_ptr->y));
+                }
             }
         }
         return 0;
@@ -291,42 +307,6 @@ errr term_pict_godot(TERM_LEN x, TERM_LEN y, int n,
     tiles->draw_tiles(x, y, n,
         reinterpret_cast<const uint8_t *>(ap), cp,
         reinterpret_cast<const uint8_t *>(tap), tcp);
-
-    // 3D マップ: pict_hook で描かれた領域は floor.grid_array から
-    // 地形種別を引いて map3d のテキストグリッドを直接更新する。
-    // (これで tile モードでもダンジョンが 3D に反映される)
-    if (auto *m3d = get_map3d(game_term)) {
-        if (p_ptr && p_ptr->current_floor_ptr) {
-            const auto &floor = *p_ptr->current_floor_ptr;
-            for (int i = 0; i < n; ++i) {
-                const int sx = x + i;
-                const int sy = y;
-                // 画面座標 → ダンジョン座標
-                const int dy = sy + static_cast<int>(panel_row_min) - 1;
-                const int dx = sx + static_cast<int>(panel_col_min) - 13;
-                if (dy < 0 || dx < 0
-                    || dy >= floor.height || dx >= floor.width) {
-                    continue;
-                }
-                const auto &g = floor.grid_array[dy][dx];
-                // 壁/床の二択を地形フラグから推定する。
-                // Phase 1 簡易: feat の get_terrain() で wall/can_pass を判定。
-                const auto &terrain = g.get_terrain();
-                char ch = '.'; // 既定は床
-                if (terrain.flags.has(TerrainCharacteristics::WALL)) {
-                    ch = '#';
-                } else if (terrain.flags.has(TerrainCharacteristics::DOOR)) {
-                    ch = '+';
-                } else if (terrain.flags.has(TerrainCharacteristics::LESS)) {
-                    ch = '<';
-                } else if (terrain.flags.has(TerrainCharacteristics::MORE)) {
-                    ch = '>';
-                }
-                const char buf[2] = { ch, 0 };
-                m3d->update_text(sx, sy, 1, 0, buf);
-            }
-        }
-    }
     return 0;
 }
 

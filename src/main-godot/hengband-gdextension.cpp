@@ -376,9 +376,8 @@ void HengbandGame::register_map3d(int idx, Object *map3d_obj)
     auto *m3d = Object::cast_to<GodotMap3D>(map3d_obj);
     auto &td = term_data_[idx];
     td.map3d = m3d;
-    if (m3d) {
-        m3d->set_grid_size(td.cols, td.rows);
-    }
+    // m3d のグリッドは set_floor_snapshot で動的に確定するので
+    // ここでのサイズ指定は不要 (フロアサイズ ≠ ターミナルサイズ)
 }
 
 void HengbandGame::set_sub_window_size(int idx, int cols, int rows)
