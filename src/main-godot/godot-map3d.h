@@ -75,6 +75,14 @@ public:
     /// 全セルをクリアする
     void clear_all();
 
+    /// 描画アクティブ状態を切り替える (false の間 _process はメッシュ再生成しない)
+    void set_active(bool active);
+
+    bool is_active() const
+    {
+        return active_;
+    }
+
     /// プレイヤー位置を取得する (Godot の `_process` 等で Camera 追従に使う)
     /// 戻り値は 3D ワールド座標 (cell 中心)
     godot::Vector3 get_player_world_position() const;
@@ -93,6 +101,16 @@ private:
 
     /// 更新フラグ (true なら次の _process で rebuild_meshes() を呼ぶ)
     std::atomic<bool> dirty_{ false };
+
+    /// アクティブフラグ (false の間 _process は何もしない。
+    /// 3D 表示無効時の無駄なメッシュ生成・破棄を防ぐ)
+    std::atomic<bool> active_{ false };
+
+    /// 連続したメッシュ再生成を抑えるためのクールダウン残時間 (秒)
+    double rebuild_cooldown_{ 0.0 };
+
+    /// 再生成の最小間隔 (秒): 100ms = 10fps の更新レート
+    static constexpr double REBUILD_INTERVAL = 0.1;
 
     /// 現在のプレイヤー位置 (グリッド座標、見つからない場合は -1)
     int player_x_{ -1 };

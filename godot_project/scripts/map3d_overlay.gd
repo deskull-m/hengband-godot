@@ -58,12 +58,11 @@ func _is_player_known(map3d: GodotMap3D) -> bool:
 	# 原点 (= ROW_MAP, COL_MAP) も Vector3.ZERO に重なるが、Phase 1 では割り切る。
 	return map3d.get_player_world_position() != Vector3.ZERO
 
-## 親ペインから呼ばれる: SubViewport のピクセルサイズを更新する
-func resize_viewport(px_size: Vector2i) -> void:
-	var sv: SubViewport = $SubViewport
-	if sv == null:
-		return
-	sv.size = Vector2i(maxi(64, px_size.x), maxi(64, px_size.y))
+## 親ペインから呼ばれる: SubViewport のピクセルサイズ要求
+## stretch=true のとき SubViewportContainer が自動でリサイズするため何もしない。
+## 互換性のためにシグネチャだけ残す。
+func resize_viewport(_px_size: Vector2i) -> void:
+	pass
 
 ## 親ペインから呼ばれる: マップ矩形の原点を 3D マップノードに反映する
 func set_map_origin(col: int, row: int) -> void:
