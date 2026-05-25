@@ -1,133 +1,63 @@
 /*!
  * @file godot-map3d.cpp
- * @brief Godot 3D マップ描画ノード実装 (Phase 1: テキスト入力ベース)
+ * @brief Godot 3D マップ描画ノード実装 (Phase 2: floor 直読み + 差分更新)
  */
 
 #include "godot-map3d.h"
-#include "term-color-map.h"
 
 #include <godot_cpp/classes/box_mesh.hpp>
 #include <godot_cpp/classes/material.hpp>
 #include <godot_cpp/classes/mesh_instance3d.hpp>
 #include <godot_cpp/classes/standard_material3d.hpp>
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/variant/color.hpp>
 #include <godot_cpp/variant/vector3.hpp>
-
-#include <algorithm>
 
 using namespace godot;
 using namespace hengband_godot;
 
-// ---------------------------------------------------------------------------
-// セル種別 (rebuild_meshes でマテリアルキャッシュキーに使う)
-// ---------------------------------------------------------------------------
-enum MeshKind : uint16_t {
-    KIND_NONE = 0,
-    KIND_FLOOR = 1, ///< '.', ',' — 床ブロック (低)
-    KIND_WALL = 2, ///< '#' — 高い壁
-    KIND_DOOR_CLOSED = 3, ///< '+' — 閉扉
-    KIND_DOOR_OPEN = 4, ///< '\'' — 開扉
-    KIND_STAIR_UP = 5, ///< '<' — 上り階段
-    KIND_STAIR_DOWN = 6, ///< '>' — 下り階段
-    KIND_PLAYER = 7, ///< '@' — プレイヤー
-    KIND_MONSTER = 8, ///< その他文字 — モンスター/アイテム
-};
-
 namespace {
 
 struct MeshSpec {
-    float size_x{ 0.9f };
+    float size_x{ 0.98f };
     float size_y{ 0.05f };
-    float size_z{ 0.9f };
-    float y_offset{ 0.025f }; ///< AABB 中心の Y 位置
+    float size_z{ 0.98f };
+    float y_offset{ 0.025f };
+    Color color{ Color(1, 1, 1) };
 };
 
-/// 文字を MeshKind に分類する
-MeshKind classify_char(char32_t ch)
-{
-    switch (ch) {
-    case U'.':
-    case U',':
-        return KIND_FLOOR;
-    case U'#':
-    case 0x7F: // wall (ASCII DEL: Hengband 内部での壁文字)
-        return KIND_WALL;
-    case U'+':
-        return KIND_DOOR_CLOSED;
-    case U'\'':
-        return KIND_DOOR_OPEN;
-    case U'<':
-        return KIND_STAIR_UP;
-    case U'>':
-        return KIND_STAIR_DOWN;
-    case U'@':
-        return KIND_PLAYER;
-    case U' ':
-    case 0:
-        return KIND_NONE;
-    default:
-        return KIND_MONSTER;
-    }
-}
-
-MeshSpec spec_for_kind(MeshKind kind)
+MeshSpec spec_for_kind(uint8_t kind)
 {
     MeshSpec s;
     switch (kind) {
-    case KIND_FLOOR:
-        s = { 0.98f, 0.05f, 0.98f, 0.025f };
+    case M3D_FLOOR:
+        s = { 1.0f, 0.05f, 1.0f, 0.025f, Color(0.30f, 0.30f, 0.32f) };
         break;
-    case KIND_WALL:
-        s = { 1.0f, 2.0f, 1.0f, 1.0f };
+    case M3D_WALL:
+        s = { 1.0f, 2.0f, 1.0f, 1.0f, Color(0.55f, 0.45f, 0.35f) };
         break;
-    case KIND_DOOR_CLOSED:
-        s = { 0.9f, 2.0f, 0.9f, 1.0f };
+    case M3D_DOOR_CLOSED:
+        s = { 0.9f, 2.0f, 0.9f, 1.0f, Color(0.60f, 0.30f, 0.10f) };
         break;
-    case KIND_DOOR_OPEN:
-        s = { 0.2f, 2.0f, 0.9f, 1.0f };
+    case M3D_DOOR_OPEN:
+        s = { 0.2f, 2.0f, 0.9f, 1.0f, Color(0.40f, 0.25f, 0.10f) };
         break;
-    case KIND_STAIR_UP:
-    case KIND_STAIR_DOWN:
-        s = { 0.8f, 0.3f, 0.8f, 0.15f };
+    case M3D_STAIR_UP:
+        s = { 0.8f, 0.3f, 0.8f, 0.15f, Color(0.50f, 0.80f, 1.00f) };
         break;
-    case KIND_PLAYER:
-        s = { 0.6f, 1.6f, 0.6f, 0.8f };
-        break;
-    case KIND_MONSTER:
-        s = { 0.7f, 1.0f, 0.7f, 0.5f };
+    case M3D_STAIR_DOWN:
+        s = { 0.8f, 0.3f, 0.8f, 0.15f, Color(1.00f, 0.70f, 0.20f) };
         break;
     default:
+        // M3D_NONE — 呼ばれないはずだが安全側に倒す
+        s = { 0.0f, 0.0f, 0.0f, 0.0f, Color(0, 0, 0, 0) };
         break;
     }
     return s;
 }
 
-/// MeshKind から基本色を生成する (TERM_COLOR と組み合わせる前のベース色)
-Color base_color_for_kind(MeshKind kind, uint8_t term_color)
-{
-    // 一部の種別はゲームのカラーよりも目で見やすい固定色を優先する
-    switch (kind) {
-    case KIND_WALL:
-        return Color(0.55f, 0.45f, 0.35f); // 茶土色
-    case KIND_FLOOR:
-        return Color(0.30f, 0.30f, 0.32f); // 暗い灰色
-    case KIND_DOOR_CLOSED:
-        return Color(0.60f, 0.30f, 0.10f); // ブラウン
-    case KIND_DOOR_OPEN:
-        return Color(0.40f, 0.25f, 0.10f);
-    case KIND_STAIR_UP:
-        return Color(0.50f, 0.80f, 1.00f); // 水色
-    case KIND_STAIR_DOWN:
-        return Color(1.00f, 0.70f, 0.20f); // オレンジ
-    case KIND_PLAYER:
-        return Color(1.00f, 0.20f, 0.20f); // 赤
-    case KIND_MONSTER:
-        // モンスター/アイテムは TERM_COLOR をそのまま使う
-        return term_color_to_godot(term_color);
-    default:
-        return Color(1, 1, 1);
-    }
-}
+constexpr int PLAYER_KIND_SENTINEL = 100;
+const MeshSpec PLAYER_SPEC{ 0.6f, 1.6f, 0.6f, 0.8f, Color(1.0f, 0.2f, 0.2f) };
 
 } // anonymous namespace
 
@@ -135,30 +65,26 @@ Color base_color_for_kind(MeshKind kind, uint8_t term_color)
 // GodotMap3D 実装
 // ---------------------------------------------------------------------------
 
-GodotMap3D::GodotMap3D()
-{
-    resize_grid();
-}
-
 void GodotMap3D::_ready()
 {
-    resize_grid();
+    // active_ が true なら最初に空スナップショットを反映する (= 何もしない)
+    // 実際のメッシュは pending_ が届いてから生成される。
 }
 
 void GodotMap3D::_process(double delta)
 {
-    // 非アクティブ (3D オーバーレイ非表示) のときはメッシュ再生成をスキップする。
-    // 毎フレーム数百個の Mesh を作り直して固まるのを防ぐため。
-    // dirty フラグはクリアせず、再アクティブ化時に最新状態へ追従できるようにする。
     if (!active_.load()) {
         return;
     }
+    // プレイヤー位置はクールダウンに関係なく毎フレーム追随させる
+    update_player_position();
+
     if (rebuild_cooldown_ > 0.0) {
         rebuild_cooldown_ -= delta;
         return;
     }
     if (dirty_.exchange(false)) {
-        rebuild_meshes();
+        apply_snapshot();
         rebuild_cooldown_ = REBUILD_INTERVAL;
     }
 }
@@ -167,210 +93,209 @@ void GodotMap3D::set_active(bool active)
 {
     const bool prev = active_.exchange(active);
     if (active && !prev) {
-        // 非アクティブ→アクティブ遷移時は強制再構築
+        // 非アクティブ→アクティブ: 強制的に差分反映を要求
         dirty_.store(true);
     } else if (!active && prev) {
-        // アクティブ→非アクティブ遷移時は既存メッシュを破棄してメモリ解放
-        const int child_count = get_child_count();
-        for (int i = child_count - 1; i >= 0; --i) {
-            Node *child = get_child(i);
-            if (child) {
-                remove_child(child);
-                child->queue_free();
-            }
-        }
+        // アクティブ→非アクティブ: メッシュを全削除してメモリ解放
+        clear_all_meshes();
+        // current_ もクリア (再アクティブ化時に全セルが「変化」とみなされる)
+        current_ = Map3DFloorSnapshot{};
     }
 }
 
-void GodotMap3D::set_grid_size(int cols, int rows)
+void GodotMap3D::set_floor_snapshot(int width, int height,
+    const uint8_t *kinds, int player_x, int player_y)
 {
-    if (cols <= 0 || rows <= 0) {
+    if (width <= 0 || height <= 0 || !kinds) {
         return;
     }
-    if (cols == cols_ && rows == rows_) {
-        return;
-    }
-    cols_ = cols;
-    rows_ = rows;
-    resize_grid();
-    dirty_.store(true);
-}
-
-void GodotMap3D::set_map_origin(int col, int row)
-{
-    origin_col_ = col;
-    origin_row_ = row;
-    dirty_.store(true);
-}
-
-void GodotMap3D::update_text(int x, int y, int n, uint8_t color, const char *str)
-{
-    if (y < 0 || y >= rows_ || x < 0 || !str) {
-        return;
-    }
-    // 簡易 UTF-8 → コードポイント (1 セル = 1 コードポイント前提)
-    // Hengband は cp932/UTF-8 混在で扱われるが、Phase 1 では ASCII 範囲のみ判定対象なので
-    // 先頭バイトが ASCII の場合のみ抽出する。マルチバイト文字は KIND_MONSTER 扱い。
+    const size_t n = static_cast<size_t>(width) * static_cast<size_t>(height);
     {
-        std::lock_guard<std::mutex> lock(grid_mutex_);
-        const unsigned char *p = reinterpret_cast<const unsigned char *>(str);
-        int col = x;
-        for (int i = 0; i < n && col < cols_; ++i) {
-            char32_t cp = 0;
-            if (!*p) {
-                break;
-            }
-            if (*p < 0x80) {
-                cp = *p++;
-            } else if ((*p & 0xE0) == 0xC0) {
-                cp = U'#'; // とりあえず壁扱い (Phase 2 で正確化)
-                p += 2;
-            } else if ((*p & 0xF0) == 0xE0) {
-                cp = U'#';
-                p += 3;
-            } else {
-                cp = U'?';
-                ++p;
-            }
-            auto &cell = grid_[cell_idx(col, y)];
-            cell.ch = cp;
-            cell.color = color;
-            ++col;
-        }
+        std::lock_guard<std::mutex> lock(pending_mutex_);
+        pending_.width = width;
+        pending_.height = height;
+        pending_.kinds.assign(kinds, kinds + n);
+        pending_.player_x = player_x;
+        pending_.player_y = player_y;
     }
     dirty_.store(true);
-}
-
-void GodotMap3D::wipe_cells(int x, int y, int n)
-{
-    if (y < 0 || y >= rows_) {
-        return;
-    }
-    {
-        std::lock_guard<std::mutex> lock(grid_mutex_);
-        for (int i = 0; i < n && (x + i) < cols_; ++i) {
-            auto &cell = grid_[cell_idx(x + i, y)];
-            cell.ch = U' ';
-            cell.color = 0;
-        }
-    }
-    dirty_.store(true);
-}
-
-void GodotMap3D::clear_all()
-{
-    {
-        std::lock_guard<std::mutex> lock(grid_mutex_);
-        for (auto &c : grid_) {
-            c.ch = U' ';
-            c.color = 0;
-        }
-        // player_x_ / player_y_ はクリアしない: term_hooks 側の
-        // set_player_screen_position が常に最新値を保持しているため。
-    }
-    dirty_.store(true);
-}
-
-void GodotMap3D::set_player_screen_position(int sx, int sy)
-{
-    // term_hooks のゲームスレッドから呼ばれる。grid_mutex_ で
-    // player_x_ / player_y_ を保護しつつ更新する。
-    std::lock_guard<std::mutex> lock(grid_mutex_);
-    player_x_ = sx;
-    player_y_ = sy;
 }
 
 Vector3 GodotMap3D::get_player_world_position() const
 {
-    std::lock_guard<std::mutex> lock(grid_mutex_);
-    if (player_x_ < 0 || player_y_ < 0) {
+    std::lock_guard<std::mutex> lock(pending_mutex_);
+    const int px = pending_.player_x >= 0 ? pending_.player_x : current_.player_x;
+    const int py = pending_.player_y >= 0 ? pending_.player_y : current_.player_y;
+    if (px < 0 || py < 0) {
         return Vector3(0, 0, 0);
     }
-    const float wx = static_cast<float>(player_x_ - origin_col_);
-    const float wz = static_cast<float>(player_y_ - origin_row_);
-    return Vector3(wx, 0.0f, wz);
+    return Vector3(static_cast<float>(px), 0.0f, static_cast<float>(py));
 }
 
 bool GodotMap3D::has_player() const
 {
-    std::lock_guard<std::mutex> lock(grid_mutex_);
-    return player_x_ >= 0 && player_y_ >= 0;
+    std::lock_guard<std::mutex> lock(pending_mutex_);
+    if (pending_.player_x >= 0 && pending_.player_y >= 0) {
+        return true;
+    }
+    return current_.player_x >= 0 && current_.player_y >= 0;
 }
 
-void GodotMap3D::resize_grid()
-{
-    std::lock_guard<std::mutex> lock(grid_mutex_);
-    grid_.assign(static_cast<size_t>(cols_ * rows_), Map3DCell{});
-}
+// ---------------------------------------------------------------------------
+// 内部: スナップショットの差分適用
+// ---------------------------------------------------------------------------
 
-void GodotMap3D::rebuild_meshes()
+void GodotMap3D::apply_snapshot()
 {
-    // 既存の子 MeshInstance3D をすべて削除する
-    // (Phase 1 簡易実装。Phase 2 で MultiMeshInstance3D + 差分更新に置き換える)
+    // pending_ をスナップショットコピーする
+    Map3DFloorSnapshot snap;
     {
-        const int child_count = get_child_count();
-        for (int i = child_count - 1; i >= 0; --i) {
-            Node *child = get_child(i);
-            if (child) {
-                remove_child(child);
-                child->queue_free();
-            }
-        }
+        std::lock_guard<std::mutex> lock(pending_mutex_);
+        snap = pending_;
     }
 
-    // グリッドのスナップショットを取る
-    std::vector<Map3DCell> snapshot;
-    int snap_cols, snap_rows;
-    {
-        std::lock_guard<std::mutex> lock(grid_mutex_);
-        snapshot = grid_;
-        snap_cols = cols_;
-        snap_rows = rows_;
+    // フロアサイズが変わったら全削除して作り直す
+    if (snap.width != current_.width || snap.height != current_.height) {
+        clear_all_meshes();
+        current_.width = snap.width;
+        current_.height = snap.height;
+        current_.kinds.assign(static_cast<size_t>(snap.width)
+                * static_cast<size_t>(snap.height),
+            M3D_NONE);
     }
 
-    for (int gy = origin_row_; gy < snap_rows; ++gy) {
-        for (int gx = origin_col_; gx < snap_cols; ++gx) {
-            const auto &cell = snapshot[gy * snap_cols + gx];
-            const MeshKind kind = classify_char(cell.ch);
-            if (kind == KIND_NONE) {
+    const int w = snap.width;
+    const int h = snap.height;
+    if (static_cast<int>(snap.kinds.size()) != w * h) {
+        return; // 不整合: スキップ
+    }
+
+    // セル単位で差分検出
+    for (int dy = 0; dy < h; ++dy) {
+        for (int dx = 0; dx < w; ++dx) {
+            const int idx = dy * w + dx;
+            const uint8_t new_kind = snap.kinds[idx];
+            const uint8_t old_kind = current_.kinds[idx];
+            if (new_kind == old_kind) {
                 continue;
             }
-
-            const MeshSpec spec = spec_for_kind(kind);
-            Ref<BoxMesh> box;
-            box.instantiate();
-            box->set_size(Vector3(spec.size_x, spec.size_y, spec.size_z));
-
-            Ref<StandardMaterial3D> mat;
-            mat.instantiate();
-            mat->set_albedo(base_color_for_kind(kind, cell.color));
-            Ref<Material> mat_base = mat;
-
-            MeshInstance3D *mi = memnew(MeshInstance3D);
-            mi->set_mesh(box);
-            mi->set_material_override(mat_base);
-            mi->set_position(Vector3(
-                static_cast<float>(gx - origin_col_),
-                spec.y_offset,
-                static_cast<float>(gy - origin_row_)));
-            add_child(mi);
+            // 既存メッシュがあれば削除
+            auto it = active_meshes_.find(idx);
+            if (it != active_meshes_.end()) {
+                MeshInstance3D *mi = it->second;
+                if (mi) {
+                    remove_child(mi);
+                    mi->queue_free();
+                }
+                active_meshes_.erase(it);
+            }
+            // 新規メッシュを作成 (NONE 以外)
+            if (new_kind != M3D_NONE) {
+                MeshInstance3D *mi = create_cell_mesh(new_kind, dx, dy);
+                if (mi) {
+                    add_child(mi);
+                    active_meshes_[idx] = mi;
+                }
+            }
+            current_.kinds[idx] = new_kind;
         }
     }
-    // player_x_ / player_y_ は update_text / wipe_cells で常時追跡しているため
-    // ここでは更新しない (再構築待ちの間にプレイヤーが移動しても遅延なく追従する)
+
+    current_.player_x = snap.player_x;
+    current_.player_y = snap.player_y;
+
+    update_player_position();
+}
+
+MeshInstance3D *GodotMap3D::create_cell_mesh(uint8_t kind, int dx, int dy)
+{
+    if (kind == M3D_NONE) {
+        return nullptr;
+    }
+    const MeshSpec spec = spec_for_kind(kind);
+
+    Ref<BoxMesh> box;
+    box.instantiate();
+    box->set_size(Vector3(spec.size_x, spec.size_y, spec.size_z));
+
+    Ref<StandardMaterial3D> mat;
+    mat.instantiate();
+    mat->set_albedo(spec.color);
+    Ref<Material> mat_base = mat;
+
+    MeshInstance3D *mi = memnew(MeshInstance3D);
+    mi->set_mesh(box);
+    mi->set_material_override(mat_base);
+    mi->set_position(Vector3(
+        static_cast<float>(dx),
+        spec.y_offset,
+        static_cast<float>(dy)));
+    return mi;
+}
+
+void GodotMap3D::ensure_player_mesh()
+{
+    if (player_mesh_) {
+        return;
+    }
+    Ref<BoxMesh> box;
+    box.instantiate();
+    box->set_size(Vector3(PLAYER_SPEC.size_x, PLAYER_SPEC.size_y, PLAYER_SPEC.size_z));
+
+    Ref<StandardMaterial3D> mat;
+    mat.instantiate();
+    mat->set_albedo(PLAYER_SPEC.color);
+    Ref<Material> mat_base = mat;
+
+    player_mesh_ = memnew(MeshInstance3D);
+    player_mesh_->set_mesh(box);
+    player_mesh_->set_material_override(mat_base);
+    add_child(player_mesh_);
+}
+
+void GodotMap3D::update_player_position()
+{
+    int px, py;
+    {
+        std::lock_guard<std::mutex> lock(pending_mutex_);
+        px = pending_.player_x >= 0 ? pending_.player_x : current_.player_x;
+        py = pending_.player_y >= 0 ? pending_.player_y : current_.player_y;
+    }
+    if (px < 0 || py < 0) {
+        if (player_mesh_) {
+            player_mesh_->set_visible(false);
+        }
+        return;
+    }
+    ensure_player_mesh();
+    player_mesh_->set_visible(true);
+    player_mesh_->set_position(Vector3(
+        static_cast<float>(px),
+        PLAYER_SPEC.y_offset,
+        static_cast<float>(py)));
+}
+
+void GodotMap3D::clear_all_meshes()
+{
+    for (auto &kv : active_meshes_) {
+        MeshInstance3D *mi = kv.second;
+        if (mi) {
+            remove_child(mi);
+            mi->queue_free();
+        }
+    }
+    active_meshes_.clear();
+    if (player_mesh_) {
+        remove_child(player_mesh_);
+        player_mesh_->queue_free();
+        player_mesh_ = nullptr;
+    }
 }
 
 void GodotMap3D::_bind_methods()
 {
-    ClassDB::bind_method(D_METHOD("set_grid_size", "cols", "rows"),
-        &GodotMap3D::set_grid_size);
-    ClassDB::bind_method(D_METHOD("set_map_origin", "col", "row"),
-        &GodotMap3D::set_map_origin);
-    ClassDB::bind_method(D_METHOD("clear_all"), &GodotMap3D::clear_all);
     ClassDB::bind_method(D_METHOD("set_active", "active"), &GodotMap3D::set_active);
     ClassDB::bind_method(D_METHOD("is_active"), &GodotMap3D::is_active);
-    ClassDB::bind_method(D_METHOD("set_player_screen_position", "sx", "sy"),
-        &GodotMap3D::set_player_screen_position);
     ClassDB::bind_method(D_METHOD("get_player_world_position"),
         &GodotMap3D::get_player_world_position);
     ClassDB::bind_method(D_METHOD("has_player"), &GodotMap3D::has_player);
