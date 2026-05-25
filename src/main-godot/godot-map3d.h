@@ -59,10 +59,20 @@ struct Map3DMonster {
     uint8_t color{ 0 }; ///< TERM_COLOR
 };
 
+/// アイテム 1 つの表示情報 (床上のもののみ。モンスター所持品は含めない)
+struct Map3DItem {
+    int o_idx{ 0 }; ///< ItemEntity の o_list 上の index (差分更新キー)
+    int x{ 0 }; ///< ダンジョン X 座標
+    int y{ 0 }; ///< ダンジョン Y 座標
+    char ch{ '?' }; ///< 表示シンボル (ItemEntity::get_symbol().character)
+    uint8_t color{ 0 }; ///< TERM_COLOR
+};
+
 /// フロアスナップショット
 struct Map3DFloorSnapshot {
     std::vector<uint8_t> kinds; ///< height × width の Map3DKind 配列
     std::vector<Map3DMonster> monsters; ///< 視認中のモンスター一覧
+    std::vector<Map3DItem> items; ///< 視認中のアイテム一覧
     int width{ 0 };
     int height{ 0 };
     int player_x{ -1 };
@@ -88,10 +98,11 @@ public:
 
     /// フロアスナップショットを設定する (ゲームスレッドから呼ばれる)
     /// kinds は width * height 個の Map3DKind 値。コピーされる。
-    /// monsters は視認中のモンスター配列 (空可)。コピーされる。
+    /// monsters / items は視認中のエンティティ配列 (空可)。コピーされる。
     void set_floor_snapshot(int width, int height,
         const uint8_t *kinds, int player_x, int player_y,
-        const Map3DMonster *monsters = nullptr, int monster_count = 0);
+        const Map3DMonster *monsters = nullptr, int monster_count = 0,
+        const Map3DItem *items = nullptr, int item_count = 0);
 
     /// プレイヤー位置を取得する (ワールド座標、cell 中心)
     godot::Vector3 get_player_world_position() const;
@@ -129,7 +140,13 @@ private:
     /// 直近に描画済みのモンスター情報 (差分検出用、m_idx をキーに最新コピー)
     std::unordered_map<int, Map3DMonster> current_monsters_;
 
-    /// モンスター TextMesh で使用するフォント (遅延初期化)
+    /// o_idx → MeshInstance3D ポインタ (アイテム用、差分更新キーは o_idx)
+    std::unordered_map<int, godot::MeshInstance3D *> active_items_;
+
+    /// 直近に描画済みのアイテム情報 (差分検出用、o_idx をキーに最新コピー)
+    std::unordered_map<int, Map3DItem> current_items_;
+
+    /// モンスター / アイテムの TextMesh で使用するフォント (遅延初期化)
     godot::Ref<godot::Font> monster_font_;
 
     /// プレイヤー専用の単一メッシュ
@@ -154,7 +171,13 @@ private:
     /// 1 体のモンスター用 TextMesh ノードを生成する
     godot::MeshInstance3D *create_monster_mesh(const Map3DMonster &m);
 
-    /// モンスターフォントを必要に応じて初期化する
+    /// アイテム差分: モンスターと同様。地面に寝そべる向きで TextMesh 配置。
+    void apply_items(const std::vector<Map3DItem> &new_items);
+
+    /// 1 つのアイテム用 TextMesh ノードを生成する (地面に寝せて配置)
+    godot::MeshInstance3D *create_item_mesh(const Map3DItem &it);
+
+    /// モンスター/アイテム用フォントを必要に応じて初期化する
     void ensure_monster_font();
 
     /// 全メッシュを削除する (フロアサイズ変更時)
