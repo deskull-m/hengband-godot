@@ -29,6 +29,7 @@
 
 #include <atomic>
 #include <cstdint>
+#include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/mesh_instance3d.hpp>
 #include <godot_cpp/classes/node3d.hpp>
 #include <mutex>
@@ -49,9 +50,19 @@ enum Map3DKind : uint8_t {
     M3D_KIND_COUNT
 };
 
+/// モンスター 1 体の表示情報
+struct Map3DMonster {
+    int m_idx{ 0 }; ///< MonsterEntity の m_list 上の index (差分更新キー)
+    int x{ 0 }; ///< ダンジョン X 座標
+    int y{ 0 }; ///< ダンジョン Y 座標
+    char ch{ '?' }; ///< 表示シンボル (MonraceDefinition.symbol_config.character)
+    uint8_t color{ 0 }; ///< TERM_COLOR
+};
+
 /// フロアスナップショット
 struct Map3DFloorSnapshot {
     std::vector<uint8_t> kinds; ///< height × width の Map3DKind 配列
+    std::vector<Map3DMonster> monsters; ///< 視認中のモンスター一覧
     int width{ 0 };
     int height{ 0 };
     int player_x{ -1 };
@@ -77,8 +88,10 @@ public:
 
     /// フロアスナップショットを設定する (ゲームスレッドから呼ばれる)
     /// kinds は width * height 個の Map3DKind 値。コピーされる。
+    /// monsters は視認中のモンスター配列 (空可)。コピーされる。
     void set_floor_snapshot(int width, int height,
-        const uint8_t *kinds, int player_x, int player_y);
+        const uint8_t *kinds, int player_x, int player_y,
+        const Map3DMonster *monsters = nullptr, int monster_count = 0);
 
     /// プレイヤー位置を取得する (ワールド座標、cell 中心)
     godot::Vector3 get_player_world_position() const;
@@ -107,8 +120,17 @@ private:
     double rebuild_cooldown_{ 0.0 };
     static constexpr double REBUILD_INTERVAL = 0.05;
 
-    /// (dy * width + dx) → MeshInstance3D ポインタ
+    /// (dy * width + dx) → MeshInstance3D ポインタ (地形セル用)
     std::unordered_map<int, godot::MeshInstance3D *> active_meshes_;
+
+    /// m_idx → MeshInstance3D ポインタ (モンスター用、差分更新キーは m_idx)
+    std::unordered_map<int, godot::MeshInstance3D *> active_monsters_;
+
+    /// 直近に描画済みのモンスター情報 (差分検出用、m_idx をキーに最新コピー)
+    std::unordered_map<int, Map3DMonster> current_monsters_;
+
+    /// モンスター TextMesh で使用するフォント (遅延初期化)
+    godot::Ref<godot::Font> monster_font_;
 
     /// プレイヤー専用の単一メッシュ
     godot::MeshInstance3D *player_mesh_{ nullptr };
@@ -124,6 +146,16 @@ private:
 
     /// プレイヤー位置を更新する (current_.player_x/y を反映)
     void update_player_position();
+
+    /// モンスター差分: 新リストと current_monsters_ を比較し
+    /// 移動・新規追加・消失をメッシュに反映する
+    void apply_monsters(const std::vector<Map3DMonster> &new_monsters);
+
+    /// 1 体のモンスター用 TextMesh ノードを生成する
+    godot::MeshInstance3D *create_monster_mesh(const Map3DMonster &m);
+
+    /// モンスターフォントを必要に応じて初期化する
+    void ensure_monster_font();
 
     /// 全メッシュを削除する (フロアサイズ変更時)
     void clear_all_meshes();
