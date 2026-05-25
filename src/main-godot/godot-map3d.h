@@ -32,6 +32,7 @@
 #include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/mesh_instance3d.hpp>
 #include <godot_cpp/classes/node3d.hpp>
+#include <godot_cpp/classes/shader_material.hpp>
 #include <mutex>
 #include <unordered_map>
 #include <vector>
@@ -149,6 +150,11 @@ private:
     /// モンスター / アイテムの TextMesh で使用するフォント (遅延初期化)
     godot::Ref<godot::Font> monster_font_;
 
+    /// 壁 / 扉用の共有シェーダマテリアル (player_position uniform を毎フレーム更新)
+    /// プレイヤー近辺のセルだけ半透明になり、後ろのシンボルが透けて見えるように
+    /// する距離ベースのアルファフェードを実装する。
+    godot::Ref<godot::ShaderMaterial> wall_material_;
+
     /// プレイヤー専用の単一メッシュ (半透明発光の光柱、位置マーカー)
     godot::MeshInstance3D *player_mesh_{ nullptr };
 
@@ -182,6 +188,13 @@ private:
 
     /// モンスター/アイテム用フォントを必要に応じて初期化する
     void ensure_monster_font();
+
+    /// 壁/扉用の共有シェーダマテリアルを必要に応じて初期化する。
+    /// 一度初期化したものを全壁メッシュで共有する (per-cell マテリアルを作らない)。
+    void ensure_wall_material();
+
+    /// wall_material_ の player_position uniform を毎フレーム最新値に更新する。
+    void update_wall_player_uniform();
 
     /// 全メッシュを削除する (フロアサイズ変更時)
     void clear_all_meshes();
