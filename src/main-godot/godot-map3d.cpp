@@ -63,7 +63,8 @@ MeshSpec spec_for_kind(uint8_t kind)
 }
 
 constexpr int PLAYER_KIND_SENTINEL = 100;
-const MeshSpec PLAYER_SPEC{ 0.6f, 1.6f, 0.6f, 0.8f, Color(1.0f, 0.2f, 0.2f) };
+// 半透明発光の光柱 (位置マーカー)
+const MeshSpec PLAYER_PILLAR_SPEC{ 0.7f, 2.2f, 0.7f, 1.1f, Color(1.0f, 0.4f, 0.4f) };
 
 } // anonymous namespace
 
@@ -258,22 +259,68 @@ MeshInstance3D *GodotMap3D::create_cell_mesh(uint8_t kind, int dx, int dy)
 
 void GodotMap3D::ensure_player_mesh()
 {
-    if (player_mesh_) {
-        return;
+    // (1) 位置マーカー: 半透明発光の光柱
+    if (!player_mesh_) {
+        Ref<BoxMesh> box;
+        box.instantiate();
+        box->set_size(Vector3(
+            PLAYER_PILLAR_SPEC.size_x,
+            PLAYER_PILLAR_SPEC.size_y,
+            PLAYER_PILLAR_SPEC.size_z));
+
+        Ref<StandardMaterial3D> mat;
+        mat.instantiate();
+        // 半透明 (壁越しに自分が居る方向が分かるくらい)
+        Color albedo = PLAYER_PILLAR_SPEC.color;
+        albedo.a = 0.35f;
+        mat->set_albedo(albedo);
+        mat->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
+        // 発光: 暗所でも目立つ
+        mat->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
+        Color emiss = PLAYER_PILLAR_SPEC.color;
+        emiss.a = 1.0f;
+        mat->set_emission(emiss);
+        mat->set_emission_energy_multiplier(1.2f);
+        // 影を落とさない (光柱なので)
+        mat->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
+        Ref<Material> mat_base = mat;
+
+        player_mesh_ = memnew(MeshInstance3D);
+        player_mesh_->set_mesh(box);
+        player_mesh_->set_material_override(mat_base);
+        add_child(player_mesh_);
     }
-    Ref<BoxMesh> box;
-    box.instantiate();
-    box->set_size(Vector3(PLAYER_SPEC.size_x, PLAYER_SPEC.size_y, PLAYER_SPEC.size_z));
 
-    Ref<StandardMaterial3D> mat;
-    mat.instantiate();
-    mat->set_albedo(PLAYER_SPEC.color);
-    Ref<Material> mat_base = mat;
+    // (2) シンボル: '@' の TextMesh (モンスターと同じ表記スタイル)
+    if (!player_symbol_mesh_) {
+        ensure_monster_font();
 
-    player_mesh_ = memnew(MeshInstance3D);
-    player_mesh_->set_mesh(box);
-    player_mesh_->set_material_override(mat_base);
-    add_child(player_mesh_);
+        const char tbuf[2] = { '@', 0 };
+        Ref<TextMesh> tm;
+        tm.instantiate();
+        tm->set_font(monster_font_);
+        tm->set_font_size(64);
+        tm->set_depth(0.18f);
+        tm->set_pixel_size(0.018f); // モンスターより少し大きく目立たせる
+        tm->set_text(String(tbuf));
+        tm->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+        tm->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+
+        Ref<StandardMaterial3D> mat;
+        mat.instantiate();
+        // 白色寄りの赤で「自分」と分かるアクセントカラー
+        mat->set_albedo(Color(1.0f, 0.95f, 0.85f));
+        mat->set_billboard_mode(BaseMaterial3D::BILLBOARD_ENABLED);
+        mat->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
+        mat->set_emission(Color(1.0f, 0.85f, 0.6f));
+        mat->set_emission_energy_multiplier(0.8f);
+        Ref<Material> mat_base = mat;
+
+        player_symbol_mesh_ = memnew(MeshInstance3D);
+        player_symbol_mesh_->set_mesh(tm);
+        player_symbol_mesh_->set_material_override(mat_base);
+        add_child(player_symbol_mesh_);
+    }
 }
 
 void GodotMap3D::update_player_position()
@@ -288,13 +335,22 @@ void GodotMap3D::update_player_position()
         if (player_mesh_) {
             player_mesh_->set_visible(false);
         }
+        if (player_symbol_mesh_) {
+            player_symbol_mesh_->set_visible(false);
+        }
         return;
     }
     ensure_player_mesh();
     player_mesh_->set_visible(true);
     player_mesh_->set_position(Vector3(
         static_cast<float>(px),
-        PLAYER_SPEC.y_offset,
+        PLAYER_PILLAR_SPEC.y_offset,
+        static_cast<float>(py)));
+    player_symbol_mesh_->set_visible(true);
+    // '@' は光柱の中ほど (光柱頂上付近) に配置すると埋もれにくい
+    player_symbol_mesh_->set_position(Vector3(
+        static_cast<float>(px),
+        PLAYER_PILLAR_SPEC.size_y * 0.7f,
         static_cast<float>(py)));
 }
 
@@ -330,6 +386,11 @@ void GodotMap3D::clear_all_meshes()
         remove_child(player_mesh_);
         player_mesh_->queue_free();
         player_mesh_ = nullptr;
+    }
+    if (player_symbol_mesh_) {
+        remove_child(player_symbol_mesh_);
+        player_symbol_mesh_->queue_free();
+        player_symbol_mesh_ = nullptr;
     }
 }
 
