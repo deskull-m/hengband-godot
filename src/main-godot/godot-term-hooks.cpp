@@ -18,9 +18,12 @@
 #include "system/enums/terrain/terrain-characteristics.h"
 #include "system/floor/floor-info.h"
 #include "system/grid-type-definition.h"
+#include "system/monrace/monrace-definition.h"
+#include "system/monster-entity.h"
 #include "system/player-type-definition.h"
 #include "system/system-variables.h"
 #include "system/terrain/terrain-definition.h"
+#include "view/display-symbol.h"
 #include "target/target-checker.h"
 #include "term/gameterm.h"
 #include "term/z-term.h"
@@ -195,8 +198,38 @@ errr term_xtra_godot(int n, int v)
                             kinds[dy * w + dx] = kind;
                         }
                     }
+
+                    // 視認中のモンスターを収集する
+                    // (m_list[0] は予約済みのプレイヤースロットなので 1 から)
+                    std::vector<Map3DMonster> monsters;
+                    const int mmax = static_cast<int>(floor.m_max);
+                    monsters.reserve(static_cast<size_t>(mmax));
+                    for (int m_idx = 1; m_idx < mmax; ++m_idx) {
+                        const auto &mon = floor.m_list[m_idx];
+                        if (!mon.is_valid()) {
+                            continue;
+                        }
+                        if (!mon.ml) {
+                            continue; // 視認外 (含むテレパシーで未補足)
+                        }
+                        const auto &monrace = mon.get_monrace();
+                        const auto &sym = monrace.symbol_config;
+                        if (!sym.has_character()) {
+                            continue;
+                        }
+                        Map3DMonster ent;
+                        ent.m_idx = m_idx;
+                        ent.x = static_cast<int>(mon.fx);
+                        ent.y = static_cast<int>(mon.fy);
+                        ent.ch = sym.character;
+                        ent.color = sym.color;
+                        monsters.push_back(ent);
+                    }
+
                     m3d->set_floor_snapshot(w, h, kinds.data(),
-                        static_cast<int>(p_ptr->x), static_cast<int>(p_ptr->y));
+                        static_cast<int>(p_ptr->x), static_cast<int>(p_ptr->y),
+                        monsters.empty() ? nullptr : monsters.data(),
+                        static_cast<int>(monsters.size()));
                 }
             }
         }
