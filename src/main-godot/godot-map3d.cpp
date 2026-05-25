@@ -7,6 +7,7 @@
 #include "term-color-map.h"
 
 #include <godot_cpp/classes/box_mesh.hpp>
+#include <godot_cpp/classes/material.hpp>
 #include <godot_cpp/classes/mesh_instance3d.hpp>
 #include <godot_cpp/classes/standard_material3d.hpp>
 #include <godot_cpp/core/class_db.hpp>
@@ -144,10 +145,40 @@ void GodotMap3D::_ready()
     resize_grid();
 }
 
-void GodotMap3D::_process(double /*delta*/)
+void GodotMap3D::_process(double delta)
 {
+    // 非アクティブ (3D オーバーレイ非表示) のときはメッシュ再生成をスキップする。
+    // 毎フレーム数百個の Mesh を作り直して固まるのを防ぐため。
+    // dirty フラグはクリアせず、再アクティブ化時に最新状態へ追従できるようにする。
+    if (!active_.load()) {
+        return;
+    }
+    if (rebuild_cooldown_ > 0.0) {
+        rebuild_cooldown_ -= delta;
+        return;
+    }
     if (dirty_.exchange(false)) {
         rebuild_meshes();
+        rebuild_cooldown_ = REBUILD_INTERVAL;
+    }
+}
+
+void GodotMap3D::set_active(bool active)
+{
+    const bool prev = active_.exchange(active);
+    if (active && !prev) {
+        // 非アクティブ→アクティブ遷移時は強制再構築
+        dirty_.store(true);
+    } else if (!active && prev) {
+        // アクティブ→非アクティブ遷移時は既存メッシュを破棄してメモリ解放
+        const int child_count = get_child_count();
+        for (int i = child_count - 1; i >= 0; --i) {
+            Node *child = get_child(i);
+            if (child) {
+                remove_child(child);
+                child->queue_free();
+            }
+        }
     }
 }
 
@@ -302,10 +333,11 @@ void GodotMap3D::rebuild_meshes()
             Ref<StandardMaterial3D> mat;
             mat.instantiate();
             mat->set_albedo(base_color_for_kind(kind, cell.color));
+            Ref<Material> mat_base = mat;
 
             MeshInstance3D *mi = memnew(MeshInstance3D);
             mi->set_mesh(box);
-            mi->set_material_override(mat);
+            mi->set_material_override(mat_base);
             mi->set_position(Vector3(
                 static_cast<float>(gx - origin_col_),
                 spec.y_offset,
@@ -325,6 +357,8 @@ void GodotMap3D::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_map_origin", "col", "row"),
         &GodotMap3D::set_map_origin);
     ClassDB::bind_method(D_METHOD("clear_all"), &GodotMap3D::clear_all);
+    ClassDB::bind_method(D_METHOD("set_active", "active"), &GodotMap3D::set_active);
+    ClassDB::bind_method(D_METHOD("is_active"), &GodotMap3D::is_active);
     ClassDB::bind_method(D_METHOD("get_player_world_position"),
         &GodotMap3D::get_player_world_position);
 }

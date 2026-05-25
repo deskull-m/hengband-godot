@@ -105,6 +105,8 @@ func fit_subviewport() -> void:
 		_fit_map3d_overlay(px, cw, ch)
 
 ## 3D オーバーレイをマップ矩形のピクセル範囲に合わせて配置する
+## SubViewport のサイズは SubViewportContainer (stretch=true) が自動管理するため
+## ここでは Control の position / size のみを更新する。
 func _fit_map3d_overlay(px_size: Vector2i, cell_w: int, cell_h: int) -> void:
 	var overlay := _get_map3d_overlay()
 	if overlay == null:
@@ -116,7 +118,6 @@ func _fit_map3d_overlay(px_size: Vector2i, cell_w: int, cell_h: int) -> void:
 	)
 	overlay.position = origin
 	overlay.size = size
-	overlay.resize_viewport(Vector2i(int(size.x), int(size.y)))
 
 ## 3D オーバーレイの表示/非表示を切り替える
 func set_map_3d_enabled(enabled: bool) -> void:
@@ -124,6 +125,9 @@ func set_map_3d_enabled(enabled: bool) -> void:
 	var overlay := _get_map3d_overlay()
 	if overlay:
 		overlay.visible = enabled
+		var map3d_node: Node = overlay.get_map3d_node()
+		if map3d_node and map3d_node.has_method("set_active"):
+			map3d_node.set_active(enabled)
 
 func _get_map3d_overlay() -> Node:
 	return get_node_or_null("PaneVBox/SubViewportContainer/SubViewport/Map3DOverlay")
