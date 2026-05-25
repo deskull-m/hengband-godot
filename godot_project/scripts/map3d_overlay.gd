@@ -29,7 +29,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 func _process(_delta: float) -> void:
-	if not follow_player:
+	if not follow_player or not visible:
 		return
 	var map3d: GodotMap3D = $SubViewport/Map3D as GodotMap3D
 	if map3d == null:
@@ -37,26 +37,24 @@ func _process(_delta: float) -> void:
 	var camera: Camera3D = $SubViewport/Camera3D
 	if camera == null:
 		return
-	var target: Vector3 = map3d.get_player_world_position()
-	# プレイヤー未検出のときは現状維持
-	if target == Vector3.ZERO and not _is_player_known(map3d):
+	# プレイヤー未検出のときは現状維持 (起動直後など)
+	if not map3d.has_player():
 		return
-	_aim_camera_at(camera, target)
+	_aim_camera_at(camera, map3d.get_player_world_position())
 
 ## カメラを target セルに向けて配置する (固定俯瞰角度)
+## look_at_from_position で position と回転を一括設定する。
+## (camera.transform.origin = ... は GDScript ではローカル struct コピーになり
+##  反映されないことがあるため避ける)
 func _aim_camera_at(camera: Camera3D, target: Vector3) -> void:
 	var pitch_rad := deg_to_rad(CAMERA_PITCH_DEG)
 	var horiz := CAMERA_DISTANCE * cos(pitch_rad)
 	var vert := CAMERA_DISTANCE * sin(pitch_rad)
-	# 斜め後ろ上方からプレイヤーを見下ろす (Z+ 方向後退、Y+ 上昇)
+	# プレイヤー (target) の斜め後ろ上方から見下ろす
 	var eye := target + Vector3(0.0, vert, horiz)
-	camera.transform.origin = eye
-	camera.look_at(target + Vector3(0.0, 0.4, 0.0), Vector3.UP)
-
-func _is_player_known(map3d: GodotMap3D) -> bool:
-	# get_player_world_position は未検出時に Vector3.ZERO を返す。
-	# 原点 (= ROW_MAP, COL_MAP) も Vector3.ZERO に重なるが、Phase 1 では割り切る。
-	return map3d.get_player_world_position() != Vector3.ZERO
+	# 注視点は target のやや上 (床より少し高め) にして見やすくする
+	var look := target + Vector3(0.0, 0.4, 0.0)
+	camera.look_at_from_position(eye, look, Vector3.UP)
 
 ## 親ペインから呼ばれる: SubViewport のピクセルサイズ要求
 ## stretch=true のとき SubViewportContainer が自動でリサイズするため何もしない。

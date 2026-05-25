@@ -87,6 +87,9 @@ public:
     /// 戻り値は 3D ワールド座標 (cell 中心)
     godot::Vector3 get_player_world_position() const;
 
+    /// プレイヤー位置が既知かどうか (false なら get_player_world_position の値は無効)
+    bool has_player() const;
+
 protected:
     static void _bind_methods();
 
@@ -113,6 +116,8 @@ private:
     static constexpr double REBUILD_INTERVAL = 0.1;
 
     /// 現在のプレイヤー位置 (グリッド座標、見つからない場合は -1)
+    /// grid_mutex_ で保護する (update_text / clear_all / rebuild_meshes から書き込み、
+    /// get_player_world_position から読み込み)
     int player_x_{ -1 };
     int player_y_{ -1 };
 
