@@ -18,6 +18,7 @@
 #include "system/enums/terrain/terrain-characteristics.h"
 #include "system/floor/floor-info.h"
 #include "system/grid-type-definition.h"
+#include "system/item-entity.h"
 #include "system/monrace/monrace-definition.h"
 #include "system/monster-entity.h"
 #include "system/player-type-definition.h"
@@ -226,10 +227,52 @@ errr term_xtra_godot(int n, int v)
                         monsters.push_back(ent);
                     }
 
+                    // 床上アイテムを収集する (モンスターが所持しているものは除く)
+                    std::vector<Map3DItem> items;
+                    const int omax = static_cast<int>(floor.o_list.size());
+                    items.reserve(static_cast<size_t>(omax));
+                    for (int o_idx = 1; o_idx < omax; ++o_idx) {
+                        const auto &item_ptr = floor.o_list[o_idx];
+                        if (!item_ptr) {
+                            continue;
+                        }
+                        const auto &item = *item_ptr;
+                        if (!item.is_valid()) {
+                            continue;
+                        }
+                        if (item.is_held_by_monster()) {
+                            continue;
+                        }
+                        const int dx = static_cast<int>(item.ix);
+                        const int dy = static_cast<int>(item.iy);
+                        if (dx <= 0 || dy <= 0
+                            || dx >= w || dy >= h) {
+                            continue;
+                        }
+                        // 視認できないセルのアイテムは表示しない
+                        const auto &g = floor.grid_array[dy][dx];
+                        if (!g.is_mark() && !g.is_view()) {
+                            continue;
+                        }
+                        const auto sym = item.get_symbol();
+                        if (!sym.has_character()) {
+                            continue;
+                        }
+                        Map3DItem ent;
+                        ent.o_idx = o_idx;
+                        ent.x = dx;
+                        ent.y = dy;
+                        ent.ch = sym.character;
+                        ent.color = sym.color;
+                        items.push_back(ent);
+                    }
+
                     m3d->set_floor_snapshot(w, h, kinds.data(),
                         static_cast<int>(p_ptr->x), static_cast<int>(p_ptr->y),
                         monsters.empty() ? nullptr : monsters.data(),
-                        static_cast<int>(monsters.size()));
+                        static_cast<int>(monsters.size()),
+                        items.empty() ? nullptr : items.data(),
+                        static_cast<int>(items.size()));
                 }
             }
         }
