@@ -191,9 +191,9 @@ errr term_xtra_godot(int n, int v)
                                 kind = M3D_WALL;
                             } else if (terrain.flags.has(TerrainCharacteristics::DOOR)) {
                                 kind = M3D_DOOR_CLOSED;
-                            } else if (terrain.flags.has(TerrainCharacteristics::LESS)) {
+                            } else if (terrain.flags.has(TerrainCharacteristics::UP_STAIRS)) {
                                 kind = M3D_STAIR_UP;
-                            } else if (terrain.flags.has(TerrainCharacteristics::MORE)) {
+                            } else if (terrain.flags.has(TerrainCharacteristics::DOWN_STAIRS)) {
                                 kind = M3D_STAIR_DOWN;
                             }
                             kinds[dy * w + dx] = kind;
