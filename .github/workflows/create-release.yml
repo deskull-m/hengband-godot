@@ -1,48 +1,224 @@
-name: Create Release
+name: Create Release (Godot Windows)
+
+# 旧 VS ネイティブビルドのリリース処理を Godot GDExtension ビルドへ置換。
+# scons で GDExtension DLL を MSVC ビルド → Godot CLI でプロジェクトを exe
+# にエクスポート → lib/ と同梱して ZIP 化してリリースする。
 
 on:
   push:
-    branches:
-      - master
-  # 手動トリガーを許可
+    tags:
+      - 'v*'
+      - '3.*-Beta'
+  # 手動トリガー (任意のブランチから zip を作りたい場合)
   workflow_dispatch:
+    inputs:
+      draft:
+        description: 'Create draft release'
+        required: false
+        default: 'true'
 
+env:
+  GODOT_VERSION: 4.6-stable
+  GODOT_VERSION_DIR: 4.6.stable
+  GODOT_PROJECT_DIR: godot_project
+  GDEXT_OUTPUT_NAME: hengband.windows.template_release.x86_64.dll
 
 jobs:
-  publish-release-page:
-    name: Publish Release Page
-    runs-on: windows-2025-vs2026
+  build-windows:
+    name: Build & Package (Windows x86_64)
+    runs-on: windows-latest
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: recursive
 
-      - name: Extract version from configure.ac
-        id: get_version
+      - name: Extract version from angband-version.h
+        id: ver
+        shell: pwsh
         run: |
-          $version = Select-String -Path configure.ac -Pattern 'AC_INIT\(hengband, (.+?)\)' | ForEach-Object { $_.Matches.Groups[1].Value }
-          echo "version=$version" >> $Env:GITHUB_OUTPUT
+          $h = Get-Content src/system/angband-version.h -Raw
+          $maj   = [regex]::Match($h, '#define\s+H_VER_MAJOR\s+(\d+)').Groups[1].Value
+          $min   = [regex]::Match($h, '#define\s+H_VER_MINOR\s+(\d+)').Groups[1].Value
+          $pat   = [regex]::Match($h, '#define\s+H_VER_PATCH\s+(\d+)').Groups[1].Value
+          $extra = [regex]::Match($h, '#define\s+H_VER_EXTRA\s+(\d+)').Groups[1].Value
+          $ver = "$maj.$min.$pat.$extra"
+          Write-Host "Detected version: $ver"
+          "version=$ver" | Out-File -Append $env:GITHUB_OUTPUT
 
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1
+      - name: Setup MSVC dev environment (x64)
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
 
-      - name: Setup NuGet
-        uses: NuGet/setup-nuget@v1
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
 
-      - name: Restore Nuget Packages
+      - name: Install SCons
+        run: pip install --upgrade scons
+
+      - name: Build GDExtension (template_release, x86_64)
+        shell: pwsh
         run: |
-          NuGet restore .\VisualStudio\Hengband.sln
+          scons platform=windows target=template_release arch=x86_64 -j2
+          if (-not (Test-Path "bin/${{ env.GDEXT_OUTPUT_NAME }}")) {
+            Write-Error "GDExtension DLL was not produced: bin/${{ env.GDEXT_OUTPUT_NAME }}"
+            exit 1
+          }
+          Get-ChildItem bin
 
-      - name: Build Windows Release Package
+      - name: Cache Godot editor & templates download
+        id: godot-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/godot
+          key: godot-${{ env.GODOT_VERSION }}-windows-x86_64-v2
+
+      - name: Download Godot editor (headless, win64)
+        if: steps.godot-cache.outputs.cache-hit != 'true'
+        shell: pwsh
         run: |
-          .\Build-Windows-Release-Package.ps1 -Version ${{ steps.get_version.outputs.version }}
+          $dst = "${{ runner.temp }}/godot"
+          New-Item -ItemType Directory -Force -Path $dst | Out-Null
+          $url = "https://github.com/godotengine/godot/releases/download/${{ env.GODOT_VERSION }}/Godot_v${{ env.GODOT_VERSION }}_win64.exe.zip"
+          Write-Host "Downloading: $url"
+          Invoke-WebRequest -Uri $url -OutFile "$dst/godot.zip"
+          Expand-Archive -Force -Path "$dst/godot.zip" -DestinationPath $dst
+          Remove-Item "$dst/godot.zip"
+          $exe = Get-ChildItem $dst -Filter "Godot_v*_win64.exe" | Select-Object -First 1
+          if ($null -eq $exe) {
+            Write-Error "Godot executable not found after extraction"
+            exit 1
+          }
+          Rename-Item $exe.FullName "godot.exe"
 
-      - name: Release
-        uses: softprops/action-gh-release@v1
+      - name: Download Godot export templates archive
+        if: steps.godot-cache.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          $dst = "${{ runner.temp }}/godot/templates"
+          New-Item -ItemType Directory -Force -Path $dst | Out-Null
+          $url = "https://github.com/godotengine/godot/releases/download/${{ env.GODOT_VERSION }}/Godot_v${{ env.GODOT_VERSION }}_export_templates.tpz"
+          Write-Host "Downloading: $url"
+          Invoke-WebRequest -Uri $url -OutFile "${{ runner.temp }}/templates.tpz"
+          # .tpz は実体 zip。展開すると `templates/` サブディレクトリに本体が入る
+          $work = "${{ runner.temp }}/tpl_work"
+          New-Item -ItemType Directory -Force -Path $work | Out-Null
+          Expand-Archive -Force -Path "${{ runner.temp }}/templates.tpz" -DestinationPath $work
+          Copy-Item -Recurse -Force "$work/templates/*" $dst/
+          Remove-Item -Recurse -Force $work
+          Remove-Item "${{ runner.temp }}/templates.tpz"
+
+      - name: Install Godot export templates into user profile
+        shell: pwsh
+        run: |
+          $target = "$env:LOCALAPPDATA/Godot/export_templates/${{ env.GODOT_VERSION_DIR }}"
+          New-Item -ItemType Directory -Force -Path $target | Out-Null
+          Copy-Item -Recurse -Force "${{ runner.temp }}/godot/templates/*" $target/
+          Get-ChildItem $target | Select-Object Name, Length
+
+      - name: Add Godot to PATH
+        shell: pwsh
+        run: |
+          "${{ runner.temp }}/godot" | Out-File -Append $env:GITHUB_PATH
+
+      - name: Import Godot project (build .godot cache)
+        shell: pwsh
+        run: |
+          Push-Location ${{ env.GODOT_PROJECT_DIR }}
+          # 初回 import はリソース変換の関係で非ゼロ終了することがあるので 2 回試行
+          & godot.exe --headless --import 2>&1 | Out-Host
+          & godot.exe --headless --import 2>&1 | Out-Host
+          Pop-Location
+
+      - name: Export "Windows Desktop"
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path build | Out-Null
+          Push-Location ${{ env.GODOT_PROJECT_DIR }}
+          & godot.exe --headless --export-release "Windows Desktop" "../build/Hengband.exe"
+          $code = $LASTEXITCODE
+          Pop-Location
+          if (-not (Test-Path build/Hengband.exe)) {
+            Write-Error "Export failed: build/Hengband.exe not produced (exit=$code)"
+            exit 1
+          }
+          Get-ChildItem build
+
+      - name: Ensure GDExtension DLL is alongside exe
+        shell: pwsh
+        run: |
+          # Godot は .gdextension 内のライブラリを通常自動でコピーするが、
+          # `res://../bin/` のような外部参照では取りこぼすことがあるため明示的に確認・コピー
+          $dst = "build/${{ env.GDEXT_OUTPUT_NAME }}"
+          if (-not (Test-Path $dst)) {
+            Copy-Item -Force "bin/${{ env.GDEXT_OUTPUT_NAME }}" $dst
+          }
+          if (-not (Test-Path "build/hengband.gdextension")) {
+            Copy-Item -Force "${{ env.GODOT_PROJECT_DIR }}/hengband.gdextension" "build/hengband.gdextension"
+          }
+          Get-ChildItem build
+
+      - name: Stage release files
+        shell: pwsh
+        run: |
+          $stage = "stage/Hengband-${{ steps.ver.outputs.version }}-godot-win64"
+          New-Item -ItemType Directory -Force -Path $stage | Out-Null
+
+          # ゲーム本体
+          Copy-Item -Force build/Hengband.exe $stage/
+          Copy-Item -Force "build/${{ env.GDEXT_OUTPUT_NAME }}" $stage/
+          Copy-Item -Force build/hengband.gdextension $stage/ -ErrorAction SilentlyContinue
+          # Godot ランタイムが書き出す .pck もある (embed_pck=false のため)
+          if (Test-Path build/Hengband.pck) { Copy-Item -Force build/Hengband.pck $stage/ }
+
+          # ゲームデータ (実行時は exe の隣の lib/ を ANGBAND_DIR として読む)
+          Copy-Item -Recurse -Force lib $stage/lib
+          Get-ChildItem -Recurse -Filter Makefile.am -Path $stage/lib | Remove-Item -Force -ErrorAction SilentlyContinue
+          # ユーザ生成物は除外 (delete.me は保持)
+          Get-ChildItem -Path $stage/lib/save, $stage/lib/user -Exclude delete.me -ErrorAction SilentlyContinue |
+            Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+          # 音楽は同梱フリーのものだけ残す
+          if (Test-Path $stage/lib/xtra/music) {
+            Get-ChildItem $stage/lib/xtra/music -Exclude music.cfg, readme.txt, *.mp3 |
+              Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+          }
+
+          # ドキュメント
+          Copy-Item -Force readme.md $stage/
+          Copy-Item -Force readme-eng.md $stage/ -ErrorAction SilentlyContinue
+          Copy-Item -Force autopick.txt, autopick_eng.txt $stage/ -ErrorAction SilentlyContinue
+          Copy-Item -Force THIRD-PARTY-NOTICES.txt $stage/
+
+          Get-ChildItem -Recurse $stage | Measure-Object -Property Length -Sum |
+            ForEach-Object { Write-Host ("Staged size: {0:N1} MB" -f ($_.Sum / 1MB)) }
+
+      - name: Create release ZIP
+        shell: pwsh
+        run: |
+          $zip = "Hengband-${{ steps.ver.outputs.version }}-godot-win64.zip"
+          Compress-Archive -Path stage/* -DestinationPath $zip -Force
+          Get-Item $zip | ForEach-Object {
+            Write-Host ("Zip size: {0:N1} MB" -f ($_.Length / 1MB))
+          }
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Hengband-${{ steps.ver.outputs.version }}-godot-win64
+          path: Hengband-${{ steps.ver.outputs.version }}-godot-win64.zip
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
         with:
           files: Hengband-*.zip
           fail_on_unmatched_files: true
-          name: ${{ steps.get_version.outputs.version }}
-          tag_name: ${{ steps.get_version.outputs.version }}
+          name: ${{ steps.ver.outputs.version }}
+          tag_name: ${{ github.ref_name }}
           generate_release_notes: true
-          draft: true
+          draft: ${{ github.event.inputs.draft != 'false' }}
