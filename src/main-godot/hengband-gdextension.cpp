@@ -7,6 +7,7 @@
 #include "godot-audio-manager.h"
 #include "godot-init.h"
 #include "godot-input-handler.h"
+#include "godot-player-status.h"
 #include "godot-term-hooks.h"
 #include "godot-terminal.h"
 #include "godot-tile-layer.h"
@@ -26,6 +27,7 @@
 #include <godot_cpp/variant/callable.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/variant/string_name.hpp>
 
 #include <algorithm>
 #include <filesystem>
@@ -123,9 +125,51 @@ void HengbandGame::_ready()
     set_term_data_array(term_data_.data(), HENGBAND_TERM_COUNT);
 }
 
+/// GodotPlayerStatusSnapshot の各フィールドを Dictionary に変換するヘルパー
+static godot::Dictionary snapshot_to_dict(const GodotPlayerStatusSnapshot &s)
+{
+    godot::Dictionary d;
+    d["hp"] = s.chp;
+    d["max_hp"] = s.mhp;
+    d["sp"] = s.csp;
+    d["max_sp"] = s.msp;
+    d["level"] = s.level;
+    d["dun_level"] = s.dun_level;
+    d["gold"] = static_cast<int64_t>(s.gold);
+    d["exp"] = static_cast<int64_t>(s.exp);
+    d["max_exp"] = static_cast<int64_t>(s.max_exp);
+    d["speed"] = s.speed;
+    d["ac"] = s.display_ac;
+    d["name"] = godot::String::utf8(s.name.c_str());
+    d["race"] = godot::String::utf8(s.race_name.c_str());
+    d["class"] = godot::String::utf8(s.class_name.c_str());
+    // 能力値 (0=STR, 1=INT, 2=WIS, 3=DEX, 4=CON, 5=CHR)
+    static const char *const STAT_KEYS[6] = { "str", "int", "wis", "dex", "con", "chr" };
+    for (int i = 0; i < 6; ++i) {
+        d[godot::String("stat_") + STAT_KEYS[i]] = s.stat_use[i];
+        d[godot::String("stat_top_") + STAT_KEYS[i]] = s.stat_top[i];
+    }
+    return d;
+}
+
 void HengbandGame::_process(double delta)
 {
     (void)delta;
+    // ゲームスレッドがステータスを更新したら player_status_changed シグナルを発行する
+    const auto snap = player_status_get_snapshot();
+    if (snap.is_valid && snap.version != last_status_version_) {
+        last_status_version_ = snap.version;
+        emit_signal("player_status_changed", snapshot_to_dict(snap));
+    }
+}
+
+godot::Dictionary HengbandGame::get_player_status()
+{
+    const auto snap = player_status_get_snapshot();
+    if (!snap.is_valid) {
+        return godot::Dictionary();
+    }
+    return snapshot_to_dict(snap);
 }
 
 void HengbandGame::_notification(int p_what)
@@ -453,7 +497,14 @@ void HengbandGame::fit_term_to_viewport(const Vector2i &viewport_size)
         return;
     }
     const int cols = std::max(10, viewport_size.x / cell_w);
-    const int rows = std::max(3, viewport_size.y / cell_h);
+    int rows = std::max(3, viewport_size.y / cell_h);
+#ifdef GODOT_RICH_UI
+    // 底部ステータス行 (ROW_SPEED=-1, ROW_DUNGEON=-2, ROW_DAY=-3) を
+    // Godot StatusPanel に移したため terminal 0 の行数を 3 行削減する。
+    // これによりマップ描画領域が拡大する。
+    static constexpr int GODOT_RICH_UI_BOTTOM_ROWS = 3;
+    rows = std::max(3, rows - GODOT_RICH_UI_BOTTOM_ROWS);
+#endif
     set_sub_window_size(0, cols, rows);
 }
 
@@ -523,6 +574,14 @@ void HengbandGame::_bind_methods()
     ClassDB::bind_method(
         D_METHOD("unregister_terminal", "idx"),
         &HengbandGame::unregister_terminal);
+    ClassDB::bind_method(
+        D_METHOD("get_player_status"),
+        &HengbandGame::get_player_status);
+
+    // シグナル: ゲームターン更新時にプレイヤーステータスを通知する
+    // 引数: status (Dictionary) - get_player_status() と同じキー構成
+    ADD_SIGNAL(MethodInfo("player_status_changed",
+        PropertyInfo(Variant::DICTIONARY, "status")));
 }
 
 // ---------------------------------------------------------------------------

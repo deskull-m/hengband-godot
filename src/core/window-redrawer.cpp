@@ -48,6 +48,10 @@ void redraw_window()
  */
 static void print_dungeon(PlayerType *player_ptr)
 {
+#ifdef GODOT_RICH_UI
+    (void)player_ptr;
+    return; // Godot StatusPanel に表示するため terminal 描画をスキップ
+#else
     const auto &[wid, hgt] = term_get_size();
 
     c_put_str(TERM_WHITE, "             ", hgt + ROW_DUNGEON, COL_DUNGEON);
@@ -58,6 +62,7 @@ static void print_dungeon(PlayerType *player_ptr)
     }
 
     c_put_str(TERM_L_UMBER, dungeon_name, hgt + ROW_DUNGEON, col);
+#endif // GODOT_RICH_UI
 }
 
 /*!

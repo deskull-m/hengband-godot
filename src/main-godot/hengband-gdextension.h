@@ -9,12 +9,14 @@
 
 #include "godot-audio-manager.h"
 #include "godot-input-handler.h"
+#include "godot-player-status.h"
 #include "godot-term-hooks.h"
 #include "godot-terminal.h"
 #include "godot-tile-layer.h"
 
 #include <array>
 #include <atomic>
+#include <cstdint>
 #include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/node2d.hpp>
@@ -97,6 +99,12 @@ public:
     /// idx=0 は無視する
     void unregister_terminal(int idx);
 
+    /// 現在のプレイヤーステータスを Dictionary で返す
+    /// キー: hp, max_hp, sp, max_sp, level, dun_level, gold, exp, max_exp,
+    ///       speed, ac, name, race, class, stat_str/int/wis/dex/con/chr,
+    ///       stat_top_str/int/wis/dex/con/chr
+    godot::Dictionary get_player_status();
+
 protected:
     static void _bind_methods();
 
@@ -115,6 +123,9 @@ private:
     /// 使用するフォント
     godot::Ref<godot::Font> font_;
     int font_size_{ 14 };
+
+    /// player_status_changed シグナル発行用: 最後に確認したスナップショットバージョン
+    uint64_t last_status_version_{ 0 };
 
     /// タイルセットを読み込む（GDScript から呼び出す）
     /// @param graf_name  ANGBAND_GRAF に設定する値 ("old" / "new" / "ne2")

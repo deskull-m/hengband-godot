@@ -24,6 +24,11 @@ var window_rect: Rect2i = Rect2i(0, 0, 0, 0)
 ## サブウィンドウレイアウトツリー（空辞書 = デフォルト単一ペイン）
 var layout_data: Dictionary = {}
 
+## ステータスパネルの位置 (x=-1 = 未保存、初回は右上に自動配置)
+var status_panel_pos: Vector2i = Vector2i(-1, -1)
+## ステータスパネルの表示状態
+var status_panel_visible: bool = true
+
 const _CONFIG_PATH := "user://hengband_config.cfg"
 
 func _ready() -> void:
@@ -47,6 +52,9 @@ func save_config() -> void:
 	cfg.set_value("window", "w", window_rect.size.x)
 	cfg.set_value("window", "h", window_rect.size.y)
 	cfg.set_value("layout", "tree", layout_data)
+	cfg.set_value("status_panel", "x", status_panel_pos.x)
+	cfg.set_value("status_panel", "y", status_panel_pos.y)
+	cfg.set_value("status_panel", "visible", status_panel_visible)
 	cfg.save(_CONFIG_PATH)
 
 func load_config() -> void:
@@ -65,3 +73,7 @@ func load_config() -> void:
 	var wh: int = cfg.get_value("window", "h", 0)
 	window_rect = Rect2i(wx, wy, ww, wh)
 	layout_data = cfg.get_value("layout", "tree", {})
+	var spx: int = cfg.get_value("status_panel", "x", -1)
+	var spy: int = cfg.get_value("status_panel", "y", -1)
+	status_panel_pos = Vector2i(spx, spy)
+	status_panel_visible = cfg.get_value("status_panel", "visible", true)
