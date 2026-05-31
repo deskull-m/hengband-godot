@@ -1,6 +1,7 @@
-[gd_scene load_steps=7 format=3 uid="uid://hengband_main"]
+[gd_scene load_steps=8 format=3 uid="uid://hengband_main"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="PackedScene" path="res://scenes/status_panel.tscn" id="2_status"]
 
 ; --- コンフィグパネル背景: 暗めの赤みがかったグレー + 白縁 ---
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
@@ -107,6 +108,23 @@ offset_bottom = 0.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_bar")
+
+[node name="StatusButton" type="Button" parent="ConfigLayer/BottomBar"]
+anchor_left = 1.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -95.0
+offset_top = 4.0
+offset_right = -50.0
+offset_bottom = -4.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+text = "S"
+tooltip_text = "ステータスパネル 表示/非表示"
 
 [node name="GearButton" type="Button" parent="ConfigLayer/BottomBar"]
 anchor_left = 1.0
@@ -257,6 +275,23 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "閉じる"
+
+; --- ステータスオーバーレイ (ゲーム画面右上に常時表示) ---
+; ConfigLayer より下のレイヤー (5) に配置する。
+[node name="StatusLayer" type="CanvasLayer" parent="."]
+layer = 5
+
+[node name="StatusPanel" parent="StatusLayer" instance=ExtResource("2_status")]
+anchor_left = 1.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_left = -200.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = 4.0
+grow_horizontal = 0
+grow_vertical = 1
 
 ; HengbandGame を最後の子ノードとして宣言する。
 ; Godot は NOTIFICATION_EXIT_TREE をシーン子ノードの逆順に発行するため、

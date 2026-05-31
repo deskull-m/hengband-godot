@@ -89,6 +89,11 @@ func _ready() -> void:
 	# 起動時にタイル設定を適用する
 	_apply_tiles(game)
 
+	# StatusPanel に HengbandGame シグナルを接続する
+	var status_panel := $StatusLayer/StatusPanel
+	if status_panel and status_panel.has_method("connect_to_game"):
+		status_panel.connect_to_game(game)
+
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		_save_layout_config()
@@ -222,6 +227,7 @@ func _setup_config_ui() -> void:
 	_sync_font_edit_from_preset(idx)
 
 	$ConfigLayer/BottomBar/GearButton.pressed.connect(_on_gear_pressed)
+	$ConfigLayer/BottomBar/StatusButton.pressed.connect(_on_status_toggle_pressed)
 	var window_tabs: TabBar = $ConfigLayer/ConfigPanel/PanelVBox/WindowTabBar
 	window_tabs.tab_changed.connect(_on_window_tab_changed)
 	font_option.item_selected.connect(_on_font_preset_selected)
@@ -237,6 +243,13 @@ func _on_gear_pressed() -> void:
 	if not panel.visible:
 		_sync_window_tabs()
 	panel.visible = not panel.visible
+
+func _on_status_toggle_pressed() -> void:
+	var sp := $StatusLayer/StatusPanel
+	if sp:
+		sp.visible = not sp.visible
+		GameState.status_panel_visible = sp.visible
+		GameState.save_config()
 
 ## プリセット選択時: FontNameEdit に反映してリアルタイム適用
 func _on_font_preset_selected(idx: int) -> void:

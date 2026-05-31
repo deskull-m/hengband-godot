@@ -247,6 +247,10 @@ void print_state(PlayerType *player_ptr)
  */
 void print_speed(PlayerType *player_ptr)
 {
+#ifdef GODOT_RICH_UI
+    (void)player_ptr;
+    return; // Godot StatusPanel に表示するため terminal 描画をスキップ
+#else
     const auto &[wid, hgt] = term_get_size();
     auto col_speed = wid + COL_SPEED;
     auto row_speed = hgt + ROW_SPEED;
@@ -299,6 +303,7 @@ void print_speed(PlayerType *player_ptr)
     }
 
     c_put_str(attr, format("%-9s", buf.data()), row_speed, col_speed);
+#endif // GODOT_RICH_UI
 }
 
 /*!
@@ -307,6 +312,10 @@ void print_speed(PlayerType *player_ptr)
  */
 void print_study(PlayerType *player_ptr)
 {
+#ifdef GODOT_RICH_UI
+    (void)player_ptr;
+    return;
+#else
     const auto &[wid, hgt] = term_get_size();
     const auto col_study = wid + COL_STUDY;
     const auto row_study = hgt + ROW_STUDY;
@@ -315,6 +324,7 @@ void print_study(PlayerType *player_ptr)
     } else {
         put_str("    ", row_study, col_study);
     }
+#endif // GODOT_RICH_UI
 }
 
 /*!
@@ -323,6 +333,10 @@ void print_study(PlayerType *player_ptr)
  */
 void print_imitation(PlayerType *player_ptr)
 {
+#ifdef GODOT_RICH_UI
+    (void)player_ptr;
+    return;
+#else
     const auto &[wid, hgt] = term_get_size();
     const auto col_study = wid + COL_STUDY;
     const auto row_study = hgt + ROW_STUDY;
@@ -340,6 +354,7 @@ void print_imitation(PlayerType *player_ptr)
 
     TERM_COLOR attr = mane_data->new_mane ? TERM_L_RED : TERM_WHITE;
     c_put_str(attr, _("まね", "Imit"), row_study, col_study);
+#endif // GODOT_RICH_UI
 }
 
 /*!
@@ -436,6 +451,10 @@ static void add_hex_status_flags(PlayerType *player_ptr, BIT_FLAGS *bar_flags)
  */
 void print_status(PlayerType *player_ptr)
 {
+#ifdef GODOT_RICH_UI
+    (void)player_ptr;
+    return; // 状態バーは将来 Godot StatusPanel に移行予定
+#else
     const auto &[wid, hgt] = term_get_size();
     const auto row_statbar = hgt + ROW_STATBAR;
     const auto max_col_statbar = wid + MAX_COL_STATBAR;
@@ -734,6 +753,7 @@ void print_status(PlayerType *player_ptr)
             break;
         }
     }
+#endif // GODOT_RICH_UI
 }
 
 /*!

@@ -6,6 +6,7 @@
 #include "godot-term-hooks.h"
 #include "godot-audio-manager.h"
 #include "godot-input-handler.h"
+#include "godot-player-status.h"
 #include "godot-terminal.h"
 #include "godot-tile-layer.h"
 
@@ -151,6 +152,10 @@ errr term_xtra_godot(int n, int v)
         auto *tiles = get_tile_layer(game_term);
         if (tiles) {
             tiles->call_deferred("queue_redraw");
+        }
+        // メインターミナル (term 0) の更新時にプレイヤーステータスを同期する
+        if (game_term == term_screen) {
+            player_status_push(p_ptr);
         }
         return 0;
     }

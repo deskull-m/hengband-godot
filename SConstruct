@@ -54,7 +54,7 @@ env.Append(CPPPATH=[
     "src/external-lib/include",  # fmtlib, tl::optional 等
 ])
 
-env.Append(CPPDEFINES=["USE_GODOT"])
+env.Append(CPPDEFINES=["USE_GODOT", "GODOT_RICH_UI"])
 
 # --- Hengband 専用ビルド環境 ---
 # godot-cpp は CCFLAGS に /utf-8 (=/source-charset:utf-8 /execution-charset:utf-8) を追加する。

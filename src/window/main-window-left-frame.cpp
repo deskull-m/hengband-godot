@@ -170,6 +170,10 @@ void print_gold(PlayerType *player_ptr)
  */
 void print_depth(PlayerType *player_ptr)
 {
+#ifdef GODOT_RICH_UI
+    (void)player_ptr;
+    return; // Godot StatusPanel に表示するため terminal 描画をスキップ
+#else
     TERM_COLOR attr = TERM_WHITE;
     const auto &[wid, hgt] = term_get_size();
     const auto col_depth = wid + COL_DEPTH;
@@ -224,6 +228,7 @@ void print_depth(PlayerType *player_ptr)
     }
 
     c_prt(attr, format("%7s", depths.data()), row_depth, col_depth);
+#endif // GODOT_RICH_UI
 }
 
 /*!
