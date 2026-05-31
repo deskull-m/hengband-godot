@@ -64,8 +64,9 @@ hengband_env = env.Clone()
 
 if env["platform"] == "windows":
     # h-config.h は WIN32 マクロで WINDOWS を判定するが、
-    # x86_64 MSVC は _WIN32 のみ定義するため明示的に追加
-    hengband_env.Append(CPPDEFINES=["WINDOWS", "JP", "SJIS"])
+    # x86_64 MSVC は _WIN32 のみ定義するため明示的に追加。
+    # string-processor.cpp の iconv.h 分岐も WIN32 で判定するため必須。
+    hengband_env.Append(CPPDEFINES=["WINDOWS", "WIN32", "JP", "SJIS"])
     # fmtlib v11 の consteval フォーマット文字列検証を無効化
     # (_() マクロがランタイム文字列を返すため compile-time check 不可)
     hengband_env.Append(CPPDEFINES=["FMT_USE_CONSTEVAL=0"])
