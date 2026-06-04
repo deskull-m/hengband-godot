@@ -360,7 +360,7 @@ void do_cmd_walk(PlayerType *player_ptr, bool pickup)
         }
 
         if (is_wild_mode) {
-            energy.mul_player_turn_energy((MAX_HGT + MAX_WID) / 2);
+            energy.mul_player_turn_energy((MAX_WILD_HGT + MAX_WILD_WID) / 2);
         }
 
         if (player_ptr->action == ACTION_HAYAGAKE) {
@@ -383,8 +383,8 @@ void do_cmd_walk(PlayerType *player_ptr, bool pickup)
 
         if (((wild_level + 5) > (player_ptr->lev / 2)) && randint0(tmp) < (21 - player_ptr->skill_stl)) {
             msg_print(_("襲撃だ！", "You are ambushed !"));
-            player_ptr->oldpy = randint1(MAX_HGT - 2);
-            player_ptr->oldpx = randint1(MAX_WID - 2);
+            player_ptr->oldpy = randint1(MAX_WILD_HGT - 2);
+            player_ptr->oldpx = randint1(MAX_WILD_WID - 2);
             change_wild_mode(player_ptr, true);
             PlayerEnergy(player_ptr).set_player_turn_energy(100);
         }

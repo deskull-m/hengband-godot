@@ -1,13 +1,15 @@
 #pragma once
 
+#include "floor/floor-base-definitions.h" // MAX_WILD_HGT / MAX_WILD_WID
 #include "util/point-2d.h"
 #include <vector>
 
-/* Minimum & maximum town size */
-#define MIN_TOWN_WID ((MAX_WID / 3) / 2)
-#define MIN_TOWN_HGT ((MAX_HGT / 3) / 2)
-#define MAX_TOWN_WID ((MAX_WID / 3) * 2 / 3)
-#define MAX_TOWN_HGT ((MAX_HGT / 3) * 2 / 3)
+/* Minimum & maximum town size (build_type16 ダンジョン内の街) */
+/* MAX_HGT 拡張 (66→198) の影響を受けないよう wilderness 用上限ベースで定義 */
+#define MIN_TOWN_WID ((MAX_WILD_WID / 3) / 2)
+#define MIN_TOWN_HGT ((MAX_WILD_HGT / 3) / 2)
+#define MAX_TOWN_WID ((MAX_WILD_WID / 3) * 2 / 3)
+#define MAX_TOWN_HGT ((MAX_WILD_HGT / 3) * 2 / 3)
 
 class UndergroundBuilding {
 public:

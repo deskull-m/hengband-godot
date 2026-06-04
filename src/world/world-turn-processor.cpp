@@ -366,8 +366,8 @@ void WorldTurnProcessor::ring_nightmare_bell(int prev_min)
     disturb(this->player_ptr, true, true);
     msg_print(_("遠くで鐘が何回も鳴り、死んだような静けさの中へ消えていった。", "A distant bell tolls many times, fading into an deathly silence."));
     if (AngbandWorld::get_instance().is_wild_mode()) {
-        this->player_ptr->oldpy = randint1(MAX_HGT - 2);
-        this->player_ptr->oldpx = randint1(MAX_WID - 2);
+        this->player_ptr->oldpy = randint1(MAX_WILD_HGT - 2);
+        this->player_ptr->oldpx = randint1(MAX_WILD_WID - 2);
         change_wild_mode(this->player_ptr, true);
         PlayerEnergy(this->player_ptr).set_player_turn_energy(100);
     }

@@ -35,13 +35,27 @@ constexpr int SCREEN_HGT = 22;
 constexpr int SCREEN_WID = 66;
 
 /*!
- * @brief 表示上のダンジョンの最大垂直サイズ(SCREEN_HGTの3倍が望ましい)
- * Maximum dungeon height in grids, must be a multiple of SCREEN_HGT, probably hard-coded to SCREEN_HGT * 3.
+ * @brief 表示上のダンジョンの最大垂直サイズ
+ * 旧仕様 (SCREEN_HGT * 3 = 66) では横長 (1:3) のフロアしか作れなかったため、
+ * 縦長/正方形ダンジョンに対応すべく SCREEN_HGT * 9 (= 198) まで拡張。
+ * 地表 (wilderness) は引き続き MAX_WILD_HGT (= 66) で固定する。
  */
-constexpr int MAX_HGT = 66;
+constexpr int MAX_HGT = 198;
 
 /*!
  * @brief 表示上のダンジョンの最大水平サイズ(SCREEN_WIDの3倍が望ましい)
  * Maximum dungeon width in grids, must be a multiple of SCREEN_WID, probably hard-coded to SCREEN_WID * 3.
  */
 constexpr int MAX_WID = 198;
+
+/*!
+ * @brief 地表/街マップ専用の垂直サイズ上限。
+ * 旧 MAX_HGT (= 66) と同値で、wilderness/town 関連コードからのみ参照する。
+ * ダンジョンの上限拡張 (MAX_HGT=198) と切り分ける目的で導入。
+ */
+constexpr int MAX_WILD_HGT = 66;
+
+/*!
+ * @brief 地表/街マップ専用の水平サイズ上限。MAX_WID と同値だが意味的に分離。
+ */
+constexpr int MAX_WILD_WID = MAX_WID;
