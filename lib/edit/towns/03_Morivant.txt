@@ -451,3 +451,7 @@ P:37:113
 # Starting position when coming from quest 30
 ?:[EQU $LEAVING_QUEST 30]
 P:34:83
+
+# Entry point when arriving from the wilderness map (overrides the screen-edge default).
+?:1
+PW:33:95

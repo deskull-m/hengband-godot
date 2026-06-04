@@ -797,3 +797,11 @@ P:19:176
 # Starting position when coming from quest 15
 ?:[EQU $LEAVING_QUEST 15]
 P:3:7
+
+# Entry point when arriving from the wilderness map (overrides the screen-edge default).
+# Vampires keep their special "near dungeon entrance" spawn behaviour.
+?:[NOT [EQU $RACE Vampire] ]
+PW:33:131
+?:[EQU $RACE Vampire]
+PW:31:150
+?:1

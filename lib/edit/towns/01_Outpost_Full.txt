@@ -655,3 +655,9 @@ P:44:109
 # Starting position when coming from quest 34
 ?:[EQU $LEAVING_QUEST 34]
 P:44:109
+
+# Entry point when arriving from the wilderness map (overrides the screen-edge default).
+# Always applied during town-floor generation; teleport_town (recall) and dungeon-exit
+# transitions still override this later in wilderness_gen.
+?:1
+PW:33:131

@@ -192,3 +192,7 @@ D:##############################################################################
 
 # Starting position
 P:52:15
+
+# Entry point when arriving from the wilderness map (overrides the screen-edge default).
+?:1
+PW:52:15

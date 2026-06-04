@@ -303,3 +303,7 @@ P:9:72
 # Starting position when coming from quest 13
 ?:[EQU $LEAVING_QUEST 13]
 P:8:83
+
+# Entry point when arriving from the wilderness map (overrides the screen-edge default).
+?:1
+PW:64:99

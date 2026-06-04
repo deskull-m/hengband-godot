@@ -328,8 +328,30 @@ static bool parse_qtw_P(PlayerType *player_ptr, qtwg_type *qtwg_ptr)
         return true;
     }
 
-    const auto tokens = tokenize(qtwg_ptr->buf + 2, 2);
+    /*
+     * "PW:y:x" は広域マップ (wilderness mode) から町へ入った際の入場座標。
+     * 通常の "P:y:x" と異なり、oldpy/oldpx の既存値を無視して必ず上書きする。
+     * (movement-execution.cpp の wild モード遷移で oldpy/oldpx は画面端の値が
+     *  事前に入っているため、通常の P: では適用されない。これを救済する。)
+     * 街フロアでのみ意味を持ち、クエストフロアでは無視する。
+     * teleport_town / leaving_dungeon といった特殊復帰は wilderness_gen 側で
+     * parse_fixed_map の後に再度上書きするため、それらは引き続き優先される。
+     */
+    const auto is_pw = (qtwg_ptr->buf[1] == 'W' && qtwg_ptr->buf[2] == ':');
+    const auto token_offset = is_pw ? 3 : 2;
+    const auto tokens = tokenize(qtwg_ptr->buf + token_offset, 2);
     if (tokens.size() != 2) {
+        return true;
+    }
+
+    auto &floor = *player_ptr->current_floor_ptr;
+    if (is_pw) {
+        if (floor.is_in_quest()) {
+            return true;
+        }
+
+        player_ptr->oldpy = std::stoi(tokens[0]);
+        player_ptr->oldpx = std::stoi(tokens[1]);
         return true;
     }
 
@@ -338,7 +360,6 @@ static bool parse_qtw_P(PlayerType *player_ptr, qtwg_type *qtwg_ptr)
         panels_y++;
     }
 
-    auto &floor = *player_ptr->current_floor_ptr;
     floor.height = panels_y * SCREEN_HGT;
     int panels_x = (*qtwg_ptr->x / SCREEN_WID);
     if (*qtwg_ptr->x % SCREEN_WID) {
