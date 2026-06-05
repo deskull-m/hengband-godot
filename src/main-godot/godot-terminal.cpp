@@ -160,8 +160,11 @@ void GodotTerminal::draw_cell(int x, int y, const CellData &cell)
         static_cast<float>(char_cell_w),
         static_cast<float>(cell_h_));
 
-    // セル背景を黒で塗る (透過モード時はスキップして 3D オーバーレイを透過させる)
-    if (!transparent_mode_) {
+    // セル背景を黒で塗る
+    // - 通常モード:  常に塗る
+    // - 透過モード:  3D オーバーレイを透かすため塗らない
+    // - screen_save: 透過モード中であっても背景を塗り戻して視認性を確保する
+    if (!transparent_mode_ || screen_save_depth_ > 0) {
         draw_rect(cell_rect, Color(0, 0, 0));
     }
 
@@ -179,7 +182,13 @@ void GodotTerminal::draw_cell(int x, int y, const CellData &cell)
                                ? font_->get_ascent(font_size_)
                                : static_cast<float>(font_size_);
     const Vector2 pos(px, py + baseline);
-    font_->draw_char(get_canvas_item(), pos, static_cast<int64_t>(cell.ch), font_size_, fg);
+    const auto canvas = get_canvas_item();
+    const auto codepoint = static_cast<int64_t>(cell.ch);
+    if (screen_save_depth_ > 0) {
+        // 黒縁を先に描いてから本体を上書き
+        font_->draw_char_outline(canvas, pos, codepoint, font_size_, kScreenSaveOutlineSize, Color(0, 0, 0));
+    }
+    font_->draw_char(canvas, pos, codepoint, font_size_, fg);
 }
 
 void GodotTerminal::draw_cursor_rect(int x, int y)
@@ -231,13 +240,38 @@ void GodotTerminal::set_terminal_font(const Ref<Font> &font, int font_size)
 
 void GodotTerminal::set_transparent_mode(bool enabled, float alpha)
 {
+    // GDScript (メインスレッド) から呼ばれる想定。set_self_modulate を直接触ってよい。
     transparent_mode_ = enabled;
     transparent_alpha_ = alpha;
-    // ノード全体の不透明度を変更する: 透過モード時は self_modulate.a = alpha
-    Color mod = get_self_modulate();
-    mod.a = enabled ? alpha : 1.0f;
-    set_self_modulate(mod);
+    apply_effective_modulate();
     call_deferred("queue_redraw");
+}
+
+void GodotTerminal::set_screen_save_mode(int depth)
+{
+    // ゲームスレッド (screen_save / screen_load 経由) から呼ばれる可能性があるため、
+    // Godot scene API は直接呼ばずフラグ更新と call_deferred のみに留める。
+    // 実効 modulate / 再描画はメインスレッドの _draw() で適用される。
+    screen_save_depth_ = depth < 0 ? 0 : depth;
+    call_deferred("_apply_modulate_deferred");
+    call_deferred("queue_redraw");
+}
+
+void GodotTerminal::apply_effective_modulate()
+{
+    Color mod = get_self_modulate();
+    if (screen_save_depth_ > 0) {
+        // 退避中は透過モードを無視して完全不透明
+        mod.a = 1.0f;
+    } else {
+        mod.a = transparent_mode_ ? transparent_alpha_ : 1.0f;
+    }
+    set_self_modulate(mod);
+}
+
+void GodotTerminal::_apply_modulate_deferred()
+{
+    apply_effective_modulate();
 }
 
 void GodotTerminal::draw_text(int x, int y, int n, uint8_t color, const char *str)
@@ -343,4 +377,9 @@ void GodotTerminal::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_cell_height"), &GodotTerminal::get_cell_height);
     ClassDB::bind_method(D_METHOD("set_transparent_mode", "enabled", "alpha"),
         &GodotTerminal::set_transparent_mode, DEFVAL(0.5f));
+    ClassDB::bind_method(D_METHOD("set_screen_save_mode", "depth"),
+        &GodotTerminal::set_screen_save_mode);
+    // call_deferred で呼ぶための内部ディスパッチ (GDScript からは使わない)
+    ClassDB::bind_method(D_METHOD("_apply_modulate_deferred"),
+        &GodotTerminal::_apply_modulate_deferred);
 }

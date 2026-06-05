@@ -61,6 +61,19 @@ void set_term_data_array(term_data_godot *arr, int count)
     s_term_count = count;
 }
 
+void notify_screen_save_depth(int depth)
+{
+    // メインターミナル (term 0) のみ 3D オーバーレイ対象なのでそこにだけ通知する。
+    if (!s_term_data || s_term_count <= 0) {
+        return;
+    }
+
+    auto *terminal = s_term_data[0].terminal;
+    if (terminal) {
+        terminal->set_screen_save_mode(depth);
+    }
+}
+
 // ---------------------------------------------------------------------------
 // resize_hook: ゲームがターミナルサイズを変更した時のコールバック
 // ---------------------------------------------------------------------------
