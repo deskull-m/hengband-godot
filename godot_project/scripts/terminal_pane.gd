@@ -21,6 +21,15 @@ var _initialized: bool = false
 var pane_font_name: String = ""
 var pane_font_size: int = 0
 
+## マップ 3D オーバーレイの表示状態 (term 0 でのみ意味を持つ)
+var map_3d_enabled: bool = false
+
+## Hengband 標準のマップ矩形原点 (src/window/main-window-util.h: COL_MAP=13, ROW_MAP=1)
+const COL_MAP: int = 13
+const ROW_MAP: int = 1
+## マップ矩形下端の余白行数 (メッセージ行・ステータス行を残すための余白)
+const ROW_MAP_BOTTOM_MARGIN: int = 1
+
 func _ready() -> void:
 	if _initialized:
 		return
@@ -44,6 +53,15 @@ func setup(game: Node, term_idx: int) -> void:
 	var term = $PaneVBox/SubViewportContainer/SubViewport/TerminalContainer/Terminal
 	var tiles = $PaneVBox/SubViewportContainer/SubViewport/TerminalContainer/TileLayer
 	game.register_terminal(term_idx, term, tiles)
+
+	# メインペイン (term 0) のみ 3D マップノードを登録する
+	if term_idx == 0:
+		var overlay := _get_map3d_overlay()
+		if overlay:
+			var map3d_node: Node = overlay.get_map3d_node()
+			if map3d_node and game.has_method("register_map3d"):
+				game.register_map3d(term_idx, map3d_node)
+			overlay.set_map_origin(COL_MAP, ROW_MAP)
 
 func _apply_header_color(is_main: bool) -> void:
 	var style := StyleBoxFlat.new()
@@ -81,3 +99,31 @@ func fit_subviewport() -> void:
 	if cw <= 0 or ch <= 0:
 		return
 	_game_node.set_sub_window_size(terminal_index, maxi(1, px.x / cw), maxi(1, px.y / ch))
+
+	# Phase 1: メインペインの 3D オーバーレイを map 矩形に合わせて位置決めする
+	if terminal_index == 0:
+		_fit_map3d_overlay(px, cw, ch)
+
+## 3D オーバーレイをマップ矩形のピクセル範囲に合わせて配置する
+func _fit_map3d_overlay(px_size: Vector2i, cell_w: int, cell_h: int) -> void:
+	var overlay := _get_map3d_overlay()
+	if overlay == null:
+		return
+	var origin := Vector2(COL_MAP * cell_w, ROW_MAP * cell_h)
+	var size := Vector2(
+		maxf(0.0, px_size.x - origin.x),
+		maxf(0.0, px_size.y - origin.y - ROW_MAP_BOTTOM_MARGIN * cell_h)
+	)
+	overlay.position = origin
+	overlay.size = size
+	overlay.resize_viewport(Vector2i(int(size.x), int(size.y)))
+
+## 3D オーバーレイの表示/非表示を切り替える
+func set_map_3d_enabled(enabled: bool) -> void:
+	map_3d_enabled = enabled
+	var overlay := _get_map3d_overlay()
+	if overlay:
+		overlay.visible = enabled
+
+func _get_map3d_overlay() -> Map3DOverlay:
+	return get_node_or_null("PaneVBox/SubViewportContainer/SubViewport/Map3DOverlay")
