@@ -149,8 +149,11 @@ private:
     /// モンスター / アイテムの TextMesh で使用するフォント (遅延初期化)
     godot::Ref<godot::Font> monster_font_;
 
-    /// プレイヤー専用の単一メッシュ
+    /// プレイヤー専用の単一メッシュ (半透明発光の光柱、位置マーカー)
     godot::MeshInstance3D *player_mesh_{ nullptr };
+
+    /// プレイヤー専用の '@' シンボル TextMesh (モンスターと同じ表記)
+    godot::MeshInstance3D *player_symbol_mesh_{ nullptr };
 
     /// pending を current に反映し、変化したセルだけ Mesh を追加/削除する
     void apply_snapshot();
