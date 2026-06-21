@@ -6,6 +6,7 @@
 #include "godot-term-hooks.h"
 #include "godot-audio-manager.h"
 #include "godot-input-handler.h"
+#include "godot-map3d.h"
 #include "godot-player-status.h"
 #include "godot-terminal.h"
 #include "godot-tile-layer.h"
@@ -75,6 +76,9 @@ void term_resize_hook_godot()
     if (td->tile_layer) {
         td->tile_layer->set_grid_size(new_cols, new_rows);
     }
+    if (td->map3d) {
+        td->map3d->set_grid_size(new_cols, new_rows);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -92,10 +96,14 @@ errr term_text_godot(int x, int y, int n, TERM_COLOR a, concptr s)
     // n バイト分だけを変換対象とし、null 終端に依存しない。
     const auto utf8 = sys_to_utf8(std::string_view(s, static_cast<size_t>(n)));
     const char *str = utf8 ? utf8->c_str() : s;
-    term->draw_text(x, y, n, static_cast<uint8_t>(a), str);
 #else
-    term->draw_text(x, y, n, static_cast<uint8_t>(a), s);
+    const char *str = s;
 #endif
+    term->draw_text(x, y, n, static_cast<uint8_t>(a), str);
+    // 3D マップノード (term 0 のみ) にも転送する
+    if (auto *m3d = get_map3d(game_term)) {
+        m3d->update_text(x, y, n, static_cast<uint8_t>(a), str);
+    }
     return 0;
 }
 
@@ -109,6 +117,9 @@ errr term_wipe_godot(int x, int y, int n)
         return 1;
     }
     term->wipe_cells(x, y, n);
+    if (auto *m3d = get_map3d(game_term)) {
+        m3d->wipe_cells(x, y, n);
+    }
     return 0;
 }
 
@@ -139,6 +150,9 @@ errr term_xtra_godot(int n, int v)
         auto *tiles = get_tile_layer(game_term);
         if (tiles) {
             tiles->clear_all();
+        }
+        if (auto *m3d = get_map3d(game_term)) {
+            m3d->clear_all();
         }
         return 0;
     }
@@ -223,6 +237,9 @@ errr term_xtra_godot(int n, int v)
                     }
                     if (td.tile_layer) {
                         td.tile_layer->set_grid_size(w, h);
+                    }
+                    if (td.map3d) {
+                        td.map3d->set_grid_size(w, h);
                     }
                 }
             }

@@ -149,9 +149,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -200.0
-offset_top = -210.0
+offset_top = -240.0
 offset_right = 200.0
-offset_bottom = 210.0
+offset_bottom = 240.0
 grow_horizontal = 2
 grow_vertical = 2
 visible = false
@@ -255,6 +255,21 @@ text = "ビッグタイル"
 layout_mode = 2
 size_flags_horizontal = 3
 text = "2倍幅で表示する"
+
+[node name="Map3DRow" type="HBoxContainer" parent="ConfigLayer/ConfigPanel/PanelVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Map3DLabel" type="Label" parent="ConfigLayer/ConfigPanel/PanelVBox/Map3DRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+size_flags_horizontal = 0
+text = "3D マップ"
+
+[node name="Map3DCheck" type="CheckBox" parent="ConfigLayer/ConfigPanel/PanelVBox/Map3DRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "3D (試験)"
 
 [node name="ButtonRow" type="HBoxContainer" parent="ConfigLayer/ConfigPanel/PanelVBox"]
 layout_mode = 2
