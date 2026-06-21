@@ -111,7 +111,8 @@ void GodotMap3D::set_active(bool active)
 
 void GodotMap3D::set_floor_snapshot(int width, int height,
     const uint8_t *kinds, int player_x, int player_y,
-    const Map3DMonster *monsters, int monster_count)
+    const Map3DMonster *monsters, int monster_count,
+    const Map3DItem *items, int item_count)
 {
     if (width <= 0 || height <= 0 || !kinds) {
         return;
@@ -128,6 +129,11 @@ void GodotMap3D::set_floor_snapshot(int width, int height,
             pending_.monsters.assign(monsters, monsters + monster_count);
         } else {
             pending_.monsters.clear();
+        }
+        if (items && item_count > 0) {
+            pending_.items.assign(items, items + item_count);
+        } else {
+            pending_.items.clear();
         }
     }
     dirty_.store(true);
@@ -219,6 +225,8 @@ void GodotMap3D::apply_snapshot()
 
     // モンスターも差分反映
     apply_monsters(snap.monsters);
+    // アイテムも差分反映
+    apply_items(snap.items);
 }
 
 MeshInstance3D *GodotMap3D::create_cell_mesh(uint8_t kind, int dx, int dy)
@@ -308,6 +316,15 @@ void GodotMap3D::clear_all_meshes()
     }
     active_monsters_.clear();
     current_monsters_.clear();
+    for (auto &kv : active_items_) {
+        MeshInstance3D *mi = kv.second;
+        if (mi) {
+            remove_child(mi);
+            mi->queue_free();
+        }
+    }
+    active_items_.clear();
+    current_items_.clear();
     if (player_mesh_) {
         remove_child(player_mesh_);
         player_mesh_->queue_free();
@@ -448,6 +465,122 @@ MeshInstance3D *GodotMap3D::create_monster_mesh(const Map3DMonster &m)
         static_cast<float>(m.x),
         0.5f, // 床面より少し上
         static_cast<float>(m.y)));
+    return mi;
+}
+
+// ---------------------------------------------------------------------------
+// アイテム: 差分更新 (地面に寝そべる向きで配置)
+// ---------------------------------------------------------------------------
+
+void GodotMap3D::apply_items(const std::vector<Map3DItem> &new_items)
+{
+    // 新リストを o_idx → Map3DItem の map に変換
+    std::unordered_map<int, Map3DItem> new_by_idx;
+    new_by_idx.reserve(new_items.size());
+    for (const auto &it : new_items) {
+        new_by_idx[it.o_idx] = it;
+    }
+
+    // (1) 消失したアイテム (拾われた / 破壊された)
+    for (auto it = current_items_.begin(); it != current_items_.end();) {
+        if (new_by_idx.find(it->first) == new_by_idx.end()) {
+            auto mit = active_items_.find(it->first);
+            if (mit != active_items_.end()) {
+                MeshInstance3D *mi = mit->second;
+                if (mi) {
+                    remove_child(mi);
+                    mi->queue_free();
+                }
+                active_items_.erase(mit);
+            }
+            it = current_items_.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    // (2) 新規 or 変化
+    for (const auto &kv : new_by_idx) {
+        const int idx = kv.first;
+        const auto &it = kv.second;
+        auto cit = current_items_.find(idx);
+        if (cit == current_items_.end()) {
+            MeshInstance3D *mi = create_item_mesh(it);
+            if (mi) {
+                add_child(mi);
+                active_items_[idx] = mi;
+            }
+            current_items_[idx] = it;
+            continue;
+        }
+        const auto &prev = cit->second;
+        if (prev.ch != it.ch || prev.color != it.color) {
+            auto mit = active_items_.find(idx);
+            if (mit != active_items_.end()) {
+                MeshInstance3D *mi = mit->second;
+                if (mi) {
+                    remove_child(mi);
+                    mi->queue_free();
+                }
+                active_items_.erase(mit);
+            }
+            MeshInstance3D *mi = create_item_mesh(it);
+            if (mi) {
+                add_child(mi);
+                active_items_[idx] = mi;
+            }
+        } else if (prev.x != it.x || prev.y != it.y) {
+            // 位置だけ更新 (rotation は据え置き)
+            auto mit = active_items_.find(idx);
+            if (mit != active_items_.end() && mit->second) {
+                mit->second->set_position(Vector3(
+                    static_cast<float>(it.x),
+                    0.08f,
+                    static_cast<float>(it.y)));
+            }
+        }
+        cit->second = it;
+    }
+}
+
+MeshInstance3D *GodotMap3D::create_item_mesh(const Map3DItem &it)
+{
+    if (it.ch == 0) {
+        return nullptr;
+    }
+    ensure_monster_font();
+
+    char tbuf[2] = { it.ch, 0 };
+    Ref<TextMesh> tm;
+    tm.instantiate();
+    tm->set_font(monster_font_);
+    tm->set_font_size(64);
+    tm->set_depth(0.05f); // 厚みは薄め (床から飛び出さない)
+    tm->set_pixel_size(0.015f);
+    tm->set_text(String(tbuf));
+    tm->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+    tm->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+
+    Ref<StandardMaterial3D> mat;
+    mat.instantiate();
+    mat->set_albedo(term_color_to_godot(it.color));
+    // ビルボードしない: 地面に寝かせるため固定姿勢で描画する
+    mat->set_billboard_mode(BaseMaterial3D::BILLBOARD_DISABLED);
+    // ライティングを切って暗所でも記号が読める平面表示にする
+    mat->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
+    Ref<Material> mat_base = mat;
+
+    MeshInstance3D *mi = memnew(MeshInstance3D);
+    mi->set_mesh(tm);
+    mi->set_material_override(mat_base);
+    mi->set_position(Vector3(
+        static_cast<float>(it.x),
+        0.08f, // 床のすぐ上 (床面 top = 0.05)
+        static_cast<float>(it.y)));
+    // -90° around X: TextMesh の正面 (+Z) を上 (+Y) に向け、地面に寝かせる。
+    // 文字の天地 (+Y) は -Z (=ダンジョン北方向) を指すので、
+    // 標準カメラ位置 (プレイヤーの南上方) から見たとき自然な向きになる。
+    mi->set_rotation_degrees(Vector3(-90.0f, 0.0f, 0.0f));
     return mi;
 }
 
