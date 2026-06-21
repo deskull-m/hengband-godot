@@ -243,8 +243,18 @@ void GodotMap3D::update_text(int x, int y, int n, uint8_t color, const char *str
                 ++p;
             }
             auto &cell = grid_[cell_idx(col, y)];
+            // 既存のプレイヤーセルが上書きされた場合は未確定状態に戻す
+            if (cell.ch == U'@' && cp != U'@' && col == player_x_ && y == player_y_) {
+                player_x_ = -1;
+                player_y_ = -1;
+            }
             cell.ch = cp;
             cell.color = color;
+            // プレイヤー位置を即座に追跡 (メッシュ再構築待ちにしない)
+            if (cp == U'@' && col >= origin_col_ && y >= origin_row_) {
+                player_x_ = col;
+                player_y_ = y;
+            }
             ++col;
         }
     }
@@ -259,7 +269,12 @@ void GodotMap3D::wipe_cells(int x, int y, int n)
             return;
         }
         for (int i = 0; i < n && (x + i) < cols_; ++i) {
-            auto &cell = grid_[cell_idx(x + i, y)];
+            const int cx = x + i;
+            auto &cell = grid_[cell_idx(cx, y)];
+            if (cell.ch == U'@' && cx == player_x_ && y == player_y_) {
+                player_x_ = -1;
+                player_y_ = -1;
+            }
             cell.ch = U' ';
             cell.color = 0;
         }
@@ -275,18 +290,27 @@ void GodotMap3D::clear_all()
             c.ch = U' ';
             c.color = 0;
         }
+        player_x_ = -1;
+        player_y_ = -1;
     }
     dirty_.store(true);
 }
 
 Vector3 GodotMap3D::get_player_world_position() const
 {
+    std::lock_guard<std::mutex> lock(grid_mutex_);
     if (player_x_ < 0 || player_y_ < 0) {
         return Vector3(0, 0, 0);
     }
     const float wx = static_cast<float>(player_x_ - origin_col_);
     const float wz = static_cast<float>(player_y_ - origin_row_);
     return Vector3(wx, 0.0f, wz);
+}
+
+bool GodotMap3D::has_player() const
+{
+    std::lock_guard<std::mutex> lock(grid_mutex_);
+    return player_x_ >= 0 && player_y_ >= 0;
 }
 
 void GodotMap3D::resize_grid()
@@ -320,19 +344,12 @@ void GodotMap3D::rebuild_meshes()
         snap_rows = rows_;
     }
 
-    int player_x = -1;
-    int player_y = -1;
-
     for (int gy = origin_row_; gy < snap_rows; ++gy) {
         for (int gx = origin_col_; gx < snap_cols; ++gx) {
             const auto &cell = snapshot[gy * snap_cols + gx];
             const MeshKind kind = classify_char(cell.ch);
             if (kind == KIND_NONE) {
                 continue;
-            }
-            if (kind == KIND_PLAYER) {
-                player_x = gx;
-                player_y = gy;
             }
 
             const MeshSpec spec = spec_for_kind(kind);
@@ -355,9 +372,8 @@ void GodotMap3D::rebuild_meshes()
             add_child(mi);
         }
     }
-
-    player_x_ = player_x;
-    player_y_ = player_y;
+    // player_x_ / player_y_ は update_text / wipe_cells で常時追跡しているため
+    // ここでは更新しない (再構築待ちの間にプレイヤーが移動しても遅延なく追従する)
 }
 
 void GodotMap3D::_bind_methods()
@@ -371,4 +387,5 @@ void GodotMap3D::_bind_methods()
     ClassDB::bind_method(D_METHOD("is_active"), &GodotMap3D::is_active);
     ClassDB::bind_method(D_METHOD("get_player_world_position"),
         &GodotMap3D::get_player_world_position);
+    ClassDB::bind_method(D_METHOD("has_player"), &GodotMap3D::has_player);
 }
