@@ -83,6 +83,11 @@ public:
         return active_;
     }
 
+    /// プレイヤーの画面 (端末グリッド) 座標を直接設定する。
+    /// term_hooks 側で TERM_XTRA_FRESH 毎に p_ptr->x/y と panel_* から
+    /// 計算して呼び出す。'@' 検出よりも優先される確定情報。
+    void set_player_screen_position(int sx, int sy);
+
     /// プレイヤー位置を取得する (Godot の `_process` 等で Camera 追従に使う)
     /// 戻り値は 3D ワールド座標 (cell 中心)
     godot::Vector3 get_player_world_position() const;
@@ -112,8 +117,8 @@ private:
     /// 連続したメッシュ再生成を抑えるためのクールダウン残時間 (秒)
     double rebuild_cooldown_{ 0.0 };
 
-    /// 再生成の最小間隔 (秒): 100ms = 10fps の更新レート
-    static constexpr double REBUILD_INTERVAL = 0.1;
+    /// 再生成の最小間隔 (秒): 50ms = 20fps の更新レート (Phase 1)
+    static constexpr double REBUILD_INTERVAL = 0.05;
 
     /// 現在のプレイヤー位置 (グリッド座標、見つからない場合は -1)
     /// grid_mutex_ で保護する (update_text / wipe_cells / clear_all から書き込み、
