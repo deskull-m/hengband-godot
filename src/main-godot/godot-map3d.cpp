@@ -10,6 +10,8 @@
 #include <godot_cpp/classes/box_mesh.hpp>
 #include <godot_cpp/classes/material.hpp>
 #include <godot_cpp/classes/mesh_instance3d.hpp>
+#include <godot_cpp/classes/shader.hpp>
+#include <godot_cpp/classes/shader_material.hpp>
 #include <godot_cpp/classes/standard_material3d.hpp>
 #include <godot_cpp/classes/system_font.hpp>
 #include <godot_cpp/classes/text_mesh.hpp>
@@ -40,13 +42,14 @@ MeshSpec spec_for_kind(uint8_t kind)
         s = { 1.0f, 0.05f, 1.0f, 0.025f, Color(0.30f, 0.30f, 0.32f) };
         break;
     case M3D_WALL:
-        s = { 1.0f, 2.0f, 1.0f, 1.0f, Color(0.55f, 0.45f, 0.35f) };
+        // 高さ 0.9: シンボルが見やすいよう従来 2.0 から低めに
+        s = { 1.0f, 0.9f, 1.0f, 0.45f, Color(0.55f, 0.45f, 0.35f) };
         break;
     case M3D_DOOR_CLOSED:
-        s = { 0.9f, 2.0f, 0.9f, 1.0f, Color(0.60f, 0.30f, 0.10f) };
+        s = { 0.9f, 0.9f, 0.9f, 0.45f, Color(0.60f, 0.30f, 0.10f) };
         break;
     case M3D_DOOR_OPEN:
-        s = { 0.2f, 2.0f, 0.9f, 1.0f, Color(0.40f, 0.25f, 0.10f) };
+        s = { 0.2f, 0.9f, 0.9f, 0.45f, Color(0.40f, 0.25f, 0.10f) };
         break;
     case M3D_STAIR_UP:
         s = { 0.8f, 0.3f, 0.8f, 0.15f, Color(0.50f, 0.80f, 1.00f) };
@@ -85,6 +88,8 @@ void GodotMap3D::_process(double delta)
     }
     // プレイヤー位置はクールダウンに関係なく毎フレーム追随させる
     update_player_position();
+    // 壁シェーダのプレイヤー位置 uniform もここで更新する
+    update_wall_player_uniform();
 
     if (rebuild_cooldown_ > 0.0) {
         rebuild_cooldown_ -= delta;
@@ -241,14 +246,23 @@ MeshInstance3D *GodotMap3D::create_cell_mesh(uint8_t kind, int dx, int dy)
     box.instantiate();
     box->set_size(Vector3(spec.size_x, spec.size_y, spec.size_z));
 
-    Ref<StandardMaterial3D> mat;
-    mat.instantiate();
-    mat->set_albedo(spec.color);
-    Ref<Material> mat_base = mat;
+    const bool is_wallish = (kind == M3D_WALL || kind == M3D_DOOR_CLOSED || kind == M3D_DOOR_OPEN);
 
     MeshInstance3D *mi = memnew(MeshInstance3D);
     mi->set_mesh(box);
-    mi->set_material_override(mat_base);
+    if (is_wallish) {
+        // 壁・扉は共有 ShaderMaterial を使う (player_position uniform を毎フレーム
+        // 更新するためインスタンスごとに material を持つと非効率)。
+        // 個別の色は per-instance shader parameter (instance uniform) で渡す。
+        ensure_wall_material();
+        mi->set_material_override(wall_material_);
+        mi->set_instance_shader_parameter("albedo_color", spec.color);
+    } else {
+        Ref<StandardMaterial3D> mat;
+        mat.instantiate();
+        mat->set_albedo(spec.color);
+        mi->set_material_override(mat);
+    }
     mi->set_position(Vector3(
         static_cast<float>(dx),
         spec.y_offset,
@@ -468,6 +482,68 @@ void GodotMap3D::apply_monsters(const std::vector<Map3DMonster> &new_monsters)
         }
         cit->second = m;
     }
+}
+
+void GodotMap3D::ensure_wall_material()
+{
+    if (wall_material_.is_valid()) {
+        return;
+    }
+    Ref<Shader> shader;
+    shader.instantiate();
+    // インライン GLSL シェーダ:
+    //  - distance(world_xz, player_xz) が小さいほどアルファを下げる
+    //  - depth_prepass_alpha でアルファ抜き&適切な深度書き込みを両立
+    //  - instance uniform albedo_color で 1 マテリアルから多色描画する
+    shader->set_code(String(R"(
+shader_type spatial;
+render_mode blend_mix, depth_prepass_alpha, cull_back, diffuse_burley, specular_schlick_ggx;
+
+uniform vec3 player_position = vec3(0.0, 0.0, 0.0);
+uniform float fade_radius : hint_range(0.5, 16.0) = 3.5;
+uniform float min_alpha : hint_range(0.0, 1.0) = 0.30;
+
+instance uniform vec3 albedo_color : source_color = vec3(0.55, 0.45, 0.35);
+
+varying vec3 v_world_pos;
+
+void vertex() {
+    v_world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+}
+
+void fragment() {
+    float d = distance(v_world_pos.xz, player_position.xz);
+    float t = smoothstep(0.0, fade_radius, d);
+    float a = mix(min_alpha, 1.0, t);
+    ALBEDO = albedo_color;
+    ALPHA = a;
+}
+)"));
+
+    wall_material_.instantiate();
+    wall_material_->set_shader(shader);
+    // 初期値: プレイヤー位置不明な間は遠方扱い (不透明)
+    wall_material_->set_shader_parameter("player_position", Vector3(1e6, 0.0, 1e6));
+    wall_material_->set_shader_parameter("fade_radius", 3.5f);
+    wall_material_->set_shader_parameter("min_alpha", 0.30f);
+}
+
+void GodotMap3D::update_wall_player_uniform()
+{
+    if (!wall_material_.is_valid()) {
+        return;
+    }
+    int px, py;
+    {
+        std::lock_guard<std::mutex> lock(pending_mutex_);
+        px = pending_.player_x >= 0 ? pending_.player_x : current_.player_x;
+        py = pending_.player_y >= 0 ? pending_.player_y : current_.player_y;
+    }
+    if (px < 0 || py < 0) {
+        return;
+    }
+    wall_material_->set_shader_parameter("player_position",
+        Vector3(static_cast<float>(px), 0.0f, static_cast<float>(py)));
 }
 
 void GodotMap3D::ensure_monster_font()
