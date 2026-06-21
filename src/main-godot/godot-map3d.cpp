@@ -4,13 +4,19 @@
  */
 
 #include "godot-map3d.h"
+#include "term-color-map.h"
 
+#include <godot_cpp/classes/base_material3d.hpp>
 #include <godot_cpp/classes/box_mesh.hpp>
 #include <godot_cpp/classes/material.hpp>
 #include <godot_cpp/classes/mesh_instance3d.hpp>
 #include <godot_cpp/classes/standard_material3d.hpp>
+#include <godot_cpp/classes/system_font.hpp>
+#include <godot_cpp/classes/text_mesh.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/color.hpp>
+#include <godot_cpp/variant/packed_string_array.hpp>
+#include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 
 using namespace godot;
@@ -104,7 +110,8 @@ void GodotMap3D::set_active(bool active)
 }
 
 void GodotMap3D::set_floor_snapshot(int width, int height,
-    const uint8_t *kinds, int player_x, int player_y)
+    const uint8_t *kinds, int player_x, int player_y,
+    const Map3DMonster *monsters, int monster_count)
 {
     if (width <= 0 || height <= 0 || !kinds) {
         return;
@@ -117,6 +124,11 @@ void GodotMap3D::set_floor_snapshot(int width, int height,
         pending_.kinds.assign(kinds, kinds + n);
         pending_.player_x = player_x;
         pending_.player_y = player_y;
+        if (monsters && monster_count > 0) {
+            pending_.monsters.assign(monsters, monsters + monster_count);
+        } else {
+            pending_.monsters.clear();
+        }
     }
     dirty_.store(true);
 }
@@ -204,6 +216,9 @@ void GodotMap3D::apply_snapshot()
     current_.player_y = snap.player_y;
 
     update_player_position();
+
+    // モンスターも差分反映
+    apply_monsters(snap.monsters);
 }
 
 MeshInstance3D *GodotMap3D::create_cell_mesh(uint8_t kind, int dx, int dy)
@@ -284,11 +299,156 @@ void GodotMap3D::clear_all_meshes()
         }
     }
     active_meshes_.clear();
+    for (auto &kv : active_monsters_) {
+        MeshInstance3D *mi = kv.second;
+        if (mi) {
+            remove_child(mi);
+            mi->queue_free();
+        }
+    }
+    active_monsters_.clear();
+    current_monsters_.clear();
     if (player_mesh_) {
         remove_child(player_mesh_);
         player_mesh_->queue_free();
         player_mesh_ = nullptr;
     }
+}
+
+// ---------------------------------------------------------------------------
+// モンスター: 差分更新
+// ---------------------------------------------------------------------------
+
+void GodotMap3D::apply_monsters(const std::vector<Map3DMonster> &new_monsters)
+{
+    // 新リストを m_idx → Map3DMonster の map に変換
+    std::unordered_map<int, Map3DMonster> new_by_idx;
+    new_by_idx.reserve(new_monsters.size());
+    for (const auto &m : new_monsters) {
+        new_by_idx[m.m_idx] = m;
+    }
+
+    // (1) 消失したモンスター: current_ にあって new_ に居ない → 破棄
+    for (auto it = current_monsters_.begin(); it != current_monsters_.end();) {
+        if (new_by_idx.find(it->first) == new_by_idx.end()) {
+            auto mit = active_monsters_.find(it->first);
+            if (mit != active_monsters_.end()) {
+                MeshInstance3D *mi = mit->second;
+                if (mi) {
+                    remove_child(mi);
+                    mi->queue_free();
+                }
+                active_monsters_.erase(mit);
+            }
+            it = current_monsters_.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    // (2) 新規 or 変化: 追加 or 再生成
+    for (const auto &kv : new_by_idx) {
+        const int idx = kv.first;
+        const auto &m = kv.second;
+        auto cit = current_monsters_.find(idx);
+        if (cit == current_monsters_.end()) {
+            // 新規モンスター
+            MeshInstance3D *mi = create_monster_mesh(m);
+            if (mi) {
+                add_child(mi);
+                active_monsters_[idx] = mi;
+            }
+            current_monsters_[idx] = m;
+            continue;
+        }
+        const auto &prev = cit->second;
+        if (prev.ch != m.ch || prev.color != m.color) {
+            // シンボル変化 (擬態など): 作り直し
+            auto mit = active_monsters_.find(idx);
+            if (mit != active_monsters_.end()) {
+                MeshInstance3D *mi = mit->second;
+                if (mi) {
+                    remove_child(mi);
+                    mi->queue_free();
+                }
+                active_monsters_.erase(mit);
+            }
+            MeshInstance3D *mi = create_monster_mesh(m);
+            if (mi) {
+                add_child(mi);
+                active_monsters_[idx] = mi;
+            }
+        } else if (prev.x != m.x || prev.y != m.y) {
+            // 移動のみ: position 更新 (メッシュ再生成不要)
+            auto mit = active_monsters_.find(idx);
+            if (mit != active_monsters_.end() && mit->second) {
+                mit->second->set_position(Vector3(
+                    static_cast<float>(m.x),
+                    0.5f, // 床より少し上に浮かべる
+                    static_cast<float>(m.y)));
+            }
+        }
+        cit->second = m;
+    }
+}
+
+void GodotMap3D::ensure_monster_font()
+{
+    if (monster_font_.is_valid()) {
+        return;
+    }
+    // システムフォントから読みやすい等幅 / Sans 系を選択
+    Ref<SystemFont> sf;
+    sf.instantiate();
+    PackedStringArray names;
+    names.push_back("Consolas");
+    names.push_back("Courier New");
+    names.push_back("DejaVu Sans Mono");
+    names.push_back("Arial");
+    names.push_back("Sans-Serif");
+    sf->set_font_names(names);
+    monster_font_ = sf;
+}
+
+MeshInstance3D *GodotMap3D::create_monster_mesh(const Map3DMonster &m)
+{
+    if (m.ch == 0) {
+        return nullptr;
+    }
+    ensure_monster_font();
+
+    char tbuf[2] = { m.ch, 0 };
+    Ref<TextMesh> tm;
+    tm.instantiate();
+    tm->set_font(monster_font_);
+    tm->set_font_size(64);
+    tm->set_depth(0.15f); // 押し出し量 (3D 厚み)
+    tm->set_pixel_size(0.015f); // ピクセル → ワールド単位係数 (64 * 0.015 ≒ 1 cell)
+    tm->set_text(String(tbuf));
+    tm->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+    tm->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+
+    Ref<StandardMaterial3D> mat;
+    mat.instantiate();
+    mat->set_albedo(term_color_to_godot(m.color));
+    // ビルボード: 文字をどの角度からでも読めるよう常時カメラに向ける
+    mat->set_billboard_mode(BaseMaterial3D::BILLBOARD_ENABLED);
+    // 発光気味にして暗いダンジョン内でも視認しやすくする
+    mat->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
+    Color emiss = term_color_to_godot(m.color);
+    emiss.a = 1.0f;
+    mat->set_emission(emiss);
+    mat->set_emission_energy_multiplier(0.4f);
+    Ref<Material> mat_base = mat;
+
+    MeshInstance3D *mi = memnew(MeshInstance3D);
+    mi->set_mesh(tm);
+    mi->set_material_override(mat_base);
+    mi->set_position(Vector3(
+        static_cast<float>(m.x),
+        0.5f, // 床面より少し上
+        static_cast<float>(m.y)));
+    return mi;
 }
 
 void GodotMap3D::_bind_methods()
