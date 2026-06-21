@@ -59,6 +59,10 @@ public:
     /// フォントを設定する
     void set_terminal_font(const godot::Ref<godot::Font> &font, int font_size);
 
+    /// 透過モードを切り替える (3D マップ表示との重ね描画用)
+    /// true: セル背景の黒塗りを停止し、ノード全体を半透明 (modulate.a = alpha) で描画する
+    void set_transparent_mode(bool enabled, float alpha = 0.5f);
+
     // --- term_type フックから呼ばれる描画メソッド ---
 
     /// テキストを描画する（text_hook 相当）
@@ -117,6 +121,11 @@ private:
     bool cursor_visible_{ false };
     int cursor_x_{ 0 };
     int cursor_y_{ 0 };
+
+    /// 透過モード (3D オーバーレイとの併用時に有効化)
+    /// セル背景の黒塗りをスキップし、self_modulate.a を transparent_alpha_ にする
+    bool transparent_mode_{ false };
+    float transparent_alpha_{ 0.5f };
 
     godot::Ref<godot::Font> font_;
     godot::Ref<godot::ImageTexture> wall_texture_; ///< wall.bmp 由来の 8x8 パターンテクスチャ

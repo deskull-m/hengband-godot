@@ -120,6 +120,10 @@ func _fit_map3d_overlay(px_size: Vector2i, cell_w: int, cell_h: int) -> void:
 	overlay.size = size
 
 ## 3D オーバーレイの表示/非表示を切り替える
+## 有効時:
+##  - 3D ビューポートを表示 / アクティブ化
+##  - Terminal の背景黒塗りを止め、self_modulate.a を 0.5 にして 3D を透かす
+##  - TileLayer も併せて 50% 半透明化
 func set_map_3d_enabled(enabled: bool) -> void:
 	map_3d_enabled = enabled
 	var overlay := _get_map3d_overlay()
@@ -128,6 +132,17 @@ func set_map_3d_enabled(enabled: bool) -> void:
 		var map3d_node: Node = overlay.get_map3d_node()
 		if map3d_node and map3d_node.has_method("set_active"):
 			map3d_node.set_active(enabled)
+
+	var term: Node = $PaneVBox/SubViewportContainer/SubViewport/TerminalContainer/Terminal
+	if term and term.has_method("set_transparent_mode"):
+		term.set_transparent_mode(enabled, 0.5)
+
+	# TileLayer も併せて半透明化 (タイルモード + 3D の組み合わせ用)
+	var tiles: CanvasItem = $PaneVBox/SubViewportContainer/SubViewport/TerminalContainer/TileLayer
+	if tiles:
+		var mod := tiles.self_modulate
+		mod.a = 0.5 if enabled else 1.0
+		tiles.self_modulate = mod
 
 func _get_map3d_overlay() -> Map3DOverlay:
 	return get_node_or_null("PaneVBox/SubViewportContainer/SubViewport/Map3DOverlay")

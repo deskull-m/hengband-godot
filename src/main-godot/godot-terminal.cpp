@@ -160,8 +160,10 @@ void GodotTerminal::draw_cell(int x, int y, const CellData &cell)
         static_cast<float>(char_cell_w),
         static_cast<float>(cell_h_));
 
-    // セル背景を黒で塗る
-    draw_rect(cell_rect, Color(0, 0, 0));
+    // セル背景を黒で塗る (透過モード時はスキップして 3D オーバーレイを透過させる)
+    if (!transparent_mode_) {
+        draw_rect(cell_rect, Color(0, 0, 0));
+    }
 
     // ASCII 127 (DEL) = Windows 版の wall.bmp パターンブラシ相当
     // 壁・暗闇タイルの描画に使用される
@@ -224,6 +226,17 @@ void GodotTerminal::set_terminal_font(const Ref<Font> &font, int font_size)
         cell_h_ = std::max(1, static_cast<int>(std::round(ascent + descent)));
     }
 
+    call_deferred("queue_redraw");
+}
+
+void GodotTerminal::set_transparent_mode(bool enabled, float alpha)
+{
+    transparent_mode_ = enabled;
+    transparent_alpha_ = alpha;
+    // ノード全体の不透明度を変更する: 透過モード時は self_modulate.a = alpha
+    Color mod = get_self_modulate();
+    mod.a = enabled ? alpha : 1.0f;
+    set_self_modulate(mod);
     call_deferred("queue_redraw");
 }
 
@@ -328,4 +341,6 @@ void GodotTerminal::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_rows"), &GodotTerminal::get_rows);
     ClassDB::bind_method(D_METHOD("get_cell_width"), &GodotTerminal::get_cell_width);
     ClassDB::bind_method(D_METHOD("get_cell_height"), &GodotTerminal::get_cell_height);
+    ClassDB::bind_method(D_METHOD("set_transparent_mode", "enabled", "alpha"),
+        &GodotTerminal::set_transparent_mode, DEFVAL(0.5f));
 }
