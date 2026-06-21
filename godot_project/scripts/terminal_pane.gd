@@ -61,7 +61,6 @@ func setup(game: Node, term_idx: int) -> void:
 			var map3d_node: Node = overlay.get_map3d_node()
 			if map3d_node and game.has_method("register_map3d"):
 				game.register_map3d(term_idx, map3d_node)
-			overlay.set_map_origin(COL_MAP, ROW_MAP)
 
 func _apply_header_color(is_main: bool) -> void:
 	var style := StyleBoxFlat.new()

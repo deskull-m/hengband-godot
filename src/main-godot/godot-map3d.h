@@ -1,141 +1,132 @@
 #pragma once
 /*!
  * @file godot-map3d.h
- * @brief Godot 3D マップ描画ノード (Phase 1: テキスト入力ベースのスパイク)
+ * @brief Godot 3D マップ描画ノード (Phase 2: floor 直読み + 差分更新)
  *
- * Hengband メイン端末の「マップ矩形」(COL_MAP, ROW_MAP 以降) に描かれる
- * テキスト/タイル情報を 3D 表示に変換する。
+ * Hengband のフロアデータ (FloorType.grid_array) をスナップショットとして
+ * 受け取り、ダンジョン全体を Minecraft 風のボクセル 3D 表示にする。
  *
- * Phase 1 設計:
- *  - 入力: term_text_godot から (x, y, char, color) を受け取りグリッドに格納
- *  - 出力: 文字種に応じて Mesh ノードを生成 / 配置
- *      '#'        → 高さ 2 の壁ボクセル
- *      '.', ','   → 高さ 0.05 の床ブロック
- *      '+', '\''  → 高さ 2 の扉ボクセル (色違い)
- *      '<', '>'   → 高さ 0.3 の階段マーカー
- *      '@'        → プレイヤー: 高さ 1.5 の赤いキューブ
- *      他の文字   → 高さ 1.0 のモンスター/アイテムキューブ (色は TERM_COLOR)
- *      ' ', 0     → 何も描画しない (闇)
+ * 設計:
+ *  - ゲームスレッド (TERM_XTRA_FRESH) がフロアを走査して set_floor_snapshot を呼ぶ
+ *  - GodotMap3D::_process (メインスレッド) が直前のスナップショットと比較し
+ *    変化したセルだけ MeshInstance3D を追加/削除する (差分更新)
+ *  - プレイヤーは単一の MeshInstance3D で常に最新位置に更新する
  *
- *  - 1 セル = 1 MeshInstance3D (Phase 2 で MultiMesh に置き換え予定)
- *  - 描画更新は queue_rebuild() フラグで _process から呼び出す
+ * セル種別:
+ *   0 = NONE  (未探索 / 描画しない)
+ *   1 = FLOOR
+ *   2 = WALL
+ *   3 = DOOR_CLOSED
+ *   4 = DOOR_OPEN
+ *   5 = STAIR_UP
+ *   6 = STAIR_DOWN
  *
  * 座標系:
- *  - グリッド (gx, gy) → 3D (x, 0, z) = ((gx - COL_MAP), 0, (gy - ROW_MAP))
- *  - Y 軸が上方向（Godot 標準）
+ *  - ダンジョン (dx, dy) → 3D (x, 0, z) = (dx, 0, dy)
+ *  - Y 軸が上方向 (Godot 標準)
+ *  - プレイヤーは (player_x_, 0, player_y_) の位置
  */
 
 #include <atomic>
 #include <cstdint>
+#include <godot_cpp/classes/mesh_instance3d.hpp>
 #include <godot_cpp/classes/node3d.hpp>
 #include <mutex>
-#include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace hengband_godot {
 
-/// マップ 3D グリッドの 1 セルデータ
-struct Map3DCell {
-    char32_t ch = U' '; ///< 表示文字 (Unicode コードポイント)
-    uint8_t color = 0; ///< TERM_COLOR インデックス
+/// セル種別 (uint8_t に格納)
+enum Map3DKind : uint8_t {
+    M3D_NONE = 0,
+    M3D_FLOOR = 1,
+    M3D_WALL = 2,
+    M3D_DOOR_CLOSED = 3,
+    M3D_DOOR_OPEN = 4,
+    M3D_STAIR_UP = 5,
+    M3D_STAIR_DOWN = 6,
+    M3D_KIND_COUNT
 };
 
-/*!
- * @brief Hengband マップ 3D 描画ノード
- *
- * Godot シーンの SubViewport(3D 有効) 配下に配置する。
- * 同じ SubViewport 内に Camera3D / DirectionalLight3D を置くこと。
- */
+/// フロアスナップショット
+struct Map3DFloorSnapshot {
+    std::vector<uint8_t> kinds; ///< height × width の Map3DKind 配列
+    int width{ 0 };
+    int height{ 0 };
+    int player_x{ -1 };
+    int player_y{ -1 };
+};
+
 class GodotMap3D : public godot::Node3D {
     GDCLASS(GodotMap3D, godot::Node3D)
 
 public:
-    GodotMap3D();
+    GodotMap3D() = default;
     ~GodotMap3D() override = default;
 
     void _ready() override;
     void _process(double delta) override;
 
-    /// グリッドサイズを設定する (テキスト端末のサイズに合わせる)
-    void set_grid_size(int cols, int rows);
-
-    /// マップ矩形の原点を設定する (デフォルト: COL_MAP=13, ROW_MAP=1)
-    void set_map_origin(int col, int row);
-
-    /// 端末セル (x, y) に文字を書き込む (text_hook から呼ばれる)
-    /// @param x, y     端末上のセル座標
-    /// @param n        セル数 (str を n セル分使う)
-    /// @param color    TERM_COLOR インデックス
-    /// @param str      UTF-8 文字列
-    void update_text(int x, int y, int n, uint8_t color, const char *str);
-
-    /// 端末セル (x, y) から n セルを空白に戻す (wipe_hook から呼ばれる)
-    void wipe_cells(int x, int y, int n);
-
-    /// 全セルをクリアする
-    void clear_all();
-
-    /// 描画アクティブ状態を切り替える (false の間 _process はメッシュ再生成しない)
+    /// 描画アクティブ状態を切り替える (false の間は _process で何もしない)
     void set_active(bool active);
-
     bool is_active() const
     {
-        return active_;
+        return active_.load();
     }
 
-    /// プレイヤーの画面 (端末グリッド) 座標を直接設定する。
-    /// term_hooks 側で TERM_XTRA_FRESH 毎に p_ptr->x/y と panel_* から
-    /// 計算して呼び出す。'@' 検出よりも優先される確定情報。
-    void set_player_screen_position(int sx, int sy);
+    /// フロアスナップショットを設定する (ゲームスレッドから呼ばれる)
+    /// kinds は width * height 個の Map3DKind 値。コピーされる。
+    void set_floor_snapshot(int width, int height,
+        const uint8_t *kinds, int player_x, int player_y);
 
-    /// プレイヤー位置を取得する (Godot の `_process` 等で Camera 追従に使う)
-    /// 戻り値は 3D ワールド座標 (cell 中心)
+    /// プレイヤー位置を取得する (ワールド座標、cell 中心)
     godot::Vector3 get_player_world_position() const;
 
-    /// プレイヤー位置が既知かどうか (false なら get_player_world_position の値は無効)
+    /// プレイヤー位置が既知かどうか
     bool has_player() const;
 
 protected:
     static void _bind_methods();
 
 private:
-    int cols_{ 80 };
-    int rows_{ 24 };
-    int origin_col_{ 13 }; ///< COL_MAP デフォルト
-    int origin_row_{ 1 }; ///< ROW_MAP デフォルト
+    /// 直前にゲームスレッドが投入したスナップショット (pending_snapshot_mutex_ で保護)
+    Map3DFloorSnapshot pending_;
+    mutable std::mutex pending_mutex_;
 
-    std::vector<Map3DCell> grid_; ///< (cols × rows) のセルデータ
-    mutable std::mutex grid_mutex_; ///< ゲーム ↔ Godot メインスレッド競合防止
+    /// 既に描画済みのスナップショット (メインスレッドのみアクセス)
+    Map3DFloorSnapshot current_;
 
-    /// 更新フラグ (true なら次の _process で rebuild_meshes() を呼ぶ)
+    /// 差分更新を要求するフラグ
     std::atomic<bool> dirty_{ false };
 
-    /// アクティブフラグ (false の間 _process は何もしない。
-    /// 3D 表示無効時の無駄なメッシュ生成・破棄を防ぐ)
+    /// 3D 描画アクティブフラグ
     std::atomic<bool> active_{ false };
 
-    /// 連続したメッシュ再生成を抑えるためのクールダウン残時間 (秒)
+    /// 連続再生成を抑えるためのクールダウン残時間 (秒)
     double rebuild_cooldown_{ 0.0 };
-
-    /// 再生成の最小間隔 (秒): 50ms = 20fps の更新レート (Phase 1)
     static constexpr double REBUILD_INTERVAL = 0.05;
 
-    /// 現在のプレイヤー位置 (グリッド座標、見つからない場合は -1)
-    /// grid_mutex_ で保護する (update_text / wipe_cells / clear_all から書き込み、
-    /// get_player_world_position / has_player から読み込み)
-    int player_x_{ -1 };
-    int player_y_{ -1 };
+    /// (dy * width + dx) → MeshInstance3D ポインタ
+    std::unordered_map<int, godot::MeshInstance3D *> active_meshes_;
 
-    int cell_idx(int x, int y) const
-    {
-        return y * cols_ + x;
-    }
+    /// プレイヤー専用の単一メッシュ
+    godot::MeshInstance3D *player_mesh_{ nullptr };
 
-    void resize_grid();
+    /// pending を current に反映し、変化したセルだけ Mesh を追加/削除する
+    void apply_snapshot();
 
-    /// 現在のグリッドからメッシュノードを全再生成する
-    /// (Phase 1 簡易実装: 既存子ノードを削除して 1 セル 1 MeshInstance3D を追加)
-    void rebuild_meshes();
+    /// 指定種別のセルメッシュを作成する。kind == M3D_NONE は nullptr を返す。
+    godot::MeshInstance3D *create_cell_mesh(uint8_t kind, int dx, int dy);
+
+    /// プレイヤーメッシュを生成 (まだ無ければ)
+    void ensure_player_mesh();
+
+    /// プレイヤー位置を更新する (current_.player_x/y を反映)
+    void update_player_position();
+
+    /// 全メッシュを削除する (フロアサイズ変更時)
+    void clear_all_meshes();
 };
 
 } // namespace hengband_godot
