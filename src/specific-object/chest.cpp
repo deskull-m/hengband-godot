@@ -89,8 +89,8 @@ void Chest::open(bool scatter, const Pos2D &pos, short item_idx)
 
         /* If chest scatters its contents, pick any floor square. */
         for (auto i = 0; i < 200; i++) {
-            const auto y = randint0(MAX_HGT);
-            const auto x = randint0(MAX_WID);
+            const auto y = randint0(floor.height);
+            const auto x = randint0(floor.width);
             const Pos2D pos_random(y, x); //!< @details 乱数引数の標準を固定する.
             if (!floor.is_empty_at(pos_random) || (pos_random == this->player_ptr->get_position())) {
                 continue;

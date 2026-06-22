@@ -86,7 +86,7 @@ void exe_movement(PlayerType *player_ptr, const Direction &dir, bool do_pickup, 
     auto &grid = floor.get_grid(pos);
     bool p_can_enter = player_can_enter(player_ptr, grid.feat, CEM_P_CAN_ENTER_PATTERN);
     const auto &world = AngbandWorld::get_instance();
-    if (!floor.is_underground() && !world.is_wild_mode() && ((pos.x == 0) || (pos.x == MAX_WID - 1) || (pos.y == 0) || (pos.y == MAX_HGT - 1))) {
+    if (!floor.is_underground() && !world.is_wild_mode() && ((pos.x == 0) || (pos.x == MAX_WILD_WID - 1) || (pos.y == 0) || (pos.y == MAX_WILD_HGT - 1))) {
         if (grid.mimic && player_can_enter(player_ptr, grid.mimic, 0)) {
             auto &wilderness = WildernessGrids::get_instance();
             if ((pos.y == 0) && (pos.x == 0)) {
@@ -94,17 +94,17 @@ void exe_movement(PlayerType *player_ptr, const Direction &dir, bool do_pickup, 
                 player_ptr->oldpy = floor.height - 2;
                 player_ptr->oldpx = floor.width - 2;
                 player_ptr->ambush_flag = false;
-            } else if ((pos.y == 0) && (pos.x == MAX_WID - 1)) {
+            } else if ((pos.y == 0) && (pos.x == MAX_WILD_WID - 1)) {
                 wilderness.move_player_to(Direction(9));
                 player_ptr->oldpy = floor.height - 2;
                 player_ptr->oldpx = 1;
                 player_ptr->ambush_flag = false;
-            } else if ((pos.y == MAX_HGT - 1) && (pos.x == 0)) {
+            } else if ((pos.y == MAX_WILD_HGT - 1) && (pos.x == 0)) {
                 wilderness.move_player_to(Direction(1));
                 player_ptr->oldpy = 1;
                 player_ptr->oldpx = floor.width - 2;
                 player_ptr->ambush_flag = false;
-            } else if ((pos.y == MAX_HGT - 1) && (pos.x == MAX_WID - 1)) {
+            } else if ((pos.y == MAX_WILD_HGT - 1) && (pos.x == MAX_WILD_WID - 1)) {
                 wilderness.move_player_to(Direction(3));
                 player_ptr->oldpy = 1;
                 player_ptr->oldpx = 1;
@@ -114,7 +114,7 @@ void exe_movement(PlayerType *player_ptr, const Direction &dir, bool do_pickup, 
                 player_ptr->oldpy = floor.height - 2;
                 player_ptr->oldpx = pos.x;
                 player_ptr->ambush_flag = false;
-            } else if (pos.y == MAX_HGT - 1) {
+            } else if (pos.y == MAX_WILD_HGT - 1) {
                 wilderness.move_player_to(Direction(2));
                 player_ptr->oldpy = 1;
                 player_ptr->oldpx = pos.x;
@@ -124,7 +124,7 @@ void exe_movement(PlayerType *player_ptr, const Direction &dir, bool do_pickup, 
                 player_ptr->oldpx = floor.width - 2;
                 player_ptr->oldpy = pos.y;
                 player_ptr->ambush_flag = false;
-            } else if (pos.x == MAX_WID - 1) {
+            } else if (pos.x == MAX_WILD_WID - 1) {
                 wilderness.move_player_to(Direction(6));
                 player_ptr->oldpx = 1;
                 player_ptr->oldpy = pos.y;
@@ -330,19 +330,19 @@ void exe_movement(PlayerType *player_ptr, const Direction &dir, bool do_pickup, 
             player_ptr->oldpy = 1;
         }
         if (vec.y < 0) {
-            player_ptr->oldpy = MAX_HGT - 2;
+            player_ptr->oldpy = MAX_WILD_HGT - 2;
         }
         if (vec.y == 0) {
-            player_ptr->oldpy = MAX_HGT / 2;
+            player_ptr->oldpy = MAX_WILD_HGT / 2;
         }
         if (vec.x > 0) {
             player_ptr->oldpx = 1;
         }
         if (vec.x < 0) {
-            player_ptr->oldpx = MAX_WID - 2;
+            player_ptr->oldpx = MAX_WILD_WID - 2;
         }
         if (vec.x == 0) {
-            player_ptr->oldpx = MAX_WID / 2;
+            player_ptr->oldpx = MAX_WILD_WID / 2;
         }
     }
 
