@@ -1,48 +1,300 @@
-name: Create Release
+name: Create Release (Godot Windows)
+
+# 旧 VS ネイティブビルドのリリース処理を Godot GDExtension ビルドへ置換。
+# scons で GDExtension DLL を MSVC ビルド → Godot CLI でプロジェクトを exe
+# にエクスポート → lib/ と同梱して ZIP 化してリリースする。
 
 on:
   push:
-    branches:
-      - master
-  # 手動トリガーを許可
+    tags:
+      - 'v*'
+      - '3.*-Beta'
+  # 手動トリガー (任意のブランチから zip を作りたい場合)
   workflow_dispatch:
+    inputs:
+      draft:
+        description: 'Create draft release'
+        required: false
+        default: 'true'
 
+env:
+  GODOT_VERSION: 4.6-stable
+  GODOT_VERSION_DIR: 4.6.stable
+  GODOT_PROJECT_DIR: godot_project
+  GDEXT_OUTPUT_NAME: hengband.windows.template_release.x86_64.dll
 
 jobs:
-  publish-release-page:
-    name: Publish Release Page
-    runs-on: windows-2025-vs2026
+  build-windows:
+    name: Build & Package (Windows x86_64)
+    runs-on: windows-latest
+    # リリース作成 (GitHub Release への書き込み) に必要な最小権限のみ付与する。
+    permissions:
+      contents: write
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          submodules: true
+          submodules: recursive
+          # チェックアウト後に認証情報を git config に残さない (資格情報漏えい対策)
+          persist-credentials: false
 
-      - name: Extract version from configure.ac
-        id: get_version
+      - name: Extract version from angband-version.h
+        id: ver
+        shell: pwsh
         run: |
-          $version = Select-String -Path configure.ac -Pattern 'AC_INIT\(hengband, (.+?)\)' | ForEach-Object { $_.Matches.Groups[1].Value }
-          echo "version=$version" >> $Env:GITHUB_OUTPUT
+          $h = Get-Content src/system/angband-version.h -Raw
+          function Get-VerComponent($name) {
+            $m = [regex]::Match($h, "#define\s+$name\s+(\d+)")
+            if (-not $m.Success) {
+              Write-Error "Failed to parse $name from src/system/angband-version.h"
+              exit 1
+            }
+            return $m.Groups[1].Value
+          }
+          $maj   = Get-VerComponent 'H_VER_MAJOR'
+          $min   = Get-VerComponent 'H_VER_MINOR'
+          $pat   = Get-VerComponent 'H_VER_PATCH'
+          $extra = Get-VerComponent 'H_VER_EXTRA'
+          $ver = "$maj.$min.$pat.$extra"
+          Write-Host "Detected version: $ver"
+          "version=$ver" | Out-File -Append $env:GITHUB_OUTPUT
 
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1
+      - name: Setup MSVC dev environment (x64)
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
+        with:
+          arch: x64
 
-      - name: Setup NuGet
-        uses: NuGet/setup-nuget@v1
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.x'
 
-      - name: Restore Nuget Packages
+      - name: Install SCons
+        run: pip install --upgrade scons
+
+      - name: Build GDExtension (template_release, x86_64)
+        shell: pwsh
         run: |
-          NuGet restore .\VisualStudio\Hengband.sln
+          scons platform=windows target=template_release arch=x86_64 -j2
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "scons build failed with exit code $LASTEXITCODE"
+            exit 1
+          }
+          if (-not (Test-Path "bin/${{ env.GDEXT_OUTPUT_NAME }}")) {
+            Write-Error "GDExtension DLL was not produced: bin/${{ env.GDEXT_OUTPUT_NAME }}"
+            exit 1
+          }
+          Get-ChildItem bin
 
-      - name: Build Windows Release Package
+      # ダウンロードした「アーカイブ」をキャッシュする (展開済み exe はキャッシュしない)。
+      # 展開・実行前に毎回 公式チェックサムで検証するため、キャッシュ汚染を防げる。
+      - name: Cache Godot download archives
+        id: godot-cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ${{ runner.temp }}/godot-dl
+          key: godot-${{ env.GODOT_VERSION }}-archives-v1
+
+      - name: Download Godot editor & templates archives (if cache miss)
+        if: steps.godot-cache.outputs.cache-hit != 'true'
+        shell: pwsh
         run: |
-          .\Build-Windows-Release-Package.ps1 -Version ${{ steps.get_version.outputs.version }}
+          $dl = "${{ runner.temp }}/godot-dl"
+          New-Item -ItemType Directory -Force -Path $dl | Out-Null
+          $base = "https://github.com/godotengine/godot/releases/download/${{ env.GODOT_VERSION }}"
+          $editorZip = "Godot_v${{ env.GODOT_VERSION }}_win64.exe.zip"
+          $tplTpz    = "Godot_v${{ env.GODOT_VERSION }}_export_templates.tpz"
+          Write-Host "Downloading: $base/$editorZip"
+          Invoke-WebRequest -Uri "$base/$editorZip" -OutFile "$dl/$editorZip"
+          Write-Host "Downloading: $base/$tplTpz"
+          Invoke-WebRequest -Uri "$base/$tplTpz" -OutFile "$dl/$tplTpz"
 
-      - name: Release
-        uses: softprops/action-gh-release@v1
+      - name: Verify Godot archives against published SHA-512 checksums
+        shell: pwsh
+        run: |
+          # SHA512-SUMS.txt は キャッシュ外 から毎回取得する (= 信頼の起点)。
+          # キャッシュ復元・新規DL いずれのアーカイブも、展開・実行前に必ず照合する。
+          $dl = "${{ runner.temp }}/godot-dl"
+          $base = "https://github.com/godotengine/godot/releases/download/${{ env.GODOT_VERSION }}"
+          $sums = "${{ runner.temp }}/SHA512-SUMS.txt"
+          Invoke-WebRequest -Uri "$base/SHA512-SUMS.txt" -OutFile $sums
+          $expected = @{}
+          foreach ($line in Get-Content $sums) {
+            if ($line -match '^\s*([0-9a-fA-F]{128})\s+\*?(.+?)\s*$') {
+              $expected[$matches[2].Trim()] = $matches[1].ToLower()
+            }
+          }
+          $editorZip = "Godot_v${{ env.GODOT_VERSION }}_win64.exe.zip"
+          $tplTpz    = "Godot_v${{ env.GODOT_VERSION }}_export_templates.tpz"
+          foreach ($name in @($editorZip, $tplTpz)) {
+            $path = Join-Path $dl $name
+            if (-not (Test-Path $path)) {
+              Write-Error "Archive missing for verification: $path"
+              exit 1
+            }
+            if (-not $expected.ContainsKey($name)) {
+              Write-Error "No published checksum for $name in SHA512-SUMS.txt"
+              exit 1
+            }
+            $actual = (Get-FileHash -Algorithm SHA512 -Path $path).Hash.ToLower()
+            if ($actual -ne $expected[$name]) {
+              Write-Error "Checksum mismatch for ${name}: expected $($expected[$name]) but got $actual"
+              exit 1
+            }
+            Write-Host "Checksum OK: $name"
+          }
+
+      - name: Extract & install verified Godot
+        shell: pwsh
+        run: |
+          # 検証済みアーカイブからのみ exe/テンプレートを展開する (実行バイトを検証済みに限定)
+          $dl  = "${{ runner.temp }}/godot-dl"
+          $dst = "${{ runner.temp }}/godot"
+          if (Test-Path $dst) { Remove-Item -Recurse -Force $dst }
+          New-Item -ItemType Directory -Force -Path $dst | Out-Null
+
+          # エディタ本体
+          Expand-Archive -Force -Path "$dl/Godot_v${{ env.GODOT_VERSION }}_win64.exe.zip" -DestinationPath $dst
+          $exe = Get-ChildItem $dst -Filter "Godot_v*_win64.exe" | Select-Object -First 1
+          if ($null -eq $exe) {
+            Write-Error "Godot executable not found after extraction"
+            exit 1
+          }
+          Rename-Item $exe.FullName "godot.exe"
+
+          # エクスポートテンプレート (.tpz は zip 実体。templates/ サブdirに入る)
+          $work = "${{ runner.temp }}/tpl_work"
+          if (Test-Path $work) { Remove-Item -Recurse -Force $work }
+          New-Item -ItemType Directory -Force -Path $work | Out-Null
+          # Expand-Archive は .zip 拡張子しか受け付けない (.tpz は NotSupportedArchiveFileExtension)。
+          # .tpz は zip 実体なので一時的に .zip へコピーしてから展開する。
+          $tplZip = "$work/templates.zip"
+          Copy-Item -Force "$dl/Godot_v${{ env.GODOT_VERSION }}_export_templates.tpz" $tplZip
+          Expand-Archive -Force -Path $tplZip -DestinationPath $work
+          $target = "$env:LOCALAPPDATA/Godot/export_templates/${{ env.GODOT_VERSION_DIR }}"
+          New-Item -ItemType Directory -Force -Path $target | Out-Null
+          Copy-Item -Recurse -Force "$work/templates/*" $target/
+          Remove-Item -Recurse -Force $work
+          Get-ChildItem $target | Select-Object Name, Length
+
+          # PATH 追加
+          $dst | Out-File -Append $env:GITHUB_PATH
+
+      - name: Import Godot project (build .godot cache)
+        shell: pwsh
+        run: |
+          Push-Location ${{ env.GODOT_PROJECT_DIR }}
+          # 初回 import はリソース変換の関係で非ゼロ終了することがあるので 2 回試行する。
+          # 1 回目は失敗を許容し、2 回目の終了コードで成否を判定する。
+          & godot.exe --headless --import 2>&1 | Out-Host
+          & godot.exe --headless --import 2>&1 | Out-Host
+          $code = $LASTEXITCODE
+          Pop-Location
+          if ($code -ne 0) {
+            Write-Error "Godot import failed with exit code $code"
+            exit 1
+          }
+
+      - name: Export "Windows Desktop"
+        shell: pwsh
+        run: |
+          # 前回ビルドの残骸を除去してクリーンな出力を保証する
+          # (古い exe が残っていると export 失敗を取りこぼす)
+          if (Test-Path build) { Remove-Item -Recurse -Force build }
+          New-Item -ItemType Directory -Force -Path build | Out-Null
+          Push-Location ${{ env.GODOT_PROJECT_DIR }}
+          & godot.exe --headless --export-release "Windows Desktop" "../build/Hengband.exe"
+          $code = $LASTEXITCODE
+          Pop-Location
+          if ($code -ne 0) {
+            Write-Error "Export failed: godot.exe exited with code $code"
+            exit 1
+          }
+          if (-not (Test-Path build/Hengband.exe)) {
+            Write-Error "Export failed: build/Hengband.exe not produced (exit=$code)"
+            exit 1
+          }
+          Get-ChildItem build
+
+      - name: Ensure GDExtension DLL is alongside exe
+        shell: pwsh
+        run: |
+          # Godot は .gdextension 内のライブラリを通常自動でコピーするが、
+          # `res://../bin/` のような外部参照では取りこぼすことがあるため明示的に確認・コピー
+          $dst = "build/${{ env.GDEXT_OUTPUT_NAME }}"
+          if (-not (Test-Path $dst)) {
+            Copy-Item -Force "bin/${{ env.GDEXT_OUTPUT_NAME }}" $dst
+          }
+          if (-not (Test-Path "build/hengband.gdextension")) {
+            Copy-Item -Force "${{ env.GODOT_PROJECT_DIR }}/hengband.gdextension" "build/hengband.gdextension"
+          }
+          Get-ChildItem build
+
+      - name: Stage release files
+        shell: pwsh
+        run: |
+          $stage = "stage/Hengband-${{ steps.ver.outputs.version }}-godot-win64"
+          New-Item -ItemType Directory -Force -Path $stage | Out-Null
+
+          # ゲーム本体
+          Copy-Item -Force build/Hengband.exe $stage/
+          Copy-Item -Force "build/${{ env.GDEXT_OUTPUT_NAME }}" $stage/
+          Copy-Item -Force build/hengband.gdextension $stage/ -ErrorAction SilentlyContinue
+          # Godot ランタイムが書き出す .pck (embed_pck=false のため必須)。
+          # 欠落していると実行不能なパッケージになるので、存在しなければ失敗させる。
+          if (-not (Test-Path build/Hengband.pck)) {
+            Write-Error "Required PCK not found: build/Hengband.pck (export_presets.cfg embed_pck=false)"
+            exit 1
+          }
+          Copy-Item -Force build/Hengband.pck $stage/
+
+          # ゲームデータ (実行時は exe の隣の lib/ を ANGBAND_DIR として読む)
+          Copy-Item -Recurse -Force lib $stage/lib
+          Get-ChildItem -Recurse -Filter Makefile.am -Path $stage/lib | Remove-Item -Force -ErrorAction SilentlyContinue
+          # ユーザ生成物は除外 (delete.me は保持)
+          Get-ChildItem -Path $stage/lib/save, $stage/lib/user -Exclude delete.me -ErrorAction SilentlyContinue |
+            Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+          # 音楽は同梱フリーのものだけ残す
+          if (Test-Path $stage/lib/xtra/music) {
+            Get-ChildItem $stage/lib/xtra/music -Exclude music.cfg, readme.txt, *.mp3 |
+              Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+          }
+
+          # ドキュメント
+          Copy-Item -Force readme.md $stage/
+          Copy-Item -Force readme-eng.md $stage/ -ErrorAction SilentlyContinue
+          Copy-Item -Force autopick.txt, autopick_eng.txt $stage/ -ErrorAction SilentlyContinue
+          Copy-Item -Force THIRD-PARTY-NOTICES.txt $stage/
+
+          Get-ChildItem -Recurse $stage | Measure-Object -Property Length -Sum |
+            ForEach-Object { Write-Host ("Staged size: {0:N1} MB" -f ($_.Sum / 1MB)) }
+
+      - name: Create release ZIP
+        shell: pwsh
+        run: |
+          $zip = "Hengband-${{ steps.ver.outputs.version }}-godot-win64.zip"
+          Compress-Archive -Path stage/* -DestinationPath $zip -Force
+          Get-Item $zip | ForEach-Object {
+            Write-Host ("Zip size: {0:N1} MB" -f ($_.Length / 1MB))
+          }
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Hengband-${{ steps.ver.outputs.version }}-godot-win64
+          path: Hengband-${{ steps.ver.outputs.version }}-godot-win64.zip
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           files: Hengband-*.zip
           fail_on_unmatched_files: true
-          name: ${{ steps.get_version.outputs.version }}
-          tag_name: ${{ steps.get_version.outputs.version }}
+          name: ${{ steps.ver.outputs.version }}
+          tag_name: ${{ github.ref_name }}
           generate_release_notes: true
-          draft: true
+          # tag push 時は inputs が未定義のため draft=false (正式リリース)。
+          # workflow_dispatch 時のみ入力値を尊重する。
+          draft: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.draft != 'false' }}
