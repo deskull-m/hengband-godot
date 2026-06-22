@@ -54,10 +54,10 @@
 constexpr auto SUM_TERRAIN_PROBABILITIES = 18;
 
 struct border_type {
-    short top[MAX_WID];
-    short bottom[MAX_WID];
-    short right[MAX_HGT];
-    short left[MAX_HGT];
+    short top[MAX_WILD_WID];
+    short bottom[MAX_WILD_WID];
+    short right[MAX_WILD_HGT];
+    short left[MAX_WILD_HGT];
     short top_left;
     short top_right;
     short bottom_left;
@@ -201,8 +201,8 @@ static void generate_wilderness_area(FloorType &floor, const WildernessGrid &wg,
 {
     const auto wg_terrain = wg.get_terrain();
     if (wg_terrain == WildernessTerrain::EDGE) {
-        for (auto y = 0; y < MAX_HGT; y++) {
-            for (auto x = 0; x < MAX_WID; x++) {
+        for (auto y = 0; y < MAX_WILD_HGT; y++) {
+            for (auto x = 0; x < MAX_WILD_WID; x++) {
                 floor.get_grid({ y, x }).set_terrain_id(TerrainTag::PERMANENT_WALL);
             }
         }
@@ -215,17 +215,17 @@ static void generate_wilderness_area(FloorType &floor, const WildernessGrid &wg,
     Xoshiro128StarStar wilderness_rng(wg.get_seed());
     system.set_rng(wilderness_rng);
     if (!corner) {
-        for (auto y = 0; y < MAX_HGT; y++) {
-            for (auto x = 0; x < MAX_WID; x++) {
+        for (auto y = 0; y < MAX_WILD_HGT; y++) {
+            for (auto x = 0; x < MAX_WILD_WID; x++) {
                 floor.get_grid({ y, x }).feat = SUM_TERRAIN_PROBABILITIES / 2;
             }
         }
     }
 
     auto &grid_top_left = floor.get_grid({ 1, 1 });
-    auto &grid_bottom_left = floor.get_grid({ MAX_HGT - 2, 1 });
-    auto &grid_top_right = floor.get_grid({ 1, MAX_WID - 2 });
-    auto &grid_bottom_right = floor.get_grid({ MAX_HGT - 2, MAX_WID - 2 });
+    auto &grid_bottom_left = floor.get_grid({ MAX_WILD_HGT - 2, 1 });
+    auto &grid_top_right = floor.get_grid({ 1, MAX_WILD_WID - 2 });
+    auto &grid_bottom_right = floor.get_grid({ MAX_WILD_HGT - 2, MAX_WILD_WID - 2 });
     grid_top_left.feat = randnum0<short>(SUM_TERRAIN_PROBABILITIES);
     grid_bottom_left.feat = randnum0<short>(SUM_TERRAIN_PROBABILITIES);
     grid_top_right.feat = randnum0<short>(SUM_TERRAIN_PROBABILITIES);
@@ -245,13 +245,13 @@ static void generate_wilderness_area(FloorType &floor, const WildernessGrid &wg,
     const auto top_right = grid_top_right.feat;
     const auto bottom_right = grid_bottom_right.feat;
     const short roughness = 1; /* The roughness of the level. */
-    plasma_recursive(floor, 1, 1, MAX_WID - 2, MAX_HGT - 2, SUM_TERRAIN_PROBABILITIES - 1, roughness);
+    plasma_recursive(floor, 1, 1, MAX_WILD_WID - 2, MAX_WILD_HGT - 2, SUM_TERRAIN_PROBABILITIES - 1, roughness);
     grid_top_left.feat = top_left;
     grid_bottom_left.feat = bottom_left;
     grid_top_right.feat = top_right;
     grid_bottom_right.feat = bottom_right;
-    for (auto y = 1; y < MAX_HGT - 1; y++) {
-        for (auto x = 1; x < MAX_WID - 1; x++) {
+    for (auto y = 1; y < MAX_WILD_HGT - 1; y++) {
+        for (auto x = 1; x < MAX_WILD_WID - 1; x++) {
             const Pos2D pos(y, x);
             auto &grid = floor.get_grid(pos);
             grid.set_terrain_id(terrain_table.at(wg_terrain).at(grid.feat));
@@ -287,7 +287,7 @@ static void generate_area(PlayerType *player_ptr, const Pos2D &pos, bool is_bord
             init_flags = INIT_CREATE_DUNGEON;
         }
 
-        parse_fixed_map(player_ptr, TOWN_DEFINITION_LIST, 0, 0, MAX_HGT, MAX_WID);
+        parse_fixed_map(player_ptr, TOWN_DEFINITION_LIST, 0, 0, MAX_WILD_HGT, MAX_WILD_WID);
         if (!is_corner && !is_border) {
             TownRecords::get_instance().set_visited(i2enum<TownId>(player_ptr->town_num - 1));
         }
@@ -298,31 +298,31 @@ static void generate_area(PlayerType *player_ptr, const Pos2D &pos, bool is_bord
     //!< @details 地上マップに曲がり道の道路を作る.
     if (!is_corner && !wg.has_town()) {
         if (wg.has_road()) {
-            floor.get_grid({ MAX_HGT / 2, MAX_WID / 2 }).set_terrain_id(TerrainTag::FLOOR);
+            floor.get_grid({ MAX_WILD_HGT / 2, MAX_WILD_WID / 2 }).set_terrain_id(TerrainTag::FLOOR);
             if (wilderness.get_grid(pos + Direction(8).vec()).has_road()) {
-                for (auto y = 1; y < MAX_HGT / 2; y++) {
-                    const Pos2D pos_road(y, MAX_WID / 2);
+                for (auto y = 1; y < MAX_WILD_HGT / 2; y++) {
+                    const Pos2D pos_road(y, MAX_WILD_WID / 2);
                     floor.get_grid(pos_road).set_terrain_id(TerrainTag::FLOOR);
                 }
             }
 
             if (wilderness.get_grid(pos + Direction(2).vec()).has_road()) {
-                for (auto y = MAX_HGT / 2; y < MAX_HGT - 1; y++) {
-                    const Pos2D pos_road(y, MAX_WID / 2);
+                for (auto y = MAX_WILD_HGT / 2; y < MAX_WILD_HGT - 1; y++) {
+                    const Pos2D pos_road(y, MAX_WILD_WID / 2);
                     floor.get_grid(pos_road).set_terrain_id(TerrainTag::FLOOR);
                 }
             }
 
             if (wilderness.get_grid(pos + Direction(6).vec()).has_road()) {
-                for (auto x = MAX_WID / 2; x < MAX_WID - 1; x++) {
-                    const Pos2D pos_road(MAX_HGT / 2, x);
+                for (auto x = MAX_WILD_WID / 2; x < MAX_WILD_WID - 1; x++) {
+                    const Pos2D pos_road(MAX_WILD_HGT / 2, x);
                     floor.get_grid(pos_road).set_terrain_id(TerrainTag::FLOOR);
                 }
             }
 
             if (wilderness.get_grid(pos + Direction(4).vec()).has_road()) {
-                for (auto x = 1; x < MAX_WID / 2; x++) {
-                    const Pos2D pos_road(MAX_HGT / 2, x);
+                for (auto x = 1; x < MAX_WILD_WID / 2; x++) {
+                    const Pos2D pos_road(MAX_WILD_HGT / 2, x);
                     floor.get_grid(pos_road).set_terrain_id(TerrainTag::FLOOR);
                 }
             }
@@ -380,8 +380,8 @@ static void generate_wild_monsters(PlayerType *player_ptr)
 void wilderness_gen(PlayerType *player_ptr)
 {
     auto &floor = *player_ptr->current_floor_ptr;
-    floor.height = MAX_HGT;
-    floor.width = MAX_WID;
+    floor.height = MAX_WILD_HGT;
+    floor.width = MAX_WILD_WID;
     panel_row_min = floor.height;
     panel_col_min = floor.width;
     auto &wilderness = WildernessGrids::get_instance();
@@ -392,33 +392,33 @@ void wilderness_gen(PlayerType *player_ptr)
     get_mon_num_prep_enum(player_ptr, floor.get_monrace_hook());
 
     generate_area(player_ptr, pos_wilderness + Direction(8).vec(), true, false);
-    for (auto i = 1; i < MAX_WID - 1; i++) {
-        border.top[i] = floor.get_grid({ MAX_HGT - 2, i }).feat;
+    for (auto i = 1; i < MAX_WILD_WID - 1; i++) {
+        border.top[i] = floor.get_grid({ MAX_WILD_HGT - 2, i }).feat;
     }
 
     generate_area(player_ptr, pos_wilderness + Direction(2).vec(), true, false);
-    for (auto i = 1; i < MAX_WID - 1; i++) {
+    for (auto i = 1; i < MAX_WILD_WID - 1; i++) {
         border.bottom[i] = floor.get_grid({ 1, i }).feat;
     }
 
     generate_area(player_ptr, pos_wilderness + Direction(4).vec(), true, false);
-    for (auto i = 1; i < MAX_HGT - 1; i++) {
-        border.left[i] = floor.get_grid({ i, MAX_WID - 2 }).feat;
+    for (auto i = 1; i < MAX_WILD_HGT - 1; i++) {
+        border.left[i] = floor.get_grid({ i, MAX_WILD_WID - 2 }).feat;
     }
 
     generate_area(player_ptr, pos_wilderness + Direction(6).vec(), true, false);
-    for (auto i = 1; i < MAX_HGT - 1; i++) {
+    for (auto i = 1; i < MAX_WILD_HGT - 1; i++) {
         border.right[i] = floor.get_grid({ i, 1 }).feat;
     }
 
     generate_area(player_ptr, pos_wilderness + Direction(7).vec(), false, true);
-    border.top_left = floor.get_grid({ MAX_HGT - 2, MAX_WID - 2 }).feat;
+    border.top_left = floor.get_grid({ MAX_WILD_HGT - 2, MAX_WILD_WID - 2 }).feat;
 
     generate_area(player_ptr, pos_wilderness + Direction(9).vec(), false, true);
-    border.top_right = floor.get_grid({ MAX_HGT - 2, 1 }).feat;
+    border.top_right = floor.get_grid({ MAX_WILD_HGT - 2, 1 }).feat;
 
     generate_area(player_ptr, pos_wilderness + Direction(1).vec(), false, true);
-    border.bottom_left = floor.get_grid({ 1, MAX_WID - 2 }).feat;
+    border.bottom_left = floor.get_grid({ 1, MAX_WILD_WID - 2 }).feat;
 
     generate_area(player_ptr, pos_wilderness + Direction(3).vec(), false, true);
     border.bottom_right = floor.get_grid({ 1, 1 }).feat;
@@ -427,37 +427,37 @@ void wilderness_gen(PlayerType *player_ptr)
     generate_area(player_ptr, pos_wilderness, false, false);
 
     /* Special boundary walls -- North */
-    for (auto i = 0; i < MAX_WID; i++) {
+    for (auto i = 0; i < MAX_WILD_WID; i++) {
         auto &grid = floor.get_grid({ 0, i });
         grid.set_terrain_id(TerrainTag::PERMANENT_WALL);
         grid.mimic = border.top[i];
     }
 
     /* Special boundary walls -- South */
-    for (auto i = 0; i < MAX_WID; i++) {
-        auto &grid = floor.get_grid({ MAX_HGT - 1, i });
+    for (auto i = 0; i < MAX_WILD_WID; i++) {
+        auto &grid = floor.get_grid({ MAX_WILD_HGT - 1, i });
         grid.set_terrain_id(TerrainTag::PERMANENT_WALL);
         grid.mimic = border.bottom[i];
     }
 
     /* Special boundary walls -- West */
-    for (auto i = 0; i < MAX_HGT; i++) {
+    for (auto i = 0; i < MAX_WILD_HGT; i++) {
         auto &grid = floor.get_grid({ i, 0 });
         grid.set_terrain_id(TerrainTag::PERMANENT_WALL);
         grid.mimic = border.left[i];
     }
 
     /* Special boundary walls -- East */
-    for (auto i = 0; i < MAX_HGT; i++) {
-        auto &grid = floor.get_grid({ i, MAX_WID - 1 });
+    for (auto i = 0; i < MAX_WILD_HGT; i++) {
+        auto &grid = floor.get_grid({ i, MAX_WILD_WID - 1 });
         grid.set_terrain_id(TerrainTag::PERMANENT_WALL);
         grid.mimic = border.right[i];
     }
 
     floor.get_grid({ 0, 0 }).mimic = border.top_left;
-    floor.get_grid({ 0, MAX_WID - 1 }).mimic = border.top_right;
-    floor.get_grid({ MAX_HGT - 1, 0 }).mimic = border.bottom_left;
-    floor.get_grid({ MAX_HGT - 1, MAX_WID - 1 }).mimic = border.bottom_right;
+    floor.get_grid({ 0, MAX_WILD_WID - 1 }).mimic = border.top_right;
+    floor.get_grid({ MAX_WILD_HGT - 1, 0 }).mimic = border.bottom_left;
+    floor.get_grid({ MAX_WILD_HGT - 1, MAX_WILD_WID - 1 }).mimic = border.bottom_right;
     const auto &world = AngbandWorld::get_instance();
     for (const auto &pos : floor.get_area()) {
         auto &grid = floor.get_grid(pos);
@@ -556,8 +556,8 @@ void wilderness_gen(PlayerType *player_ptr)
 void wilderness_gen_small(PlayerType *player_ptr)
 {
     auto &floor = *player_ptr->current_floor_ptr;
-    for (auto x = 0; x < MAX_WID; x++) {
-        for (auto y = 0; y < MAX_HGT; y++) {
+    for (auto x = 0; x < MAX_WILD_WID; x++) {
+        for (auto y = 0; y < MAX_WILD_HGT; y++) {
             floor.get_grid({ y, x }).set_terrain_id(TerrainTag::PERMANENT_WALL);
         }
     }
@@ -597,12 +597,12 @@ void wilderness_gen_small(PlayerType *player_ptr)
 
     floor.height = area.height();
     floor.width = area.width();
-    if (floor.height > MAX_HGT) {
-        floor.height = MAX_HGT;
+    if (floor.height > MAX_WILD_HGT) {
+        floor.height = MAX_WILD_HGT;
     }
 
-    if (floor.width > MAX_WID) {
-        floor.width = MAX_WID;
+    if (floor.width > MAX_WILD_WID) {
+        floor.width = MAX_WILD_WID;
     }
 
     panel_row_min = floor.height;
