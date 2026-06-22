@@ -204,8 +204,12 @@ namespace {
             xor_byte = data[13];
 
             // XOR ストリーム開始 (Byte 14 から)
-            // sf_system(4) + sf_when(4) + sf_lives(2) + sf_saves(2) = 12 バイト
-            strip(12);
+            // 3.0.2.2 以前のみ:
+            //   sf_system(4) + sf_when(4) + sf_lives(2) + sf_saves(2) = 12 バイト
+            // 3.0.2.3 以降は本家側 (commit 43a7003b8) でこの 12 バイトが削除済み
+            if (h_older_than(3, 0, 2, 3)) {
+                strip(12);
+            }
 
             // SAVEFILE_VERSION
             sv_version = rd_u32b();
