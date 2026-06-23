@@ -13,6 +13,7 @@
  *  - 複数端末（最大8）はそれぞれ独立した GodotTerminal ノードとして扱う
  */
 
+#include <atomic>
 #include <cstdint>
 #include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/image_texture.hpp>
@@ -62,6 +63,13 @@ public:
     /// 透過モードを切り替える (3D マップ表示との重ね描画用)
     /// true: セル背景の黒塗りを停止し、ノード全体を半透明 (modulate.a = alpha) で描画する
     void set_transparent_mode(bool enabled, float alpha = 0.5f);
+
+    /// screen_save モードを設定する (cコマンド等で一時的に画面を退避する時に有効化)
+    /// 有効時は透過モードに関わらず:
+    ///   - self_modulate.a = 1.0 で文字を不透明化
+    ///   - 各文字に黒縁を追加して 3D オーバーレイ上でも視認性を確保
+    /// 値は screen_save() の入れ子深度 (0 で無効、1 以上で有効)
+    void set_screen_save_mode(int depth);
 
     // --- term_type フックから呼ばれる描画メソッド ---
 
@@ -127,6 +135,13 @@ private:
     bool transparent_mode_{ false };
     float transparent_alpha_{ 0.5f };
 
+    /// screen_save() の入れ子深度。> 0 の間は不透明 + 黒縁モードを強制する
+    /// ゲームスレッド (set_screen_save_mode) が書き込み、メインスレッドの
+    /// 描画パスが読むためアトミックにする
+    std::atomic<int> screen_save_depth_{ 0 };
+    /// 文字の黒縁サイズ (ピクセル) screen_save モード時のみ使用
+    static constexpr int kScreenSaveOutlineSize = 1;
+
     godot::Ref<godot::Font> font_;
     godot::Ref<godot::ImageTexture> wall_texture_; ///< wall.bmp 由来の 8x8 パターンテクスチャ
     std::vector<CellData> grid_; ///< グリッドバッファ (cols × rows)
@@ -146,6 +161,11 @@ private:
 
     void draw_cell(int x, int y, const CellData &cell);
     void draw_cursor_rect(int x, int y);
+
+    /// 透過/screen_save の状態に応じた self_modulate を反映する (要メインスレッド)
+    void apply_effective_modulate();
+    /// call_deferred で呼ぶためのメインスレッド側ディスパッチ
+    void _apply_modulate_deferred();
 };
 
 } // namespace hengband_godot
