@@ -6,6 +6,10 @@
 #include "view/display-symbol.h"
 #include "world/world.h"
 
+#ifdef USE_GODOT
+#include "main-godot/godot-term-hooks.h"
+#endif
+
 /*
  * Hack -- prevent "accidents" in "screen_save()" or "screen_load()"
  */
@@ -44,6 +48,9 @@ void screen_save()
 
     AngbandWorld::get_instance().character_icky_depth++;
     screen_depth++;
+#ifdef USE_GODOT
+    notify_screen_save_depth(screen_depth);
+#endif
 }
 
 /*
@@ -69,6 +76,9 @@ void screen_load(ScreenLoadOptType opt)
     default:
         break;
     }
+#ifdef USE_GODOT
+    notify_screen_save_depth(screen_depth);
+#endif
 }
 
 /*

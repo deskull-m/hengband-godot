@@ -53,6 +53,12 @@ void set_term_data_array(term_data_godot *arr, int count);
 /// arg_bigtile を設定し term_resize() で use_bigtile と同期させる
 void apply_bigtile_mode(bool enabled);
 
+/// screen_save() / screen_load() の入れ子深度をメイン term (term 0) の
+/// GodotTerminal に通知する。screen_save 中は 3D オーバーレイ越しでも
+/// 視認できるようテキストを不透明化 + 黒縁付きで描画させる。
+/// @param depth  screen_save の入れ子深度 (0 で解除)
+void notify_screen_save_depth(int depth);
+
 /// タイル描画の有効/無効を切り替える
 /// use_graphics / ANGBAND_GRAF / higher_pict を一括設定し、
 /// ゲームスレッドが起動済みであれば reset_visuals() を呼び出す。
