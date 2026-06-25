@@ -68,16 +68,29 @@ func _ready() -> void:
 	if _lib_path.is_empty():
 		_lib_path = ProjectSettings.globalize_path("res://../lib")
 
-	# 保存済みレイアウトを復元、なければデフォルト単一ペイン
+	# 保存済みレイアウトを復元する。
+	var restored_ok := false
 	if not GameState.layout_data.is_empty():
 		var root_node := _restore_layout_node(GameState.layout_data)
 		$LayoutRoot.add_child(root_node)
 		_setup_panes_in_subtree(root_node, game)
-		_apply_font(game)
-	else:
+		# 壊れた保存データ (端末ペインを含まない split だけのツリーや、メインペイン
+		# (index 0) を欠いたツリー等) を検出する。メイン端末 (term 0) が生成・登録
+		# されないと画面が真っ黒になるため、メインペインの有無で判定し、無ければ
+		# 復元ノードを破棄してデフォルト単一ペインにフォールバックする。
+		restored_ok = _has_main_pane()
+		if restored_ok:
+			_apply_font(game)
+		else:
+			push_warning("保存レイアウトにメイン端末ペイン (index 0) がありません。単一ペインにフォールバックします。")
+			root_node.queue_free()
+
+	# レイアウト未保存、または復元結果にペインが無い場合はデフォルトのメインペインを作る。
+	if not restored_ok:
 		var main_pane := _create_terminal_pane(0)
 		$LayoutRoot.add_child(main_pane)
 		main_pane.setup(game, 0)
+		_apply_font(game)
 
 	# レイアウト確定後にグリッドをフィット（1フレーム後に実行）
 	_fit_main_term.call_deferred()
@@ -392,6 +405,14 @@ func _restore_layout_node(data: Dictionary) -> Node:
 	pane.pane_font_name = data.get("font_name", "")
 	pane.pane_font_size = data.get("font_size", 0)
 	return pane
+
+## メイン端末ペイン (terminal_index == 0) が存在するか判定する。
+## 復元レイアウトが壊れていてメインペインを欠く場合のフォールバック判定に使う。
+func _has_main_pane() -> bool:
+	for pane in get_tree().get_nodes_in_group("terminal_panes"):
+		if pane.terminal_index == 0:
+			return true
+	return false
 
 ## ツリー内の全 TerminalPane に setup() を呼ぶ（add_child 後に実行）
 func _setup_panes_in_subtree(node: Node, game: Node) -> void:
