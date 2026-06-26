@@ -57,6 +57,30 @@ MeshSpec spec_for_kind(uint8_t kind)
     case M3D_STAIR_DOWN:
         s = { 0.8f, 0.3f, 0.8f, 0.15f, Color(1.00f, 0.70f, 0.20f) };
         break;
+    case M3D_RUBBLE:
+        // 岩石: 壁より低い瓦礫の山。灰褐色
+        s = { 0.85f, 0.45f, 0.85f, 0.225f, Color(0.45f, 0.42f, 0.40f) };
+        break;
+    case M3D_VEIN:
+        // 鉱脈: 壁と同じ高さだが青灰色で区別する
+        s = { 1.0f, 0.9f, 1.0f, 0.45f, Color(0.42f, 0.45f, 0.55f) };
+        break;
+    case M3D_TREE:
+        // 木: 背の高い緑
+        s = { 0.7f, 1.3f, 0.7f, 0.65f, Color(0.18f, 0.50f, 0.20f) };
+        break;
+    case M3D_WATER:
+        // 水: 床と同じ高さの薄い青いスラブ
+        s = { 1.0f, 0.08f, 1.0f, 0.04f, Color(0.18f, 0.40f, 0.85f) };
+        break;
+    case M3D_LAVA:
+        // 溶岩: 床高の鮮やかな橙赤
+        s = { 1.0f, 0.10f, 1.0f, 0.05f, Color(0.95f, 0.30f, 0.05f) };
+        break;
+    case M3D_MOUNTAIN:
+        // 山: 壁より高い灰色
+        s = { 1.0f, 1.5f, 1.0f, 0.75f, Color(0.50f, 0.50f, 0.52f) };
+        break;
     default:
         // M3D_NONE — 呼ばれないはずだが安全側に倒す
         s = { 0.0f, 0.0f, 0.0f, 0.0f, Color(0, 0, 0, 0) };
@@ -246,7 +270,8 @@ MeshInstance3D *GodotMap3D::create_cell_mesh(uint8_t kind, int dx, int dy)
     box.instantiate();
     box->set_size(Vector3(spec.size_x, spec.size_y, spec.size_z));
 
-    const bool is_wallish = (kind == M3D_WALL || kind == M3D_DOOR_CLOSED || kind == M3D_DOOR_OPEN);
+    // 背の高い障害物は壁シェーダ (プレイヤー近辺フェード + per-instance 色) を使う
+    const bool is_wallish = (kind == M3D_WALL || kind == M3D_DOOR_CLOSED || kind == M3D_DOOR_OPEN || kind == M3D_VEIN || kind == M3D_MOUNTAIN || kind == M3D_TREE || kind == M3D_RUBBLE);
 
     MeshInstance3D *mi = memnew(MeshInstance3D);
     mi->set_mesh(box);

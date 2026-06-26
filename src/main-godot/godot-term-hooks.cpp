@@ -211,15 +211,31 @@ errr term_xtra_godot(int n, int v)
                                 continue;
                             }
                             const auto &terrain = g.get_terrain();
+                            const auto &tf = terrain.flags;
+                            // 特徴的な地形を先に判定し、最後に壁/岩石/床へ振り分ける。
+                            // (扉・階段はFLOORフラグも持つため壁/床より先に判定する)
                             uint8_t kind = M3D_FLOOR; // 既定は床
-                            if (terrain.flags.has(TerrainCharacteristics::WALL)) {
-                                kind = M3D_WALL;
-                            } else if (terrain.flags.has(TerrainCharacteristics::DOOR)) {
-                                kind = M3D_DOOR_CLOSED;
-                            } else if (terrain.flags.has(TerrainCharacteristics::UP_STAIRS)) {
+                            if (tf.has(TerrainCharacteristics::DOOR)) {
+                                // 通行可能 (MOVE) な扉 = 開いた/壊れた扉、それ以外 = 閉じた扉
+                                kind = tf.has(TerrainCharacteristics::MOVE) ? M3D_DOOR_OPEN : M3D_DOOR_CLOSED;
+                            } else if (tf.has(TerrainCharacteristics::UP_STAIRS)) {
                                 kind = M3D_STAIR_UP;
-                            } else if (terrain.flags.has(TerrainCharacteristics::DOWN_STAIRS)) {
+                            } else if (tf.has(TerrainCharacteristics::DOWN_STAIRS)) {
                                 kind = M3D_STAIR_DOWN;
+                            } else if (tf.has(TerrainCharacteristics::TREE)) {
+                                kind = M3D_TREE;
+                            } else if (tf.has(TerrainCharacteristics::LAVA)) {
+                                kind = M3D_LAVA;
+                            } else if (tf.has(TerrainCharacteristics::WATER)) {
+                                kind = M3D_WATER;
+                            } else if (tf.has(TerrainCharacteristics::MOUNTAIN)) {
+                                kind = M3D_MOUNTAIN;
+                            } else if (tf.has(TerrainCharacteristics::WALL)) {
+                                // STONE 持ちの壁 = 鉱脈 (マグマ/石英)、それ以外は通常の壁
+                                kind = tf.has(TerrainCharacteristics::STONE) ? M3D_VEIN : M3D_WALL;
+                            } else if (tf.has(TerrainCharacteristics::STONE)) {
+                                // 壁ではないが STONE を持つ = 岩石 (rubble)
+                                kind = M3D_RUBBLE;
                             }
                             kinds[dy * w + dx] = kind;
                         }
