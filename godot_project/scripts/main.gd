@@ -74,14 +74,15 @@ func _ready() -> void:
 		var root_node := _restore_layout_node(GameState.layout_data)
 		$LayoutRoot.add_child(root_node)
 		_setup_panes_in_subtree(root_node, game)
-		# 壊れた保存データ (端末ペインを含まない split だけのツリー等) を検出する。
-		# ペインが1つも無いとメインターミナルが生成・登録されず画面が真っ黒になるため、
-		# その場合は復元ノードを破棄してデフォルト単一ペインにフォールバックする。
-		restored_ok = not get_tree().get_nodes_in_group("terminal_panes").is_empty()
+		# 壊れた保存データ (端末ペインを含まない split だけのツリーや、メインペイン
+		# (index 0) を欠いたツリー等) を検出する。メイン端末 (term 0) が生成・登録
+		# されないと画面が真っ黒になるため、メインペインの有無で判定し、無ければ
+		# 復元ノードを破棄してデフォルト単一ペインにフォールバックする。
+		restored_ok = _has_main_pane()
 		if restored_ok:
 			_apply_font(game)
 		else:
-			push_warning("保存レイアウトに端末ペインがありません。単一ペインにフォールバックします。")
+			push_warning("保存レイアウトにメイン端末ペイン (index 0) がありません。単一ペインにフォールバックします。")
 			root_node.queue_free()
 
 	# レイアウト未保存、または復元結果にペインが無い場合はデフォルトのメインペインを作る。
@@ -404,6 +405,14 @@ func _restore_layout_node(data: Dictionary) -> Node:
 	pane.pane_font_name = data.get("font_name", "")
 	pane.pane_font_size = data.get("font_size", 0)
 	return pane
+
+## メイン端末ペイン (terminal_index == 0) が存在するか判定する。
+## 復元レイアウトが壊れていてメインペインを欠く場合のフォールバック判定に使う。
+func _has_main_pane() -> bool:
+	for pane in get_tree().get_nodes_in_group("terminal_panes"):
+		if pane.terminal_index == 0:
+			return true
+	return false
 
 ## ツリー内の全 TerminalPane に setup() を呼ぶ（add_child 後に実行）
 func _setup_panes_in_subtree(node: Node, game: Node) -> void:

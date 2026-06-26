@@ -48,6 +48,12 @@ enum Map3DKind : uint8_t {
     M3D_DOOR_OPEN = 4,
     M3D_STAIR_UP = 5,
     M3D_STAIR_DOWN = 6,
+    M3D_RUBBLE = 7, ///< 岩石 (STONE 持ちで壁ではない)
+    M3D_VEIN = 8, ///< 鉱脈 (STONE 持ちの壁: マグマ/石英)
+    M3D_TREE = 9, ///< 木
+    M3D_WATER = 10, ///< 水
+    M3D_LAVA = 11, ///< 溶岩
+    M3D_MOUNTAIN = 12, ///< 山
     M3D_KIND_COUNT
 };
 
