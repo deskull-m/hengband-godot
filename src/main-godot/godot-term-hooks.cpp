@@ -188,8 +188,20 @@ errr term_xtra_godot(int n, int v)
                 const auto &floor = *p_ptr->current_floor_ptr;
                 const int w = static_cast<int>(floor.width);
                 const int h = static_cast<int>(floor.height);
+                // floor.width/height と grid_array の実サイズはロード中やフロア生成前に
+                // 食い違うことがある。その状態で grid_array[dy][dx] に触れると領域外参照で
+                // クラッシュするため、全行が w 列以上あることを確認できた時だけ走査する。
+                bool grid_ready = (w > 0 && h > 0 && static_cast<int>(floor.grid_array.size()) >= h);
+                if (grid_ready) {
+                    for (int dy = 0; dy < h; ++dy) {
+                        if (static_cast<int>(floor.grid_array[dy].size()) < w) {
+                            grid_ready = false;
+                            break;
+                        }
+                    }
+                }
                 // 上限を設けて暴走防止 (Hengband の最大は概ね 198×66 = 13068)
-                if (w > 0 && h > 0 && (static_cast<long long>(w) * h) < 100000LL) {
+                if (grid_ready && (static_cast<long long>(w) * h) < 100000LL) {
                     std::vector<uint8_t> kinds(static_cast<size_t>(w) * h, 0);
                     for (int dy = 0; dy < h; ++dy) {
                         for (int dx = 0; dx < w; ++dx) {

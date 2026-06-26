@@ -68,16 +68,28 @@ func _ready() -> void:
 	if _lib_path.is_empty():
 		_lib_path = ProjectSettings.globalize_path("res://../lib")
 
-	# 保存済みレイアウトを復元、なければデフォルト単一ペイン
+	# 保存済みレイアウトを復元する。
+	var restored_ok := false
 	if not GameState.layout_data.is_empty():
 		var root_node := _restore_layout_node(GameState.layout_data)
 		$LayoutRoot.add_child(root_node)
 		_setup_panes_in_subtree(root_node, game)
-		_apply_font(game)
-	else:
+		# 壊れた保存データ (端末ペインを含まない split だけのツリー等) を検出する。
+		# ペインが1つも無いとメインターミナルが生成・登録されず画面が真っ黒になるため、
+		# その場合は復元ノードを破棄してデフォルト単一ペインにフォールバックする。
+		restored_ok = not get_tree().get_nodes_in_group("terminal_panes").is_empty()
+		if restored_ok:
+			_apply_font(game)
+		else:
+			push_warning("保存レイアウトに端末ペインがありません。単一ペインにフォールバックします。")
+			root_node.queue_free()
+
+	# レイアウト未保存、または復元結果にペインが無い場合はデフォルトのメインペインを作る。
+	if not restored_ok:
 		var main_pane := _create_terminal_pane(0)
 		$LayoutRoot.add_child(main_pane)
 		main_pane.setup(game, 0)
+		_apply_font(game)
 
 	# レイアウト確定後にグリッドをフィット（1フレーム後に実行）
 	_fit_main_term.call_deferred()
