@@ -307,6 +307,13 @@ bool HengbandGame::load_tileset(const String &tileset_path,
         // 旧座標 × 新テクスチャで黒く描画されてしまうため。
         tiles->clear_all();
         tiles->set_visible(true);
+        // 3D マップ (term 0) にも同じアトラスを共有する。
+        // タイルモード時、3D セルもこのアトラスから albedo を切り出して使う。
+        if (auto *m3d = term_data_[0].map3d) {
+            m3d->set_tile_atlas(tiles->get_tileset_texture(),
+                tiles->get_source_cell_width(),
+                tiles->get_source_cell_height());
+        }
         // graf_name 未指定の場合は "old" (8x8) をデフォルトとする。
         // utf8().get_data() は一時 CharString を指すため、std::string に格納して
         // 呼び出し中はポインタが有効であることを保証する。

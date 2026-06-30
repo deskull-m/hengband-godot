@@ -72,6 +72,10 @@ struct Map3DItem {
 /// フロアスナップショット
 struct Map3DFloorSnapshot {
     std::vector<uint8_t> kinds; ///< height × width の Map3DKind 配列
+    /// タイルモード時の地形シンボル: (attr & 0x7F, char & 0x7F) のペア。
+    /// サイズは width * height * 2、kinds が M3D_NONE のセルは未定義。
+    /// テキストモードまたはタイル未ロード時は空 (size == 0)。
+    std::vector<uint8_t> tile_symbols;
     std::vector<Map3DMonster> monsters; ///< 視認中のモンスター一覧
     std::vector<Map3DItem> items; ///< 視認中のアイテム一覧
     int width{ 0 };
@@ -99,11 +103,24 @@ public:
 
     /// フロアスナップショットを設定する (ゲームスレッドから呼ばれる)
     /// kinds は width * height 個の Map3DKind 値。コピーされる。
+    /// tile_symbols が非 null の場合は width * height * 2 個 (attr, char ペア) として
+    /// セル毎のタイル座標を取り込む。テキストモード時は nullptr で良い。
     /// monsters / items は視認中のエンティティ配列 (空可)。コピーされる。
     void set_floor_snapshot(int width, int height,
         const uint8_t *kinds, int player_x, int player_y,
         const Map3DMonster *monsters = nullptr, int monster_count = 0,
-        const Map3DItem *items = nullptr, int item_count = 0);
+        const Map3DItem *items = nullptr, int item_count = 0,
+        const uint8_t *tile_symbols = nullptr);
+
+    /// 2D タイルアトラスを共有設定する (GodotTileLayer のテクスチャを流用)。
+    /// texture が valid なら、以降の地形メッシュは AtlasTexture 経由で
+    /// そのアトラスからタイルをサンプルして albedo に張る。
+    /// nullptr を渡すとアトラス共有を解除し、単色マテリアルに戻る。
+    /// @param texture     共有元の ImageTexture
+    /// @param src_cell_w  アトラス上の 1 タイル幅 (ピクセル)
+    /// @param src_cell_h  アトラス上の 1 タイル高 (ピクセル)
+    void set_tile_atlas(const godot::Ref<godot::Texture2D> &texture,
+        int src_cell_w, int src_cell_h);
 
     /// プレイヤー位置を取得する (ワールド座標、cell 中心)
     godot::Vector3 get_player_world_position() const;
@@ -155,6 +172,11 @@ private:
     /// する距離ベースのアルファフェードを実装する。
     godot::Ref<godot::ShaderMaterial> wall_material_;
 
+    /// 共有 2D タイルアトラスとセルサイズ (タイルモード時のみ有効)
+    godot::Ref<godot::Texture2D> tile_atlas_;
+    int tile_src_cell_w_{ 0 };
+    int tile_src_cell_h_{ 0 };
+
     /// プレイヤー専用の単一メッシュ (半透明発光の光柱、位置マーカー)
     godot::MeshInstance3D *player_mesh_{ nullptr };
 
@@ -165,7 +187,10 @@ private:
     void apply_snapshot();
 
     /// 指定種別のセルメッシュを作成する。kind == M3D_NONE は nullptr を返す。
-    godot::MeshInstance3D *create_cell_mesh(uint8_t kind, int dx, int dy);
+    /// tile_attr / tile_char が共に非 0 かつ tile_atlas_ が valid なら、
+    /// その (attr, char) を使ってアトラスから albedo テクスチャを切り出す。
+    godot::MeshInstance3D *create_cell_mesh(uint8_t kind, int dx, int dy,
+        uint8_t tile_attr = 0, uint8_t tile_char = 0);
 
     /// プレイヤーメッシュを生成 (まだ無ければ)
     void ensure_player_mesh();
