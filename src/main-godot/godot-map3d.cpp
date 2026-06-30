@@ -6,6 +6,7 @@
 #include "godot-map3d.h"
 #include "term-color-map.h"
 
+#include <godot_cpp/classes/atlas_texture.hpp>
 #include <godot_cpp/classes/base_material3d.hpp>
 #include <godot_cpp/classes/box_mesh.hpp>
 #include <godot_cpp/classes/material.hpp>
@@ -142,7 +143,8 @@ void GodotMap3D::set_active(bool active)
 void GodotMap3D::set_floor_snapshot(int width, int height,
     const uint8_t *kinds, int player_x, int player_y,
     const Map3DMonster *monsters, int monster_count,
-    const Map3DItem *items, int item_count)
+    const Map3DItem *items, int item_count,
+    const uint8_t *tile_symbols)
 {
     if (width <= 0 || height <= 0 || !kinds) {
         return;
@@ -153,6 +155,11 @@ void GodotMap3D::set_floor_snapshot(int width, int height,
         pending_.width = width;
         pending_.height = height;
         pending_.kinds.assign(kinds, kinds + n);
+        if (tile_symbols) {
+            pending_.tile_symbols.assign(tile_symbols, tile_symbols + n * 2);
+        } else {
+            pending_.tile_symbols.clear();
+        }
         pending_.player_x = player_x;
         pending_.player_y = player_y;
         if (monsters && monster_count > 0) {
@@ -167,6 +174,23 @@ void GodotMap3D::set_floor_snapshot(int width, int height,
         }
     }
     dirty_.store(true);
+}
+
+void GodotMap3D::set_tile_atlas(const Ref<Texture2D> &texture, int src_cell_w, int src_cell_h)
+{
+    tile_atlas_ = texture;
+    tile_src_cell_w_ = src_cell_w;
+    tile_src_cell_h_ = src_cell_h;
+    // 既存メッシュは差し替えると複雑なので、次回のスナップショット適用時に
+    // 全消去 → 再構築で取り込む。フラグだけ立てておく。
+    dirty_.store(true);
+    // current_ を空にすることで apply_snapshot が全セルを「変化あり」と扱う
+    current_.kinds.clear();
+    current_.tile_symbols.clear();
+    current_.width = 0;
+    current_.height = 0;
+    // 既存メッシュも掃除しておく (テクスチャ付き/単色の切替で見た目が混ざるのを防ぐ)
+    clear_all_meshes();
 }
 
 Vector3 GodotMap3D::get_player_world_position() const
@@ -209,6 +233,7 @@ void GodotMap3D::apply_snapshot()
         current_.height = snap.height;
         current_.kinds.assign(static_cast<size_t>(snap.width) * static_cast<size_t>(snap.height),
             M3D_NONE);
+        current_.tile_symbols.clear();
     }
 
     const int w = snap.width;
@@ -216,14 +241,23 @@ void GodotMap3D::apply_snapshot()
     if (static_cast<int>(snap.kinds.size()) != w * h) {
         return; // 不整合: スキップ
     }
+    const bool has_tiles = (static_cast<int>(snap.tile_symbols.size()) == w * h * 2);
+    // current_.tile_symbols のサイズも同期する (差分検出用)
+    if (current_.tile_symbols.size() != static_cast<size_t>(w * h * 2)) {
+        current_.tile_symbols.assign(static_cast<size_t>(w * h * 2), 0);
+    }
 
-    // セル単位で差分検出
+    // セル単位で差分検出 (kind + (attr,char) のいずれかが変わったら作り直す)
     for (int dy = 0; dy < h; ++dy) {
         for (int dx = 0; dx < w; ++dx) {
             const int idx = dy * w + dx;
             const uint8_t new_kind = snap.kinds[idx];
             const uint8_t old_kind = current_.kinds[idx];
-            if (new_kind == old_kind) {
+            const uint8_t new_attr = has_tiles ? snap.tile_symbols[idx * 2 + 0] : 0;
+            const uint8_t new_char = has_tiles ? snap.tile_symbols[idx * 2 + 1] : 0;
+            const uint8_t old_attr = current_.tile_symbols[idx * 2 + 0];
+            const uint8_t old_char = current_.tile_symbols[idx * 2 + 1];
+            if (new_kind == old_kind && new_attr == old_attr && new_char == old_char) {
                 continue;
             }
             // 既存メッシュがあれば削除
@@ -238,13 +272,15 @@ void GodotMap3D::apply_snapshot()
             }
             // 新規メッシュを作成 (NONE 以外)
             if (new_kind != M3D_NONE) {
-                MeshInstance3D *mi = create_cell_mesh(new_kind, dx, dy);
+                MeshInstance3D *mi = create_cell_mesh(new_kind, dx, dy, new_attr, new_char);
                 if (mi) {
                     add_child(mi);
                     active_meshes_[idx] = mi;
                 }
             }
             current_.kinds[idx] = new_kind;
+            current_.tile_symbols[idx * 2 + 0] = new_attr;
+            current_.tile_symbols[idx * 2 + 1] = new_char;
         }
     }
 
@@ -259,7 +295,8 @@ void GodotMap3D::apply_snapshot()
     apply_items(snap.items);
 }
 
-MeshInstance3D *GodotMap3D::create_cell_mesh(uint8_t kind, int dx, int dy)
+MeshInstance3D *GodotMap3D::create_cell_mesh(uint8_t kind, int dx, int dy,
+    uint8_t tile_attr, uint8_t tile_char)
 {
     if (kind == M3D_NONE) {
         return nullptr;
@@ -273,9 +310,33 @@ MeshInstance3D *GodotMap3D::create_cell_mesh(uint8_t kind, int dx, int dy)
     // 背の高い障害物は壁シェーダ (プレイヤー近辺フェード + per-instance 色) を使う
     const bool is_wallish = (kind == M3D_WALL || kind == M3D_DOOR_CLOSED || kind == M3D_DOOR_OPEN || kind == M3D_VEIN || kind == M3D_MOUNTAIN || kind == M3D_TREE || kind == M3D_RUBBLE);
 
+    // 2D タイルアトラスが共有設定済 + 当該セルに (attr, char) が入っていれば
+    // そのタイル領域を切り出した AtlasTexture を albedo に使う (2D と同一見た目)。
+    const bool use_atlas = tile_atlas_.is_valid() && tile_src_cell_w_ > 0 && tile_src_cell_h_ > 0 && (tile_attr != 0 || tile_char != 0);
+
     MeshInstance3D *mi = memnew(MeshInstance3D);
     mi->set_mesh(box);
-    if (is_wallish) {
+    if (use_atlas) {
+        Ref<AtlasTexture> at;
+        at.instantiate();
+        at->set_atlas(tile_atlas_);
+        at->set_region(Rect2(
+            static_cast<float>(tile_char * tile_src_cell_w_),
+            static_cast<float>(tile_attr * tile_src_cell_h_),
+            static_cast<float>(tile_src_cell_w_),
+            static_cast<float>(tile_src_cell_h_)));
+
+        Ref<StandardMaterial3D> mat;
+        mat.instantiate();
+        mat->set_albedo(Color(1, 1, 1));
+        mat->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, at);
+        // アトラスのアルファマスクが既に焼き込まれているので alpha_scissor で抜く
+        mat->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA_SCISSOR);
+        mat->set_alpha_scissor_threshold(0.5f);
+        // ピクセルアートとしてくっきり見せるため近傍補間に固定
+        mat->set_texture_filter(BaseMaterial3D::TEXTURE_FILTER_NEAREST);
+        mi->set_material_override(mat);
+    } else if (is_wallish) {
         // 壁・扉は共有 ShaderMaterial を使う (player_position uniform を毎フレーム
         // 更新するためインスタンスごとに material を持つと非効率)。
         // 個別の色は per-instance shader parameter (instance uniform) で渡す。

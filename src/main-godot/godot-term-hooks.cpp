@@ -203,6 +203,14 @@ errr term_xtra_godot(int n, int v)
                 // 上限を設けて暴走防止 (Hengband の最大は概ね 198×66 = 13068)
                 if (grid_ready && (static_cast<long long>(w) * h) < 100000LL) {
                     std::vector<uint8_t> kinds(static_cast<size_t>(w) * h, 0);
+                    // タイルモード時は地形の表示シンボル (attr, char) も同梱して
+                    // 3D 側で同じタイル画像から albedo を切り出せるようにする。
+                    // (attr, char) はそれぞれ 0x7F でマスクすると 2D pict_hook と一致する。
+                    const bool tile_mode = (use_graphics != 0);
+                    std::vector<uint8_t> tile_syms;
+                    if (tile_mode) {
+                        tile_syms.assign(static_cast<size_t>(w) * h * 2, 0);
+                    }
                     for (int dy = 0; dy < h; ++dy) {
                         for (int dx = 0; dx < w; ++dx) {
                             const auto &g = floor.grid_array[dy][dx];
@@ -238,6 +246,17 @@ errr term_xtra_godot(int n, int v)
                                 kind = M3D_RUBBLE;
                             }
                             kinds[dy * w + dx] = kind;
+                            if (tile_mode) {
+                                // F_LIT_STANDARD の symbol_configs を参照。
+                                // 暗所/明所で多少色が違うが 3D マップは全体俯瞰なので
+                                // 標準ライティングで統一する。
+                                const auto sym_it = terrain.symbol_configs.find(F_LIT_STANDARD);
+                                if (sym_it != terrain.symbol_configs.end()) {
+                                    const auto &sym = sym_it->second;
+                                    tile_syms[(dy * w + dx) * 2 + 0] = static_cast<uint8_t>(sym.color & 0x7F);
+                                    tile_syms[(dy * w + dx) * 2 + 1] = static_cast<uint8_t>(sym.character & 0x7F);
+                                }
+                            }
                         }
                     }
 
@@ -312,7 +331,8 @@ errr term_xtra_godot(int n, int v)
                         monsters.empty() ? nullptr : monsters.data(),
                         static_cast<int>(monsters.size()),
                         items.empty() ? nullptr : items.data(),
-                        static_cast<int>(items.size()));
+                        static_cast<int>(items.size()),
+                        tile_syms.empty() ? nullptr : tile_syms.data());
                 }
             }
         }

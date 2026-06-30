@@ -118,6 +118,23 @@ public:
         return cell_h_;
     }
 
+    /// 3D マップ等の外部ノードがアトラスを共有するための getter。
+    /// load_tileset() 成功後に有効値を返す。
+    godot::Ref<godot::ImageTexture> get_tileset_texture() const
+    {
+        return texture_;
+    }
+
+    /// アトラス画像上の 1 タイルのソースサイズ (ピクセル)
+    int get_source_cell_width() const
+    {
+        return cell_w_;
+    }
+    int get_source_cell_height() const
+    {
+        return cell_h_;
+    }
+
 protected:
     static void _bind_methods();
 
